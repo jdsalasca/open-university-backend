@@ -1,0 +1,15 @@
+.worktrees/
+.superpowers/sdd/
+node_modules/
+dist/
+coverage/
+target/
+*.log
+.env
+.env.*
+!.env.example
+frontend/.vite/
+backend/uploads/
+backend/.data/
+Thumbs.db
+Desktop.ini
