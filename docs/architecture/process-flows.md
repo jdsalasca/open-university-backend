@@ -84,6 +84,59 @@ flowchart LR
 
 La flecha punteada hacia el gate es una dependencia por descubrir, no un estado confirmado del estudiante. La lista de servicios se mantiene desconectada deliberadamente hasta que los responsables aprueben el proceso y su relación. El detalle de las fuentes y decisiones pendientes está en [descubrimiento del ciclo](../discovery/student-lifecycle-baseline.md).
 
+## Catálogo académico — importar, revisar y publicar
+
+Este es el flujo académico que sí existe en v1. Representa planes de estudio y asignaturas versionados para pregrado presencial; no da de alta estudiantes ni matrícula. El flujo presupone un principal autorizado en un entorno con el proveedor institucional ya configurado. En Compose las rutas administrativas responden 401 porque no hay proveedor ni token de prueba. El formato de intercambio está en [la plantilla de encabezados CSV](../templates/academic-curriculum-template.csv); no contiene registros oficiales ni filas de ejemplo.
+
+```mermaid
+sequenceDiagram
+  actor Operador as Operador académico autorizado
+  participant UI as React: vista previa del catálogo
+  participant API as Spring Boot: Academic Catalog API
+  participant Auth as Spring Security
+  participant CSV as Parser y validador CSV
+  participant UseCase as Casos de uso de academics
+  participant Repo as JDBC AcademicCatalogRepository
+  participant DB as MySQL 8.4
+
+  Operador->>UI: carga archivo de una versión curricular
+  UI->>API: POST /api/v1/admin/academic-catalog/imports (multipart file)
+  API->>Auth: autentica y exige academic:catalog:write
+  Auth-->>API: sujeto y permiso interno validados en un entorno configurado
+  API->>CSV: lee máximo 2 MiB y valida UTF-8, encabezados, filas y límites
+  alt Archivo inválido o exceso de límite
+    CSV-->>API: error localizado con fila/campo seguro
+    API-->>UI: 400 o 413; sin escritura en MySQL
+  else Archivo válido
+    CSV-->>UseCase: contrato tipado completo + SHA-256 del origen
+    UseCase->>Repo: crear borrador validado
+    Repo->>DB: transacción: identidades/revisiones + plan + entradas + evento CURRICULUM_IMPORTED
+    DB-->>Repo: commit; el plan queda DRAFT
+    Repo-->>UI: 201 con resumen del borrador
+    Operador->>UI: abre el borrador y revisa sus asignaturas
+    UI->>API: GET /api/v1/admin/academic-catalog/curricula/{id}
+    API->>Auth: exige academic:catalog:read
+    API-->>UI: resumen y entradas del borrador
+    Operador->>UI: solicita publicar
+    UI->>API: POST /api/v1/admin/academic-catalog/curricula/{id}/publish
+    API->>Auth: exige academic:catalog:write
+    API->>Repo: transición condicional DRAFT → PUBLISHED
+    Repo->>DB: transacción: UPDATE condicional + evento CURRICULUM_PUBLISHED
+    alt Borrador publicado por otro operador o no existe
+      DB-->>API: conflicto 409 o no encontrado 404
+    else Publicación confirmada
+      DB-->>Repo: commit
+      API-->>UI: versión publicada e inmutable
+    end
+  end
+  UI->>API: GET /api/v1/academic-catalog/programs
+  API->>DB: consulta solo programas con plan PUBLISHED
+  DB-->>API: catálogo público; en desarrollo retorna [] hasta una publicación autorizada
+  API-->>UI: versiones publicadas y cohortes
+```
+
+La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la importación y publicación requieren `academic:catalog:write`. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
+
 ## Consulta de identidad propia
 
 ```mermaid

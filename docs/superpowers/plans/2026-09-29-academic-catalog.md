@@ -134,9 +134,9 @@
 **Files:**
 - Modify: `docs/architecture/c4.md`, `docs/architecture/data-model.md`, `docs/architecture/process-flows.md`, `docs/ROADMAP.md`, `docs/discovery/student-lifecycle-baseline.md`, `docs/runbook/local-development.md`, root/backend READMEs, `.env.example` if new limits are configurable.
 
-- [ ] Document the academics boundary, data ownership, version/cohort semantics, CSV template, source limitations, preview availability vs authoritative module flag, permissions and future student-enrollment integration in C4/data/process diagrams.
-- [ ] Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd verify` from `backend/` and `npm test`, `npm run build`, `npm run lint` from `frontend/`.
-- [ ] Run `docker compose config --quiet`; `docker compose up --build -d --wait`; verify MySQL health, Flyway V2, backend health, public empty catalog, UI route and denied anonymous import on the actual local Compose stack.
+- [x] Document the academics boundary, data ownership, version/cohort semantics, CSV template, source limitations, preview availability vs authoritative module flag, permissions and future student-enrollment integration in C4/data/process diagrams.
+- [x] Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd verify` from `backend/` and `npm test`, `npm run build`, `npm run lint` from `frontend/`.
+- [x] Run `docker compose config --quiet`; `docker compose up --build -d --wait`; verify MySQL health, Flyway V2, backend health, public empty catalog, UI route and denied anonymous import on the actual local Compose stack.
 - [ ] Confirm no real student data, no secrets, clean submodule state and clean Git diff; `git diff --check` passes.
 - [ ] Commit and push backend/docs and frontend repos to their existing `develop` upstreams; update the backend submodule pointer after the frontend commit.
 

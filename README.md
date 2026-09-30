@@ -27,12 +27,20 @@ Los valores de base de datos incluidos son solo para desarrollo local; se pueden
 
 Compose no configura SSO institucional. La API rechaza cambios administrativos mientras no haya un emisor OIDC/audience y roles autorizados; no usar datos personales reales.
 
+## Catálogo académico v0
+
+La vista previa de programas de **pregrado presencial** está en <http://localhost:5173/#programas>. El API publica únicamente planes autorizados en estado `PUBLISHED`; el catálogo local empieza vacío. La carga CSV, la revisión del borrador y la publicación requieren permisos backend `academic:catalog:read` / `academic:catalog:write`, aún sin mapeo de grupos institucionales en Compose. La ruta de vista previa no significa que el módulo esté habilitado: `programs.available` permanece en `false`.
+
+El contrato de columnas está en [academic-curriculum-template.csv](docs/templates/academic-curriculum-template.csv); el archivo solo contiene encabezados. El diseño, las siete tablas y las reglas de cohorte están documentados en [C4](docs/architecture/c4.md), [modelo de datos](docs/architecture/data-model.md) y [flujo de importación/publicación](docs/architecture/process-flows.md). El catálogo no maneja aspirantes ni registros de estudiantes.
+
 ## Estructura
 
 - `backend/`: Java 25 y Spring Boot; `.sdkmanrc` fija `25.0.4-tem` para el entorno host.
 - `frontend/`: submódulo al repositorio `Universiry-frontend`, Vite, React, TypeScript y SCSS.
 - `compose.yaml`: servicios locales frontend, backend y MySQL 8.4 con Compose Watch.
 - `docs/`: cronograma, alcance, modelo de datos, procesos, arquitectura C4 y runbooks.
+
+Consulta [el README del backend](backend/README.md) para su arquitectura, comandos SDKMAN y límites operativos.
 
 ## Java del host
 

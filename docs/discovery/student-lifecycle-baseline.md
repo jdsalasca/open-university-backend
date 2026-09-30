@@ -8,6 +8,10 @@
 
 La primera ruta a descubrir es **pregrado presencial**, por decisión del patrocinador del proyecto. FESAD/virtual y posgrado quedan fuera de este primer corte. La transferencia hacia programas presenciales se mantiene como un borde por definir con el dueño del proceso; no se le aplicarán automáticamente reglas de admisión ordinaria. Esto prioriza investigación; no constituye aprobación de reglas, datos o reemplazo de SIRA.
 
+## Límite de implementación actual
+
+La entrega de catálogo académico relacionada con esta ruta solo organiza programas y planes curriculares versionados por cohorte, con sus asignaturas. No modela aspirantes, personas, admisión, matrícula ni estado estudiantil; el módulo `students` continúa sin implementar. La vista `/#programas` es un preview local, la lista pública no incluye borradores y la marca institucional `programs.available` permanece deshabilitada. No se han cargado programas oficiales ni datos personales. Para implementar el ciclo del estudiante siguen siendo obligatorios los gates de proceso, datos, norma, permisos y autoridad descritos abajo.
+
 ## Hechos observables en fuentes oficiales
 
 | Evidencia | Observación publicada | Límite |

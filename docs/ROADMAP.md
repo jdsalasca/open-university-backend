@@ -36,6 +36,19 @@ gantt
 
 Las fechas del diagrama son una ilustración relativa iniciada el 1 de octubre de 2026, no una fecha autorizada de inicio. El programa completo podría abarcar aproximadamente 18–36+ meses con equipos de dominio y trabajo paralelo; un único equipo, integraciones complejas o datos de baja calidad pueden ampliarlo. Cada hito depende de pruebas de aceptación y ventanas de corte aprobadas, no solo del calendario.
 
+## Línea base de entregas locales v0 — 30 de septiembre de 2026
+
+| Entrega | Estado en los repositorios de desarrollo | Alcance y gate restante |
+|---|---|---|
+| Frontend y backend coordinados | Implementación local en dos repositorios separados, ambas ramas `develop`; Compose integra los servicios para vista previa. | Sigue siendo entorno de desarrollo. No es un despliegue UPTC ni tiene SSO institucional. |
+| Identidad y permisos | Endpoint de identidad propia y autorización del catálogo implementados con permisos internos separados. | Emisor, audience, grupos y roles UPTC siguen sin mapear; no hay credenciales de prueba. |
+| Catálogo de pregrado presencial | CSV validado a borrador, revisión de entradas, publicación protegida e interfaces públicas para versiones publicadas; actualmente vacío. | Formato y códigos deben mapearse con la fuente maestra y los responsables antes de cargar la oferta oficial. |
+| Vista de React del catálogo | Ruta `/#programas` con estados vacío/red/error, lista de versiones publicadas y panel administrativo condicionado a autorización. | Es preview local. El flag autoritativo `programs.available` sigue en `false` y la pantalla no habilita operación institucional. |
+| Ciclo de vida del estudiante | Descubrimiento de fuentes públicas para **pregrado presencial**. | No se implementan aspirantes, expediente, admisión ni matrícula. Proceso, cohorte, autoridad normativa, fuente y permisos requieren aprobación. |
+| Latencia MySQL | No medida con carga representativa. | La meta promedio `<50 ms` permanece pendiente; una consulta local vacía no es evidencia de desempeño. |
+
+La plantilla sin filas [academic-curriculum-template.csv](templates/academic-curriculum-template.csv) documenta el contrato de importación técnico; no es un formato exportado de un legado ni una lista de programas aprobada. El hito H5 requiere validación del catálogo y no se considera cumplido solo porque exista el endpoint o la interfaz.
+
 ## Desglose del siguiente hito: pregrado presencial
 
 Estimación de trabajo posterior a que UPTC designe responsables y facilite documentación no productiva. No incluye espera de aprobaciones ni contratación y no constituye fecha comprometida.
