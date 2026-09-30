@@ -103,4 +103,4 @@
 
 - [x] Ejecutar suite Maven (199 tests, 0 fallos, 6 omitidos), suite frontend (124 tests, 13 archivos), build/lint, `docker compose config --quiet` y smoke de salud frontend/backend.
 - [x] Confirmar configuración vacía como denegación segura con pruebas; no probar contra UPTC ni emitir tokens.
-- [ ] Completar revisión independiente, actualizar submódulo al commit frontend y publicar commits separados a `origin/develop`.
+- [x] Completar revisión independiente sin hallazgos restantes, actualizar el submódulo al frontend `821f982` y publicar ambos repositorios a `origin/develop` (frontend `821f982`, backend/documentación `a9868dd`).
