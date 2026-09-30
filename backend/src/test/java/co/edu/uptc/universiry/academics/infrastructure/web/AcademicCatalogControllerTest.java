@@ -101,6 +101,117 @@ class AcademicCatalogControllerTest {
         mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports").file(csv))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("forbidden"));
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews").file(csv))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("forbidden"));
+    }
+
+    @Test
+    void anonymous_admin_preview_requires_authentication() throws Exception {
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews")
+                        .file(upload(validCsv(programCode(), "V1", "3"))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("unauthorized"));
+    }
+
+    @Test
+    void preview_rejects_a_missing_jwt_subject_before_validating_the_upload() throws Exception {
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews")
+                        .file(upload(validCsv(programCode(), "V1", "INVALID_CREDIT_CELL")))
+                        .with(jwt().jwt(token -> token.subject(" ")).authorities(
+                                new SimpleGrantedAuthority(READ),
+                                new SimpleGrantedAuthority(WRITE))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("invalid_actor"));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program", Integer.class));
+    }
+
+    @Test
+    @WithAcademicCatalogPermissions
+    void catalog_admin_previews_valid_csv_without_persisting_and_limits_sample_rows() throws Exception {
+        // Arrange
+        String programCode = programCode();
+        String csvContent = curriculumCsv(programCode, "V1", new String[][]{
+                {"1", "SUB-ONE", "Álgebra", "3"},
+                {"2", "SUB-TWO", "Cálculo", "4"},
+                {"2", "SUB-THREE", "Geometría", "2"},
+        });
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews").file(upload(csvContent)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.programCode").value(programCode))
+                .andExpect(jsonPath("$.academicLevel").value("PREGRADO"))
+                .andExpect(jsonPath("$.studyModality").value("PRESENCIAL"))
+                .andExpect(jsonPath("$.sniesCode").value("12345"))
+                .andExpect(jsonPath("$.programName").value("Programa sintético"))
+                .andExpect(jsonPath("$.curriculumVersion").value("V1"))
+                .andExpect(jsonPath("$.entryCount").value(3))
+                .andExpect(jsonPath("$.semesters").isArray())
+                .andExpect(jsonPath("$.semesters.length()").value(2))
+                .andExpect(jsonPath("$.semesters[0]").value(1))
+                .andExpect(jsonPath("$.semesters[1]").value(2))
+                .andExpect(jsonPath("$.sampleEntries.length()").value(3))
+                .andExpect(jsonPath("$.sampleEntries[0].sourceRowNumber").value(2))
+                .andExpect(jsonPath("$.sampleEntries[0].subjectName").value("Álgebra"));
+
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program WHERE program_code = ?", Integer.class, programCode));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_curriculum", Integer.class));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_catalog_audit_event", Integer.class));
+    }
+
+    @Test
+    @WithAcademicCatalogPermissions
+    void invalid_preview_returns_safe_row_issues_and_persists_nothing() throws Exception {
+        // Arrange
+        String programCode = programCode();
+        String secretInvalidCell = "SECRET_INVALID_CREDIT_CELL";
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews")
+                        .file(upload(validCsv(programCode, "V1", secretInvalidCell)))
+                        .header("Accept-Language", "en-US"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_curriculum_csv"))
+                .andExpect(jsonPath("$.issues[0].rowNumber").value(2))
+                .andExpect(jsonPath("$.issues[0].column").value("credits"))
+                .andExpect(content().string(not(containsString(secretInvalidCell))));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program WHERE program_code = ?", Integer.class, programCode));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_catalog_audit_event WHERE actor_sub = ?", Integer.class, ADMIN_USER));
+    }
+
+    @Test
+    @WithAcademicCatalogPermissions
+    void curriculum_preview_reports_all_entries_but_returns_at_most_ten_sample_rows() throws Exception {
+        // Arrange
+        String programCode = programCode();
+        String[][] entries = new String[12][4];
+        for (int index = 0; index < entries.length; index++) {
+            entries[index] = new String[]{
+                    Integer.toString(index + 1),
+                    String.format(Locale.ROOT, "SUB-%02d", index + 1),
+                    "Asignatura " + (index + 1),
+                    "3",
+            };
+        }
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews")
+                        .file(upload(curriculumCsv(programCode, "V1", entries))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.entryCount").value(12))
+                .andExpect(jsonPath("$.semesters.length()").value(12))
+                .andExpect(jsonPath("$.sampleEntries.length()").value(10))
+                .andExpect(jsonPath("$.sampleEntries[9].sourceRowNumber").value(11))
+                .andExpect(jsonPath("$.sampleEntries[9].subjectCode").value("SUB-10"));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program WHERE program_code = ?", Integer.class, programCode));
     }
 
     @Test

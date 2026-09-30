@@ -39,6 +39,8 @@ La vista previa del catálogo está en `http://localhost:5173/#programas`. El AP
 
 El panel administrativo muestra el enlace «Descargar plantilla CSV» incluso sin sesión. Descarga el contrato vigente desde `GET /api/v1/academic-catalog/curriculum-template`, que devuelve un archivo UTF-8 generado desde los encabezados Java y no accede a MySQL.
 
+Con el permiso `academic:catalog:write` en un entorno autorizado, selecciona el CSV y pulsa **Validar CSV** para revisar metadata y una muestra de hasta 10 asignaturas. La ruta `POST /api/v1/admin/academic-catalog/import-previews` vuelve a validar todo el archivo, pero no crea borradores ni eventos. Revisa el resumen y pulsa **Crear borrador**; el servidor recibe y valida nuevamente el archivo antes de guardarlo en una transacción. Cambiar el archivo limpia la muestra anterior. La previsualización local continúa sujeta a autenticación y no habilita la carga institucional desde Compose.
+
 ## Variables locales
 
 Compose ofrece credenciales sencillas solo para desarrollo. Para cambiarlas, copia `.env.example` a `.env`, actualiza claves y reinicia el proyecto. `.env` queda fuera de Git. Las variables `UPTC_OIDC_ISSUER_URI` y `UPTC_OIDC_AUDIENCE` se dejan vacías por defecto; mientras sigan vacías, `GET /api/v1/me` requiere un token que no está disponible en Compose y responderá 401, y no se puede publicar identidad visual mediante el API. No se incluye una cuenta ni token de prueba.

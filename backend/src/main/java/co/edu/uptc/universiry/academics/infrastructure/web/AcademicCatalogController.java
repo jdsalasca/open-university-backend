@@ -109,6 +109,19 @@ public class AcademicCatalogController {
         }
     }
 
+    @PostMapping(path = "/api/v1/admin/academic-catalog/import-previews", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public AcademicCurriculumImportPreviewResponse previewCsv(
+            @RequestPart("file") MultipartFile file,
+            Authentication authentication
+    ) {
+        try (InputStream source = file.getInputStream()) {
+            return AcademicCurriculumImportPreviewResponse.from(
+                    publicationService.previewCsv(source, authentication.getName()));
+        } catch (IOException error) {
+            throw new CurriculumImportSourceException(error);
+        }
+    }
+
     @PostMapping("/api/v1/admin/academic-catalog/curricula/{curriculumId}/publish")
     public AcademicCurriculumDetailsResponse publish(
             @PathVariable UUID curriculumId,

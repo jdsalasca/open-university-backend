@@ -104,7 +104,7 @@ sequenceDiagram
   UI->>API: GET /api/v1/academic-catalog/curriculum-template
   API-->>UI: CSV UTF-8 descargable generado desde CurriculumCsvSchema.HEADERS
   Operador->>UI: carga archivo de una versión curricular
-  UI->>API: POST /api/v1/admin/academic-catalog/imports (multipart file)
+  UI->>API: POST /api/v1/admin/academic-catalog/import-previews (multipart file)
   API->>Auth: autentica y exige academic:catalog:write
   Auth-->>API: sujeto y permiso interno validados en un entorno configurado
   API->>CSV: lee máximo 2 MiB y valida UTF-8, encabezados, filas y límites
@@ -112,6 +112,14 @@ sequenceDiagram
     CSV-->>API: error localizado con fila/campo seguro
     API-->>UI: 400 o 413; sin escritura en MySQL
   else Archivo válido
+    CSV-->>UseCase: contrato tipado completo + SHA-256 del origen
+    UseCase-->>UI: 200 con metadata, conteo, semestres y muestra de hasta 10 filas
+    Note over UseCase,DB: La prevalidación no invoca el repositorio ni crea auditoría
+    Operador->>UI: revisa la muestra y confirma crear borrador
+    UI->>API: POST /api/v1/admin/academic-catalog/imports (multipart file)
+    API->>Auth: autentica y exige academic:catalog:write otra vez
+    Auth-->>API: sujeto y permiso interno validados
+    API->>CSV: vuelve a leer y validar el archivo completo
     CSV-->>UseCase: contrato tipado completo + SHA-256 del origen
     UseCase->>Repo: crear borrador validado
     Repo->>DB: transacción: identidades/revisiones + plan + entradas + evento CURRICULUM_IMPORTED
@@ -162,7 +170,7 @@ sequenceDiagram
   end
 ```
 
-La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. El detalle público obtiene metadata separada de entradas y consulta páginas filtradas por código/nombre o semestre; solo `PUBLISHED` puede producir conteos o filas, y borradores y UUID inexistentes comparten 404 en ambos endpoints. La consulta de página fija el tamaño máximo en 100, enlaza parámetros, escapa los comodines SQL y mantiene orden `(semester, row_order)`. La interfaz pide la metadata y su primera página en paralelo; espera 250 ms para búsqueda de texto, vuelve a página 1 al cambiar filtros y cancela solicitudes anteriores con `AbortSignal`. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la importación y publicación requieren `academic:catalog:write`. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
+La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. El detalle público obtiene metadata separada de entradas y consulta páginas filtradas por código/nombre o semestre; solo `PUBLISHED` puede producir conteos o filas, y borradores y UUID inexistentes comparten 404 en ambos endpoints. La consulta de página fija el tamaño máximo en 100, enlaza parámetros, escapa los comodines SQL y mantiene orden `(semester, row_order)`. La interfaz pide la metadata y su primera página en paralelo; espera 250 ms para búsqueda de texto, vuelve a página 1 al cambiar filtros y cancela solicitudes anteriores con `AbortSignal`. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la prevalidación, importación y publicación requieren `academic:catalog:write`. `POST /import-previews` valida el mismo contrato, devuelve metadata, semestres y como máximo 10 filas sin persistir datos ni eventos; `POST /imports` vuelve a validar antes de la transacción de escritura. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
 
 ## Consulta de identidad propia
 

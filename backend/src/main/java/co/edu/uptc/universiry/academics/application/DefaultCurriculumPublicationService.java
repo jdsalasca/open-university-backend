@@ -24,6 +24,14 @@ public class DefaultCurriculumPublicationService implements CurriculumPublicatio
     }
 
     @Override
+    public CurriculumImportPreview previewCsv(InputStream source, String actorSub) {
+        AcademicCatalogActorSub.require(actorSub);
+        ParsedCurriculum parsed = parser.parse(Objects.requireNonNull(source, "source"));
+        ValidatedCurriculum validated = importService.validate(parsed);
+        return CurriculumImportPreview.from(validated);
+    }
+
+    @Override
     public CurriculumSummary importCsv(InputStream source, String actorSub) {
         String actor = AcademicCatalogActorSub.require(actorSub);
         ParsedCurriculum parsed = parser.parse(Objects.requireNonNull(source, "source"));

@@ -82,6 +82,7 @@ public class SecurityConfiguration {
                         .hasAuthority(ApplicationPermission.ACADEMIC_CATALOG_READ.authority())
                         .requestMatchers(POST,
                                 "/api/v1/admin/academic-catalog/imports",
+                                "/api/v1/admin/academic-catalog/import-previews",
                                 "/api/v1/admin/academic-catalog/curricula/*/publish")
                         .hasAuthority(ApplicationPermission.ACADEMIC_CATALOG_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()

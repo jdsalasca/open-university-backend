@@ -5,6 +5,8 @@ import java.util.UUID;
 
 public interface CurriculumPublicationService {
 
+    CurriculumImportPreview previewCsv(InputStream source, String actorSub);
+
     CurriculumSummary importCsv(InputStream source, String actorSub);
 
     AcademicCurriculumDetails publish(UUID curriculumId, String actorSub);
