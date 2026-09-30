@@ -31,6 +31,7 @@ class BrandingAdministrationControllerTest {
                         .content("{}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("unauthorized"))
+                .andExpect(jsonPath("$.message").value("Se requiere autenticación."))
                 .andExpect(header().string("WWW-Authenticate", "Bearer"));
     }
 
@@ -50,10 +51,12 @@ class BrandingAdministrationControllerTest {
     @WithMockUser(username = "staff", authorities = "USER")
     void rejects_authenticated_user_without_brand_admin_authority() throws Exception {
         mockMvc.perform(put("/api/v1/admin/branding")
+                        .header("Accept-Language", "en-US")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validChange(1)))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("forbidden"));
+                .andExpect(jsonPath("$.error").value("forbidden"))
+                .andExpect(jsonPath("$.message").value("The authenticated user lacks the required permission."));
     }
 
     @Test
@@ -68,7 +71,8 @@ class BrandingAdministrationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validChange(1).replace("Universidad UPTC", "Cambio obsoleto")))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("revision_conflict"));
+                .andExpect(jsonPath("$.error").value("revision_conflict"))
+                .andExpect(jsonPath("$.message").value("La configuración de identidad cambió en otra sesión. Recárgala antes de publicar."));
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/branding"))
                 .andExpect(status().isOk())

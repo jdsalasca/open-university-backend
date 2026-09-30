@@ -1,0 +1,83 @@
+name: universiry
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-universiry_dev}
+      MYSQL_USER: ${DB_USERNAME:-universiry_dev}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-universiry_dev_local_only}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_local_only}
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping --host=127.0.0.1 --user=\"$${MYSQL_USER}\" --password=\"$${MYSQL_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-universiry_dev}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      DB_USERNAME: ${DB_USERNAME:-universiry_dev}
+      DB_PASSWORD: ${DB_PASSWORD:-universiry_dev_local_only}
+      BRANDING_ASSETS_DIRECTORY: /var/branding-assets
+      UPTC_OIDC_ISSUER_URI: ${UPTC_OIDC_ISSUER_URI:-}
+      UPTC_OIDC_AUDIENCE: ${UPTC_OIDC_AUDIENCE:-}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - maven-cache:/root/.m2
+      - branding-assets:/var/branding-assets
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/src
+          target: /workspace/src
+        - action: rebuild
+          path: ./backend/pom.xml
+        - action: rebuild
+          path: ./backend/Dockerfile.dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      VITE_API_TARGET: http://backend:8080
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:5173:5173"
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /workspace/src
+        - action: sync
+          path: ./frontend/public
+          target: /workspace/public
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
+        - action: rebuild
+          path: ./frontend/vite.config.ts
+        - action: rebuild
+          path: ./frontend/index.html
+        - action: rebuild
+          path: ./frontend/Dockerfile.dev
+
+volumes:
+  mysql-data:
+  maven-cache:
+  branding-assets:

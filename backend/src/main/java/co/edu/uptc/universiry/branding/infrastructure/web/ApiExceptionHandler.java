@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.branding.infrastructure.web;
 
+import co.edu.uptc.universiry.platform.i18n.application.MessageCatalog;
 import co.edu.uptc.universiry.branding.application.BrandingRevisionConflictException;
 import co.edu.uptc.universiry.branding.application.BrandingRevisionNotFoundException;
 import co.edu.uptc.universiry.branding.application.BrandingValidationException;
@@ -18,33 +19,40 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    private final MessageCatalog messages;
+
+    public ApiExceptionHandler(MessageCatalog messages) {
+        this.messages = messages;
+    }
+
     @ExceptionHandler(BrandingRevisionConflictException.class)
     ResponseEntity<ApiError> revisionConflict() {
-        return error(HttpStatus.CONFLICT, "revision_conflict", "The branding configuration changed. Reload it before publishing.");
+        return error(HttpStatus.CONFLICT, "revision_conflict", "api.error.revision-conflict");
     }
 
     @ExceptionHandler(BrandingRevisionNotFoundException.class)
     ResponseEntity<ApiError> revisionNotFound() {
-        return error(HttpStatus.NOT_FOUND, "revision_not_found", "The requested branding revision does not exist.");
+        return error(HttpStatus.NOT_FOUND, "revision_not_found", "api.error.revision-not-found");
     }
 
     @ExceptionHandler(BrandAssetNotFoundException.class)
     ResponseEntity<ApiError> assetNotFound() {
-        return error(HttpStatus.NOT_FOUND, "asset_not_found", "The published image asset does not exist.");
+        return error(HttpStatus.NOT_FOUND, "asset_not_found", "api.error.asset-not-found");
     }
 
     @ExceptionHandler({BrandAssetTooLargeException.class, MaxUploadSizeExceededException.class})
     ResponseEntity<ApiError> assetTooLarge() {
-        return error(HttpStatus.CONTENT_TOO_LARGE, "asset_too_large", "The image exceeds the configured upload limit.");
+        return error(HttpStatus.CONTENT_TOO_LARGE, "asset_too_large", "api.error.asset-too-large");
     }
 
     @ExceptionHandler(BrandAssetStorageException.class)
     ResponseEntity<ApiError> assetStorageFailure() {
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, "asset_storage_unavailable", "The image could not be stored or retrieved.");
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "asset_storage_unavailable", "api.error.asset-storage-unavailable");
     }
 
     @ExceptionHandler({BrandingValidationException.class, BrandAssetValidationException.class,
@@ -52,16 +60,19 @@ public class ApiExceptionHandler {
             HttpMessageNotReadableException.class, MultipartException.class,
             MissingServletRequestPartException.class})
     ResponseEntity<ApiError> invalidRequest() {
-        return error(HttpStatus.BAD_REQUEST, "validation_failed", "Review the branding values and try again.");
+        return error(HttpStatus.BAD_REQUEST, "validation_failed", "api.error.validation-failed");
     }
 
     @ExceptionHandler(DataAccessException.class)
     ResponseEntity<ApiError> persistenceFailure() {
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, "internal_error", "The requested change could not be saved.");
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "internal_error", "api.error.internal-error");
     }
 
-    private ResponseEntity<ApiError> error(HttpStatus status, String code, String message) {
-        return ResponseEntity.status(status).body(new ApiError(code, message));
+    private ResponseEntity<ApiError> error(HttpStatus status, String code, String messageKey) {
+        return ResponseEntity.status(status).body(new ApiError(
+                code,
+                messages.message(messageKey, LocaleContextHolder.getLocale())
+        ));
     }
 
     public record ApiError(String error, String message) {

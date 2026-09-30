@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.security;
 
+import co.edu.uptc.universiry.platform.i18n.application.MessageCatalog;
 import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -31,6 +33,12 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
+
+    private final MessageCatalog messages;
+
+    public SecurityConfiguration(MessageCatalog messages) {
+        this.messages = messages;
+    }
 
     @Bean
     SecurityFilterChain applicationSecurity(
@@ -111,13 +119,22 @@ public class SecurityConfiguration {
                                    jakarta.servlet.http.HttpServletResponse response,
                                    org.springframework.security.core.AuthenticationException exception) throws IOException {
         response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
-        writeError(response, UNAUTHORIZED.value(), "unauthorized", "Authentication is required.");
+        writeError(response, UNAUTHORIZED.value(), "unauthorized",
+                messages.message("security.unauthorized", requestLocale(request)));
     }
 
     private void writeForbidden(jakarta.servlet.http.HttpServletRequest request,
                                 jakarta.servlet.http.HttpServletResponse response,
                                 org.springframework.security.access.AccessDeniedException exception) throws IOException {
-        writeError(response, FORBIDDEN.value(), "forbidden", "The authenticated user lacks the required permission.");
+        writeError(response, FORBIDDEN.value(), "forbidden",
+                messages.message("security.forbidden", requestLocale(request)));
+    }
+
+    private Locale requestLocale(jakarta.servlet.http.HttpServletRequest request) {
+        String acceptLanguage = request.getHeader(HttpHeaders.ACCEPT_LANGUAGE);
+        return acceptLanguage == null || acceptLanguage.isBlank()
+                ? Locale.forLanguageTag("es-CO")
+                : request.getLocale();
     }
 
     private void writeError(jakarta.servlet.http.HttpServletResponse response,
