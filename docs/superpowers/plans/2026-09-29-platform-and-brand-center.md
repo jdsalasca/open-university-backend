@@ -35,60 +35,66 @@
 ### Task 1: Toolchain y estructura reproducible
 
 **Files:**
-- Create: `.sdkmanrc`, `README.md`, `frontend/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig*.json`, `frontend/src/main.tsx`, `backend/pom.xml`, Maven Wrapper y `.env.example`.
-- Create: `frontend/src/test/setup.ts`, configuración Vitest, `backend/src/test/resources/application-test.yml` y `tools/use-sdkman-java.ps1`.
+- Create: `.sdkmanrc`, `README.md`, `frontend/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig*.json`, `frontend/src/main.tsx`, `backend/pom.xml`, `backend/mvnw`, Maven Wrapper files y `.env.example`.
+- Create: `frontend/src/test/setup.ts`, configuración Vitest, `backend/src/test/resources/application-test.properties` (H2 solo tests), `tools/use-sdkman-java.ps1`.
+- Modify generated test: `backend/src/test/java/co/edu/uptc/universiry/UniversiryBackendApplicationTests.java` to activate the test profile for its context-start smoke check.
 
 **Interfaces:**
 - Consumes: `AGENTS.md`, `docs/PROJECT.md`, esta especificación.
-- Produces: `frontend/src/lib/api.ts` como cliente HTTP base y raíz Maven `co.edu.uptc.universiry`.
+- Produces: runners de frontend/backend y raíz Maven `co.edu.uptc.universiry`; los clientes HTTP de producto se crean junto con la prueba de su primer consumidor.
 
 - [ ] Confirmar que `sdk current java` es `25.0.4-tem` y crear `.sdkmanrc` con `java=25.0.4-tem`.
 - [ ] Generar el esqueleto Vite React TypeScript sin lógica institucional; agregar scripts `dev`, `build`, `test`, `test:watch`.
-- [ ] Generar Maven Wrapper y POM Spring Boot 4.1.1, Java 25, Web, Security, Validation, Actuator, JPA, MySQL, Flyway y pruebas.
-- [ ] Verificar los scripts de ejecución listados en `package.json` y POM; no añadir pruebas sin comportamiento de producto.
+- [ ] Generar Maven Wrapper y POM Spring Boot 4.1.1, Java 25, `spring-boot-starter-webmvc`, Validation, Actuator, JPA, MySQL, Flyway y pruebas; dejar Spring Security para el Task 3.
+- [ ] Verificar scripts; conservar únicamente el `contextLoads` generado como smoke de arranque con perfil test; no añadir tests frontend sin comportamiento de producto.
 - [ ] Crear un helper PowerShell invocable que sincronice `JAVA_HOME` y el primer `PATH` del proceso con el `current` de SDKMAN; no modificar PATH global de máquina.
-- [ ] Ejecutar `npm run build` y `./mvnw -q -DskipTests package` para verificar solo scaffold y configuración.
+- [ ] Ejecutar `npm run build` desde `frontend/` y `./backend/mvnw -f backend/pom.xml test` desde la raíz; expected: build Vite y `contextLoads` terminan con código 0 usando H2 de prueba.
 - [ ] Commit local `build: scaffold frontend and backend monoliths`.
 
 ### Task 2: Dominio de configuración visual
 
 **Files:**
 - Create: `backend/src/main/java/co/edu/uptc/universiry/branding/domain/BrandingConfiguration.java`, `BrandColor.java`, `BrandModule.java`, `BrandBanner.java`.
-- Create: `backend/src/test/java/co/edu/uptc/universiry/branding/domain/BrandingConfigurationTest.java` y pruebas específicas de colores/contraste.
+- Create: `backend/src/main/java/co/edu/uptc/universiry/branding/application/BrandingQueryService.java`, `branding/infrastructure/web/BrandingController.java`.
+- Create: `backend/src/test/java/co/edu/uptc/universiry/branding/domain/BrandingConfigurationTest.java` y `backend/src/test/java/co/edu/uptc/universiry/branding/infrastructure/web/BrandingControllerTest.java`.
 
 **Interfaces:**
 - Consumes: tipos base del Task 1.
-- Produces: `BrandingConfiguration.defaults()`, `BrandColor.fromHex(String)`, `BrandingConfiguration.publish(BrandingChange, Actor, expectedRevision)`, `BrandingConfiguration.restore(targetRevision, Actor, expectedRevision)`.
-- Rechazos: HEX distinto a `#[0-9A-Fa-f]{6}`, token/claves desconocidas, revisión obsoleta, fechas de banner invertidas y etiquetas vacías.
+- Produces: `BrandingConfiguration.defaults()`, `BrandColor.fromHex(String)`, `BrandModule.defaultCatalog()` y public read-only `GET /api/v1/branding`.
+- Rechazos: HEX distinto a `#[0-9A-Fa-f]{6}`; los cambios, revisiones, fechas y etiquetas se implementan junto con el caso de uso del Task 3.
 
-- [ ] Escribir `publishes_official_defaults_as_revision_one` con AAA y aserciones literales `assertEquals("#FFCC29", colors.get("primary"))`, `assertEquals("#1A1A1A", colors.get("ink"))`, `assertEquals(1, revision)`.
-- [ ] Ejecutar el test y confirmar que falla porque `BrandingConfiguration` no existe.
-- [ ] Implementar tipos de dominio inmutables mínimos con defaults oficiales y catálogo cerrado de módulos.
-- [ ] Escribir y correr `rejects_non_hex_color`, `rejects_stale_revision`, `rejects_blank_module_label`, `rejects_unknown_module_key`, `blocks_text_pair_below_wcag_aa`; comprobar que 4.49:1 se bloquea y 4.50:1 se permite.
-- [ ] Escribir `restoring_old_snapshot_creates_next_revision`; con revisión vigente 8 y objetivo 3, comprobar revisión nueva 9 y contenido idéntico al snapshot 3.
-- [ ] Verificar GREEN y suite backend; refactorizar sin introducir dependencia de Spring en el dominio.
+- [ ] Escribir primero `returns_official_branding_configuration` como MockMvc contra el esqueleto con H2 de test; aserciones: HTTP 200, `colors.primary == "#FFCC29"`, `colors.ink == "#1A1A1A"`, `revision == 1`.
+- [ ] Ejecutar `./mvnw -Dtest=BrandingControllerTest test` desde `backend/`; expected: aserción HTTP falla por 404 porque la ruta aún no existe, no error de compilación.
+- [ ] Implementar mínimo `BrandingConfiguration`, `BrandColor`, `BrandModule`, `BrandBanner`, consulta por defecto y GET público para obtener GREEN; todavía no agregar comandos ni persistencia.
+- [ ] Después del GREEN inicial, escribir `rejects_non_hex_color`; comprobar `BrandColor.fromHex("javascript:alert(1)")` lanza `IllegalArgumentException` y no produce valor CSS.
+- [ ] Escribir `default_catalog_has_stable_keys`; comprobar claves literales `home`, `students`, `programs`, `curricula`, `subjects`, `academic-load`, `visual-identity` sin duplicados.
+- [ ] Ejecutar `./mvnw -Dtest=BrandingControllerTest,BrandingConfigurationTest test` desde `backend/`; expected: todas las pruebas pasan y el paquete domain no importa Spring.
 - [ ] Commit local `feat: add branding configuration domain`.
 
 ### Task 3: Persistencia MySQL, API y permisos
 
 **Files:**
 - Create: `branding/application/BrandingService.java`, `BrandingRepository.java`, DTOs, controladores, adaptador JPA, `security/SecurityConfiguration.java`.
+- Add after the security test RED: `spring-boot-starter-security` and `spring-boot-starter-security-oauth2-resource-server`.
 - Create: `backend/src/main/resources/db/migration/V1__branding_configuration.sql` para snapshot actual, tokens, etiquetas, banners, activos y auditoría.
 - Create/modify: pruebas de servicio, repositorio y MockMvc bajo `branding/`.
 
 **Interfaces:**
 - Consumes: dominio del Task 2.
-- Produces: `GET /api/v1/branding`, `GET/PUT /api/v1/admin/branding`, `POST /api/v1/admin/branding/rollback`; port `BrandingRepository`; actor desde principal autenticado.
+- Produces: `BrandingService.publish(BrandingChange, Actor, expectedRevision)`, `BrandingService.restore(targetRevision, Actor, expectedRevision)`, `GET/PUT /api/v1/admin/branding`, `POST /api/v1/admin/branding/rollback`; port `BrandingRepository`; actor desde principal autenticado; el GET público de Task 2 lee revisión persistida.
 - `PUT` recibe `expectedRevision`; el resultado inserta snapshot inmutable nuevo, mueve puntero singleton y evento de auditoría en una transacción. `rollback` copia un snapshot anterior en revisión nueva.
 
-- [ ] Escribir tests MockMvc `returns_only_public_branding_fields` (HTTP 200, no actor ni auditoría), `includes_etag_from_revision` (ETag estable), `rejects_anonymous_branding_update` (401), `rejects_user_without_brand_admin` (403), `publishes_change_for_brand_admin` (200 y revisión incrementada una vez).
-- [ ] Ver cada test fallar por endpoint/permiso inexistente; no escribir el controlador antes de esa señal RED.
-- [ ] Escribir test de servicio contra fake real de repositorio para verificar control de revisión y evento en el mismo caso de uso.
-- [ ] Escribir test que verifica rollback al snapshot 3 crea revisión 9 cuando la revisión vigente es 8 y jamás altera los snapshots 3 u 8.
-- [ ] Verificar `ETag` en API pública, `Cache-Control` corto y 304 para el mismo ETag; banners fuera de vigencia no se publican; restore crea nueva revisión, no modifica snapshots anteriores.
-- [ ] Implementar endpoints DTO y autorización `BRAND_ADMIN`; solo GET público de configuración, health check y activos publicados quedan abiertos.
-- [ ] Escribir test de integración de migración Flyway/entidades; usar MySQL local cuando la conexión de desarrollo esté provisionada; ninguna prueba de H2 se reporta como verificación MySQL.
-- [ ] Ejecutar paquete de pruebas backend y construir `./mvnw verify`.
+- [ ] Escribir `branding_schema_is_available_after_flyway_migration`; contra H2 de test consulta metadatos y exige siete tablas: revisión, puntero, tokens, módulos, banners, activos y auditoría.
+- [ ] Ejecutar `./mvnw -Dtest=BrandingSchemaTest test` desde `backend/`; expected: aserción de metadatos falla porque aún no existen las tablas.
+- [ ] Implementar migración Flyway y el adapter de lectura persistida; repetir el test, expected: las siete tablas existen y la revisión inicial contiene `#FFCC29/#1A1A1A`.
+- [ ] Escribir tests MockMvc `anonymous_can_read_public_branding` (200 aun sin principal), `publishes_change_for_brand_admin` (HTTP 200 y revisión +1), `anonymous_update_returns_json_401`, `rejects_user_without_brand_admin` (403), `rejects_stale_revision` (409), `rejects_unknown_module_key` (400), `rejects_invalid_hex_and_blank_label` (400), `blocks_text_contrast_below_4_5` (4.49 falla y 4.50 pasa), `restores_snapshot_into_new_revision` (vigente 8/objetivo 3 crea 9 y deja 3 y 8 inmutables), `audit_event_commits_with_publication` (un evento con actor/revisión) e `includes_etag_from_revision` (ETag estable).
+- [ ] Ejecutar los tests recién escritos contra el API de solo lectura; expected: comandos devuelven 404 y el esquema inicial existe, antes de agregar el API de escritura.
+- [ ] Implementar `BrandingRepository`, comando de publicación y rollback, transacción MySQL, control optimista, evento audit append-only y DTOs.
+- [ ] Añadir Spring Security y resource server JWT; autorizar únicamente `BRAND_ADMIN`/`INSTITUTIONAL_ADMIN`, permitir GET público, salud y activos publicados; mapear roles desde claim configurable y fallar cerrado sin claim/rol.
+- [ ] Repetir los tests MockMvc; expected: 401/403/409/400 según contrato, publicación autorizada incrementa una vez y rollback copia valores sin mutar revisiones previas.
+- [ ] Verificar `ETag`, `Cache-Control` público corto, 304 para el mismo ETag y exclusión de banners vencidos; expected: caché versionada y contenido vigente únicamente.
+- [ ] Ejecutar `./mvnw verify` desde `backend/`; expected: suite y build terminan con código 0.
+- [ ] Si se provisiona credencial de desarrollo MySQL, ejecutar aparte el smoke de migraciones en MySQL 8; H2 nunca cuenta como verificación MySQL.
 - [ ] Commit local `feat: persist and secure branding API`.
 
 ### Task 4: Servicio de activos de marca
@@ -149,7 +155,7 @@
 - Consumes: contratos/API, configuración de build, resultados reales de pruebas y servicios locales.
 - Produces: pasos reproducibles, matriz de configuración, límites de entorno y checklist de corte.
 
-- [ ] Ejecutar suite completa frontend, `npm run build`, `./mvnw verify`, chequeo de migraciones y smoke test local con MySQL real si hay credenciales de desarrollo disponibles.
+- [ ] Ejecutar suite completa frontend, `npm run build` desde `frontend/`, `./mvnw verify` desde `backend/`, chequeo de migraciones y smoke test local con MySQL real si hay credenciales de desarrollo disponibles.
 - [ ] Verificar `GET /api/v1/branding`, rechazo 401/403 de escritura no autorizada y publicación autorizada en integración.
 - [ ] Ejecutar un smoke de UI en navegador solo si la aplicación puede arrancar localmente sin acceso a datos institucionales; nunca conectar a producción.
 - [ ] Inspeccionar diff, estado Git, secretos, duplicaciones y diagramas; solo entonces reportar evidencia y límites.
