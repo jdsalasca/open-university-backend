@@ -63,13 +63,13 @@ public class SecurityConfiguration {
                                 "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers(GET, "/api/v1/admin/branding")
-                        .hasAnyAuthority("BRAND_ADMIN", "INSTITUTIONAL_ADMIN")
+                        .hasAuthority(ApplicationPermission.BRANDING_READ.authority())
                         .requestMatchers(PUT, "/api/v1/admin/branding")
-                        .hasAnyAuthority("BRAND_ADMIN", "INSTITUTIONAL_ADMIN")
+                        .hasAuthority(ApplicationPermission.BRANDING_WRITE.authority())
                         .requestMatchers(POST,
                                 "/api/v1/admin/branding/rollback",
                                 "/api/v1/admin/branding/assets")
-                        .hasAnyAuthority("BRAND_ADMIN", "INSTITUTIONAL_ADMIN")
+                        .hasAuthority(ApplicationPermission.BRANDING_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()
                         .anyRequest().denyAll()
                 )

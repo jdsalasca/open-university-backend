@@ -15,8 +15,8 @@ sequenceDiagram
 
   Admin->>UI: cambia paleta, logos, banners o etiquetas
   UI->>API: solicita lectura o cambio autenticado
-  API->>Auth: valida identidad y permiso BRAND_ADMIN
-  Auth-->>API: principal institucional autorizado
+  API->>Auth: valida token y permiso interno según método/ruta
+  Auth-->>API: principal y permiso branding:read o branding:write
   opt Subida de imagen
     UI->>API: envía PNG, JPEG o WebP
     API->>Validator: valida firma, decodificación, tamaño y dimensiones

@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.branding.infrastructure.web;
 
+import co.edu.uptc.universiry.security.WithBrandingPermissions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,7 +39,7 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void brand_admin_can_publish_a_new_branding_revision() throws Exception {
         mockMvc.perform(put("/api/v1/admin/branding")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -62,7 +63,7 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void brand_admin_cannot_access_unregistered_administration_routes() throws Exception {
         mockMvc.perform(get("/api/v1/admin/students"))
                 .andExpect(status().isForbidden())
@@ -70,7 +71,7 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void brand_admin_cannot_access_unregistered_branding_subroutes() throws Exception {
         mockMvc.perform(get("/api/v1/admin/branding/roles"))
                 .andExpect(status().isForbidden())
@@ -78,7 +79,7 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void brand_admin_cannot_use_unregistered_methods_on_branding_routes() throws Exception {
         mockMvc.perform(delete("/api/v1/admin/branding"))
                 .andExpect(status().isForbidden())
@@ -86,7 +87,7 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void stale_revision_returns_conflict_without_overwriting_current_configuration() throws Exception {
         mockMvc.perform(put("/api/v1/admin/branding")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -106,7 +107,7 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void rollback_publishes_the_historical_snapshot_as_a_new_revision() throws Exception {
         mockMvc.perform(put("/api/v1/admin/branding")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +125,7 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void invalid_color_and_blank_module_label_return_safe_validation_error() throws Exception {
         mockMvc.perform(put("/api/v1/admin/branding")
                         .contentType(MediaType.APPLICATION_JSON)

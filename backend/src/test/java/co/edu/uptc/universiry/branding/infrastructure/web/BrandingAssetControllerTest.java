@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.branding.infrastructure.web;
 
+import co.edu.uptc.universiry.security.WithBrandingPermissions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -72,7 +73,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void brand_admin_uploads_png_and_receives_opaque_metadata() throws Exception {
         // Arrange
         byte[] png = pngBytes(32, 24);
@@ -105,7 +106,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void rejects_non_image_bytes_despite_png_filename_without_persisting_file_or_metadata() throws Exception {
         // Arrange
         MockMultipartFile upload = new MockMultipartFile("file", "logo.png", MediaType.IMAGE_PNG_VALUE,
@@ -122,7 +123,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void rejects_bytes_above_the_configured_upload_limit() throws Exception {
         // Arrange
         MockMultipartFile upload = new MockMultipartFile("file", "oversized.png", MediaType.IMAGE_PNG_VALUE, new byte[2049]);
@@ -139,7 +140,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void rejects_images_exceeding_dimension_limits_before_persisting() throws Exception {
         // Arrange
         MockMultipartFile upload = new MockMultipartFile("file", "too-wide.png", MediaType.IMAGE_PNG_VALUE, pngBytes(65, 16));
@@ -153,7 +154,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void accepts_a_decodable_webp_and_derives_its_mime_type_and_dimensions() throws Exception {
         // Arrange
         byte[] webp = webpBytes();
@@ -169,7 +170,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void rejects_a_webp_container_with_unaccounted_trailing_bytes() throws Exception {
         // Arrange
         byte[] validWebp = webpBytes();
@@ -186,7 +187,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void accepts_a_decodable_jpeg_and_uses_its_detected_mime_type() throws Exception {
         // Arrange
         byte[] jpeg = jpegBytes(20, 12);
@@ -201,7 +202,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void rejects_svg_even_when_it_is_declared_as_an_image() throws Exception {
         // Arrange
         byte[] svg = "<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script></svg>"
@@ -217,7 +218,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void rejects_images_that_exceed_the_pixel_budget_even_when_each_side_is_allowed() throws Exception {
         // Arrange
         MockMultipartFile upload = new MockMultipartFile("file", "too-many-pixels.png", MediaType.IMAGE_PNG_VALUE,
@@ -252,7 +253,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void asset_is_private_until_published_then_served_with_validated_headers() throws Exception {
         // Arrange
         byte[] png = pngBytes(24, 16);
@@ -288,7 +289,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void does_not_serve_a_published_asset_when_stored_bytes_fail_the_checksum() throws Exception {
         // Arrange
         byte[] png = pngBytes(24, 16);
@@ -315,7 +316,7 @@ class BrandingAssetControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    @WithBrandingPermissions
     void serves_a_banner_asset_only_during_its_configured_active_window() throws Exception {
         // Arrange
         byte[] png = pngBytes(20, 12);
@@ -356,7 +357,7 @@ class BrandingAssetControllerTest {
                         .file(upload)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(subject))
-                                .authorities(new SimpleGrantedAuthority("BRAND_ADMIN"))))
+                                .authorities(new SimpleGrantedAuthority("branding:write"))))
                 .andExpect(status().isInternalServerError());
         assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM media_asset", Integer.class));
         assertEquals(0, jdbcTemplate.queryForObject(

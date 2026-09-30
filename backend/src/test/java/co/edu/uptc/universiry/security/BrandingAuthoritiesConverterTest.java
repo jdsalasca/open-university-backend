@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BrandingAuthoritiesConverterTest {
 
     @Test
-    void maps_only_allowed_roles_from_the_configured_claim() {
+    void maps_recognized_roles_to_application_permissions() {
         // Arrange
         Jwt jwt = Jwt.withTokenValue("synthetic-test-token")
                 .header("alg", "none")
@@ -25,8 +25,8 @@ class BrandingAuthoritiesConverterTest {
 
         // Assert
         assertEquals(List.of(
-                new SimpleGrantedAuthority("BRAND_ADMIN"),
-                new SimpleGrantedAuthority("INSTITUTIONAL_ADMIN")
+                new SimpleGrantedAuthority("branding:read"),
+                new SimpleGrantedAuthority("branding:write")
         ), authorities);
     }
 

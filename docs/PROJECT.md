@@ -24,7 +24,7 @@ Un inventario público de DTIC de 2024 relaciona sistemas como SIRA, SIRD, SEDI,
 
 ## Usuarios y permisos preliminares
 
-Los grupos exactos y su mapeo al proveedor institucional se confirman con UPTC. El diseño inicial distingue comunidad universitaria, operadores académicos, personal administrativo, docentes, soporte técnico, administradores de identidad visual y administradores institucionales. Las APIs administrativas autorizan en backend; ocultar elementos en React no es un control de acceso. El backend permite solamente pares método/ruta que estén registrados y probados; deniega el resto de `/api/v1/admin/**` para que un futuro módulo no herede permisos por compartir un prefijo.
+Los grupos exactos y su mapeo al proveedor institucional se confirman con UPTC. El diseño inicial distingue comunidad universitaria, operadores académicos, personal administrativo, docentes, soporte técnico, administradores de identidad visual y administradores institucionales. El backend traduce los grupos reconocidos a permisos internos de la capacidad; ocultar elementos en React no es un control de acceso. Permite solamente pares método/ruta que estén registrados y probados, y deniega el resto de `/api/v1/admin/**` para que un futuro módulo no herede permisos por compartir un prefijo.
 
 ## Alcance del primer incremento
 

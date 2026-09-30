@@ -11,9 +11,9 @@ La plataforma crecerá por capacidades. Una regla amplia sobre `/api/v1/admin/**
 ## Decisión
 
 - Validar access tokens como Bearer sin sesión/cookie; el issuer y audience son obligatorios. Si faltan, el decoder rechaza el token.
-- Leer el claim de autoridades con nombre configurable y aceptar únicamente las autoridades que el backend incluya expresamente en su lista permitida.
+- Leer el claim de roles con nombre configurable, ignorar valores desconocidos y traducir solo los roles reconocidos a permisos internos de la aplicación.
 - Autorizar pares de método/ruta por capacidad; las solicitudes bajo `/api/v1/admin/**` que no estén registradas se deniegan.
-- Actualmente, `BRAND_ADMIN` e `INSTITUTIONAL_ADMIN` pueden usar `GET` y `PUT /api/v1/admin/branding`, `POST /api/v1/admin/branding/rollback` y `POST /api/v1/admin/branding/assets`.
+- Actualmente, los roles de demostración `BRAND_ADMIN` e `INSTITUTIONAL_ADMIN` reciben `branding:read` y `branding:write`. La primera autorización solo permite `GET /api/v1/admin/branding`; la segunda permite `PUT` sobre esa ruta y `POST /api/v1/admin/branding/rollback` y `/api/v1/admin/branding/assets`.
 - Probar acceso permitido y denegado en el servidor. La visibilidad de controles del frontend es solo una ayuda de experiencia.
 - No fijar el nombre real del claim ni afirmar que los dos nombres de autoridad coinciden con grupos productivos UPTC hasta recibir el contrato del proveedor institucional.
 

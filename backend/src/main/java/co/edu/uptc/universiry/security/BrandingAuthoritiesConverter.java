@@ -7,11 +7,20 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class BrandingAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
-    private static final Set<String> ALLOWED_AUTHORITIES = Set.of("BRAND_ADMIN", "INSTITUTIONAL_ADMIN");
+    private static final Set<ApplicationPermission> BRANDING_PERMISSIONS = Set.of(
+            ApplicationPermission.BRANDING_READ,
+            ApplicationPermission.BRANDING_WRITE
+    );
+
+    private static final Map<String, Set<ApplicationPermission>> ROLE_PERMISSIONS = Map.of(
+            "BRAND_ADMIN", BRANDING_PERMISSIONS,
+            "INSTITUTIONAL_ADMIN", BRANDING_PERMISSIONS
+    );
 
     private final String authoritiesClaim;
 
@@ -32,8 +41,10 @@ public final class BrandingAuthoritiesConverter implements Converter<Jwt, Collec
         return claimValues.stream()
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
-                .filter(ALLOWED_AUTHORITIES::contains)
+                .flatMap(role -> ROLE_PERMISSIONS.getOrDefault(role, Set.of()).stream())
+                .map(ApplicationPermission::authority)
                 .distinct()
+                .sorted()
                 .map(value -> (GrantedAuthority) new SimpleGrantedAuthority(value))
                 .toList();
     }
