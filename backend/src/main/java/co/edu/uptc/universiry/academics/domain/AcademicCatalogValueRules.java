@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-final class AcademicCatalogValueRules {
+public final class AcademicCatalogValueRules {
 
     private static final Pattern IDENTIFIER = Pattern.compile("^[A-Za-z0-9][A-Za-z0-9._-]*$");
     private static final Pattern COHORT_TERM = Pattern.compile("^(\\d{4})-([12])$");
@@ -21,7 +21,7 @@ final class AcademicCatalogValueRules {
         return value;
     }
 
-    static String identifier(String value, int maxLength, String field) {
+    public static String identifier(String value, int maxLength, String field) {
         String trimmed = requiredText(value, maxLength, field);
         if (!IDENTIFIER.matcher(trimmed).matches()) {
             throw invalid(field, "must use letters, numbers, dot, underscore or hyphen");
@@ -29,7 +29,7 @@ final class AcademicCatalogValueRules {
         return trimmed.toUpperCase(Locale.ROOT);
     }
 
-    static String requiredText(String value, int maxLength, String field) {
+    public static String requiredText(String value, int maxLength, String field) {
         if (value == null) {
             throw invalid(field, "is required");
         }
@@ -44,7 +44,7 @@ final class AcademicCatalogValueRules {
         return trimmed;
     }
 
-    static String optionalText(String value, int maxLength, String field) {
+    public static String optionalText(String value, int maxLength, String field) {
         if (value == null || value.isBlank()) {
             return null;
         }
@@ -56,7 +56,7 @@ final class AcademicCatalogValueRules {
         return trimmed;
     }
 
-    static BigDecimal credits(BigDecimal value) {
+    public static BigDecimal credits(BigDecimal value) {
         if (value == null || value.signum() <= 0
                 || value.compareTo(AcademicCatalogLimits.MAX_CREDITS) > 0
                 || value.scale() > AcademicCatalogLimits.MAX_CREDIT_SCALE) {
@@ -67,7 +67,7 @@ final class AcademicCatalogValueRules {
         return normalized.scale() < 0 ? normalized.setScale(0) : normalized;
     }
 
-    static CohortTerm cohortTerm(String value, String field) {
+    public static CohortTerm cohortTerm(String value, String field) {
         String normalized = requiredText(value, AcademicCatalogLimits.MAX_COHORT_TERM_LENGTH, field);
         Matcher matcher = COHORT_TERM.matcher(normalized);
         if (!matcher.matches()) {
@@ -84,7 +84,7 @@ final class AcademicCatalogValueRules {
         return value.codePointCount(0, value.length());
     }
 
-    record CohortTerm(int year, int term) implements Comparable<CohortTerm> {
+    public record CohortTerm(int year, int term) implements Comparable<CohortTerm> {
         @Override
         public int compareTo(CohortTerm other) {
             int yearComparison = Integer.compare(year, other.year);

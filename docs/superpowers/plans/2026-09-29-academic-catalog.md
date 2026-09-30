@@ -65,10 +65,10 @@
 - `CurriculumImportService.validate(ParsedCurriculum) -> ValidatedCurriculum` checks all metadata consistency, row-level fields, unique subject codes, cohort range and configured row bound before any persistence call. Parser applies byte bound while reading.
 - Validation exceptions contain safe row/column identifiers only, never raw input values or original file name.
 
-- [ ] **Step 1: Write RED tests** for BOM, quoted commas/UTF-8 accents, valid multi-semester records, missing/unknown/duplicate headers, malformed UTF-8, empty file, inconsistent repeated metadata (including academic level/modality/campus), unsupported levels/modes, blank required fields, overlong fields, nonpositive/overprecision credits, invalid semester, duplicate subject code, reversed cohort range, a stream over 2 MiB with a dishonest size header, and >10,000 rows.
-- [ ] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=ApacheCommonsCurriculumCsvParserTest,CurriculumImportServiceTest test` from `backend/`; confirm each first failure is the expected behavior.**
-- [ ] **Step 3: Add Commons CSV 1.14.1 and implement the parser using RFC 4180 UTF-8 with strict decoding and no file-system writes. Implement whole-file validation without database access.**
-- [ ] **Step 4: Rerun targeted tests and verify no input row reaches persistence when any row fails.**
+- [x] **Step 1: Write RED tests** for BOM, quoted commas/UTF-8 accents, valid multi-semester records, missing/unknown/duplicate headers, malformed UTF-8, empty file, inconsistent repeated metadata (including academic level/modality/campus), unsupported levels/modes, blank required fields, overlong fields, nonpositive/overprecision credits, invalid semester, duplicate subject code, reversed cohort range, a stream over 2 MiB with a dishonest size header, and >10,000 rows.
+- [x] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=ApacheCommonsCurriculumCsvParserTest,CurriculumImportServiceTest test` from `backend/`; confirm each first failure is the expected behavior.**
+- [x] **Step 3: Add Commons CSV 1.14.1 and implement the parser using RFC 4180 UTF-8 with strict decoding and no file-system writes. Implement whole-file validation without database access.**
+- [x] **Step 4: Rerun targeted tests and verify no input row reaches persistence when any row fails.**
 - [ ] **Step 5: Commit `feat: validate curriculum csv imports`.**
 
 ### Task 3: MySQL schema and repository adapter
