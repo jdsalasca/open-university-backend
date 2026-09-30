@@ -18,10 +18,10 @@
 | `institution_color_token` | Valor HEX por token de diseño y revisión | Clave compuesta `(revision_id, token_key)`; allowlist de `primary`, `ink`, `surface`, `text`, `accent`, `focus` |
 | `institution_module_label` | Etiqueta editable y orden por revisión | `module_key` estable en catálogo; no permitir claves desconocidas; disponibilidad la determina backend |
 | `institution_banner` | Banner, texto alternativo, orden, vigencia y ubicación por revisión | Requiere activo raster y texto alternativo; fechas coherentes; inicio anterior a fin |
-| `media_asset` | Metadatos y clave generada para imagen almacenada | Nombre interno UUID; hash SHA-256; MIME detectado; tamaño máximo; no guardar bytes en MySQL |
-| `administrative_audit_event` | Actor, acción, entidad, revisión y cambio relevante | Inserción únicamente; retención/consulta definida por política institucional |
+| `media_asset` | Metadatos y clave generada para imagen almacenada | UUID; hash SHA-256; MIME detectado; tamaño/dimensiones acotados; actor y fecha de carga; bytes fuera de MySQL |
+| `administrative_audit_event` | Actor, acción, entidad, revisión y cambio relevante | Inserción únicamente; registrar publicación de identidad y carga de medios; retención por política institucional |
 
-El esquema detallado se concreta con la primera migración y las pruebas. No se duplican `updated_by` y `updated_at` en cada fila si el registro de auditoría ya cubre la autoría y secuencia de cambio. La configuración pública lleva un número de revisión y ETag para caché e invalidación. Volver a una revisión previa crea un nuevo snapshot, no mueve el puntero hacia atrás.
+La carga guarda metadatos y un evento de auditoría en la misma transacción que los asocia a la revisión vigente; una reversión elimina el archivo creado si la transacción falla. El archivo se almacena fuera de MySQL con una clave aleatoria y nunca con su nombre entregado por el navegador. No se guardan bytes, rutas locales ni nombres originales en la configuración pública. La configuración pública lleva un número de revisión y ETag para caché e invalidación. Volver a una revisión previa crea un nuevo snapshot, no mueve el puntero hacia atrás.
 
 ## Presupuesto de latencia
 

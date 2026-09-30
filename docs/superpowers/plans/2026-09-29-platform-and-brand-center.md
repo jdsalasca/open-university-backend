@@ -107,11 +107,11 @@
 - Consumes: identidad y permisos del Task 3.
 - Produces: `store(Upload) -> StoredAsset`, `open(AssetId) -> AssetContent`; rutas públicas solo resuelven ids registrados/publicados.
 
-- [ ] Escribir RED para PNG válido servido con `image/png`, `.png` cuyo contenido no es imagen, bytes sobre el límite, dimensiones prohibidas, path traversal y eliminación del temporal si falla MySQL.
-- [ ] Implementar almacenamiento generado por UUID fuera de MySQL detrás de interfaz; no aceptar nombre/ruta arbitrarios ni servir SVG.
-- [ ] Probar que archivo inválido no deja bytes, fila ni versión publicada; añadir límites configurables y headers seguros.
-- [ ] Ejecutar pruebas de activos y suite backend completa.
-- [ ] Commit local `feat: validate and store institutional brand assets`.
+- [x] Escribir RED para PNG válido servido con `image/png`, `.png` cuyo contenido no es imagen, bytes sobre el límite, dimensiones/píxeles prohibidas, path traversal, SVG y limpieza de archivo/auditoría si falla MySQL.
+- [x] Implementar almacenamiento generado por UUID fuera de MySQL detrás de interfaz; no aceptar nombre/ruta arbitrarios ni servir SVG.
+- [x] Probar PNG/JPEG/WebP, longitud RIFF, archivos corruptos, hash, banners por vigencia, autorización, MIME/ETag/headers y auditoría de carga; archivo inválido o fallo SQL no deja bytes ni metadatos.
+- [x] Ejecutar las pruebas de activos con SDKMAN Java 25; ejecutar `mvn verify` antes de cerrar la tarea.
+- [x] Commit local `feat: validate and store institutional brand assets`.
 
 ### Task 5: Cliente de marca y proveedor de tema frontend
 
