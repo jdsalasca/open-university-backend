@@ -61,6 +61,7 @@ public class SecurityConfiguration {
                                 "/api/v1/academic-catalog/programs",
                                 "/api/v1/academic-catalog/curriculum-template",
                                 "/api/v1/academic-catalog/programs/*/curricula",
+                                "/api/v1/academic-catalog/curricula/*",
                                 "/assets/**",
                                 "/actuator/health",
                                 "/actuator/health/**"

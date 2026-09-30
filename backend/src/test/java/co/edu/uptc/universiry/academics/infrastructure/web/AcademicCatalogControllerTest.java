@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AcademicCatalogControllerTest {
 
     private static final String READ = "academic:catalog:read";
+    private static final String WRITE = "academic:catalog:write";
     private static final String ADMIN_USER = "catalog.editor";
 
     @Autowired
@@ -264,6 +266,44 @@ class AcademicCatalogControllerTest {
     }
 
     @Test
+    void anonymous_curriculum_details_hide_drafts_and_expose_entries_only_after_publication() throws Exception {
+        // Arrange
+        String code = programCode();
+        String csvContent = validCsv(code, "V1", "3");
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports")
+                        .file(upload(csvContent))
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isCreated());
+        String curriculumId = curriculumIdFor(programIdFor(code));
+
+        // Act + Assert: public details are indistinguishable from a missing curriculum while still a draft.
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}", curriculumId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("curriculum_not_found"));
+        mockMvc.perform(get("/api/v1/admin/academic-catalog/curricula/{id}", curriculumId)
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.curriculum.status").value("DRAFT"));
+
+        mockMvc.perform(post("/api/v1/admin/academic-catalog/curricula/{id}/publish", curriculumId)
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}", curriculumId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.curriculum.id").value(curriculumId))
+                .andExpect(jsonPath("$.curriculum.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.entries.length()").value(1))
+                .andExpect(jsonPath("$.entries[0].subjectName").value("Asignatura sintética"))
+                .andExpect(jsonPath("$.entries[0].semester").value(1));
+
+        // The public capability is GET-only and does not expand to writes on the same route.
+        mockMvc.perform(post("/api/v1/academic-catalog/curricula/{id}", curriculumId)
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithAcademicCatalogPermissions
     void unknown_administration_paths_and_methods_remain_denied() throws Exception {
         mockMvc.perform(get("/api/v1/admin/academic-catalog/not-registered"))
@@ -276,6 +316,11 @@ class AcademicCatalogControllerTest {
 
     private static MockMultipartFile upload(String csv) {
         return new MockMultipartFile("file", "do-not-persist-this-name.csv", "text/csv", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    private static RequestPostProcessor catalogAdminJwt() {
+        return jwt().jwt(token -> token.subject(ADMIN_USER))
+                .authorities(new SimpleGrantedAuthority(READ), new SimpleGrantedAuthority(WRITE));
     }
 
     private static String validCsv(String programCode, String version, String credits) {

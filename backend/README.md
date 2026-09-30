@@ -30,6 +30,7 @@ El catálogo conserva programa, asignatura, revisiones inmutables, plan y entrad
 | `GET` | `/api/v1/academic-catalog/programs` | Público; solo planes publicados |
 | `GET` | `/api/v1/academic-catalog/curriculum-template` | Público; CSV vacío derivado del esquema del backend |
 | `GET` | `/api/v1/academic-catalog/programs/{programId}/curricula` | Público; solo versiones publicadas |
+| `GET` | `/api/v1/academic-catalog/curricula/{curriculumId}` | Público; resumen y asignaturas solo si la versión está publicada; borrador/inexistente responde 404 |
 | `GET` | `/api/v1/admin/academic-catalog/drafts` | `academic:catalog:read` |
 | `GET` | `/api/v1/admin/academic-catalog/curricula/{curriculumId}` | `academic:catalog:read` |
 | `POST` | `/api/v1/admin/academic-catalog/imports` | `academic:catalog:write`; multipart field `file` |

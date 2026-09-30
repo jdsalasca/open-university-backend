@@ -91,6 +91,7 @@ Este es el flujo académico que sí existe en v1. Representa planes de estudio y
 ```mermaid
 sequenceDiagram
   actor Operador as Operador académico autorizado
+  actor Comunidad as Visitante de consulta
   participant UI as React: vista previa del catálogo
   participant API as Spring Boot: Academic Catalog API
   participant Auth as Spring Security
@@ -136,9 +137,23 @@ sequenceDiagram
   API->>DB: consulta solo programas con plan PUBLISHED
   DB-->>API: catálogo público; en desarrollo retorna [] hasta una publicación autorizada
   API-->>UI: versiones publicadas y cohortes
+  Comunidad->>UI: elige una versión publicada
+  UI->>API: GET /api/v1/academic-catalog/curricula/{id}
+  API->>UseCase: consulta detalle público por UUID
+  UseCase->>Repo: buscar versión y entradas ordenadas
+  Repo->>DB: leer currículo, programa y asignaturas
+  DB-->>Repo: detalle con estado
+  alt Borrador o versión inexistente
+    UseCase-->>API: no encontrada
+    API-->>UI: 404 curriculum_not_found
+  else Estado PUBLISHED
+    UseCase-->>API: resumen y entradas
+    API-->>UI: 200; solo datos del plan publicado
+    UI-->>Comunidad: muestra tabla accesible de asignaturas
+  end
 ```
 
-La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la importación y publicación requieren `academic:catalog:write`. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
+La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. El detalle público devuelve entradas solo para estado `PUBLISHED`; borradores y UUID inexistentes comparten respuesta 404. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la importación y publicación requieren `academic:catalog:write`. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
 
 ## Consulta de identidad propia
 

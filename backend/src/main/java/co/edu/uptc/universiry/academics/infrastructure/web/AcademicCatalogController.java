@@ -61,6 +61,11 @@ public class AcademicCatalogController {
         return queryService.publishedCurricula(programId).stream().map(AcademicCurriculumResponse::from).toList();
     }
 
+    @GetMapping("/api/v1/academic-catalog/curricula/{curriculumId}")
+    public AcademicCurriculumDetailsResponse publishedCurriculum(@PathVariable UUID curriculumId) {
+        return details(queryService.publishedCurriculum(curriculumId));
+    }
+
     @GetMapping("/api/v1/admin/academic-catalog/drafts")
     public List<AcademicCurriculumResponse> drafts() {
         return queryService.drafts().stream().map(AcademicCurriculumResponse::from).toList();

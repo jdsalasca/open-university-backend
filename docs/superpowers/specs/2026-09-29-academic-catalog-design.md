@@ -45,7 +45,7 @@ Antes de importar, cualquier visitante puede descargar la plantilla vacía desde
 2. El backend decodifica y valida todo el archivo antes de abrir la transacción. Una sola fila inválida rechaza el archivo completo e informa número de fila/campo; nunca deja una publicación parcial.
 3. Una carga válida crea o reutiliza programa por `(program_code, academic_level, study_modality, campus_code)` y revisiones de asignatura por código, crea una versión `DRAFT` y sus actividades en una sola transacción, y registra actor, fecha, hash, referencia normativa y resumen de auditoría. Reimportar una versión existente produce conflicto, no una segunda copia.
 4. El operador inspecciona el borrador en React y solicita publicación. El backend cambia `DRAFT → PUBLISHED` mediante transición condicional y registra auditoría en la misma transacción. Las versiones publicadas y sus datos asociados son inmutables.
-5. GET público expone exclusivamente versiones `PUBLISHED`; versiones antiguas permanecen consultables por cohorte. Se permiten rangos solapados para no descartar planes de transición; no se inventan reglas de equivalencia u homologación.
+5. GET público expone exclusivamente versiones `PUBLISHED`; versiones antiguas permanecen consultables por cohorte. El detalle `GET /api/v1/academic-catalog/curricula/{curriculumId}` devuelve resumen y entradas ordenadas únicamente si la versión está publicada. Borrador y UUID inexistente responden el mismo 404; su método GET no habilita otros métodos en esa ruta. Se permiten rangos solapados para no descartar planes de transición; no se inventan reglas de equivalencia u homologación.
 
 Si un código de asignatura ya existe, una combinación idéntica de nombre/créditos reutiliza su revisión. Si nombre o créditos cambian, crea nueva revisión, conservando enlaces de planes previos. No se actualiza silenciosamente una revisión.
 
@@ -55,7 +55,7 @@ Modelo normalizado: `academic_program` conserva identidad por `(program_code, ac
 
 - Rutas administrativas se agregan a la allowlist método/ruta existente; lectura y escritura usan permisos internos separados. El conversor traduce roles técnicos provisionales a permisos; los claims/grupos UPTC siguen pendientes. Sin issuer/audience reales no hay publicación desde navegador.
 - Límites iniciales: 2 MiB y 10 000 filas, configurables; el límite de bytes se aplica al flujo leído y no confía solo en el `Content-Length`; no se persiste el nombre/ruta del archivo ni se ejecutan fórmulas. SQL parametrizado, claves UUID, restricciones únicas/FK e índices en programa/cohorte y revisiones.
-- Errores esperados: 400 para contrato/mapeo inválido, 401/403 para falta de autenticación/permisos, 409 para versión existente o publicación concurrente, 413 para exceso de tamaño, 404 para borrador inexistente. Respuestas localizadas usando el catálogo existente.
+- Errores esperados: 400 para contrato/mapeo inválido, 401/403 para falta de autenticación/permisos, 409 para versión existente o publicación concurrente, 413 para exceso de tamaño, 404 para detalle público de borrador o UUID inexistente. Respuestas localizadas usando el catálogo existente.
 - Migración Flyway aditiva; no editar V1 ni la auditoría de identidad visual, cuyo FK actual es específico de branding. El módulo crea sus propias tablas de auditoría.
 - Criterio de latencia por definir con dueño de datos y carga representativa; el objetivo general sigue siendo promedio MySQL <50 ms y debe acompañarse de p50/p95/p99.
 
@@ -67,6 +67,7 @@ Modelo normalizado: `academic_program` conserva identidad por `(program_code, ac
 - Duplicados, UTF-8 inválido, BOM, columnas desconocidas, archivo vacío, tamaños/límites, campos ausentes y metadata inconsistente reciben resultados deterministas.
 - Publicación sólo ocurre con permiso write y estado `DRAFT`; anónimo recibe 401, lector 403 en comandos, usuario sin permiso 403 y cualquier ruta administrativa no registrada se deniega.
 - La plantilla descargada sin autenticación coincide exactamente con `CurriculumCsvSchema.HEADERS`; otros métodos HTTP sobre esa ruta pública siguen denegados.
+- El detalle anónimo presenta las entradas de una versión publicada; un borrador no puede consultarse por la ruta pública y un método diferente de GET permanece denegado.
 - Reimportación concurrente del mismo código de plan no duplica datos ni auditoría; publicaciones y auditoría son atómicas.
 - El front muestra estados vacío, cargando, validación por fila, borrador, publicado, errores de red/permisos y no presenta datos sintéticos como oficiales.
 
