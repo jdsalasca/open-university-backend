@@ -43,13 +43,13 @@
 - Consumes: `AGENTS.md`, `docs/PROJECT.md`, esta especificación.
 - Produces: runners de frontend/backend y raíz Maven `co.edu.uptc.universiry`; los clientes HTTP de producto se crean junto con la prueba de su primer consumidor.
 
-- [ ] Confirmar que `sdk current java` es `25.0.4-tem` y crear `.sdkmanrc` con `java=25.0.4-tem`.
-- [ ] Generar el esqueleto Vite React TypeScript sin lógica institucional; agregar scripts `dev`, `build`, `test`, `test:watch`.
-- [ ] Generar Maven Wrapper y POM Spring Boot 4.1.1, Java 25, `spring-boot-starter-webmvc`, Validation, Actuator, JPA, MySQL, Flyway y pruebas; dejar Spring Security para el Task 3.
-- [ ] Verificar scripts; conservar únicamente el `contextLoads` generado como smoke de arranque con perfil test; no añadir tests frontend sin comportamiento de producto.
-- [ ] Crear un helper PowerShell invocable que sincronice `JAVA_HOME` y el primer `PATH` del proceso con el `current` de SDKMAN; no modificar PATH global de máquina.
-- [ ] Ejecutar `npm run build` desde `frontend/` y `./backend/mvnw -f backend/pom.xml test` desde la raíz; expected: build Vite y `contextLoads` terminan con código 0 usando H2 de prueba.
-- [ ] Commit local `build: scaffold frontend and backend monoliths`.
+- [x] Confirmar que `sdk current java` es `25.0.4-tem` y crear `.sdkmanrc` con `java=25.0.4-tem`.
+- [x] Generar el esqueleto Vite React TypeScript sin lógica institucional; agregar scripts `dev`, `build`, `test`, `test:watch`.
+- [x] Generar Maven Wrapper y POM Spring Boot 4.1.1, Java 25, `spring-boot-starter-webmvc`, Validation, Actuator, JPA, MySQL, Flyway y pruebas; dejar Spring Security para el Task 3.
+- [x] Verificar scripts; conservar únicamente el `contextLoads` generado como smoke de arranque con perfil test; no añadir tests frontend sin comportamiento de producto.
+- [x] Crear un helper PowerShell invocable que sincronice `JAVA_HOME` y el primer `PATH` del proceso con el `current` de SDKMAN; no modificar PATH global de máquina.
+- [x] Ejecutar `npm run build` desde `frontend/` y `./backend/mvnw -f backend/pom.xml test` desde la raíz; expected: build Vite y `contextLoads` terminan con código 0 usando H2 de prueba.
+- [x] Commit local `build: scaffold frontend and backend monoliths`.
 
 ### Task 2: Dominio de configuración visual
 
