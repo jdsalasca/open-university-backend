@@ -48,7 +48,7 @@ Si una validación o persistencia falla, no se publica una versión parcial. El 
 
 ## Pregrado presencial y gate de descubrimiento
 
-El alcance de descubrimiento priorizado es pregrado presencial. La fuente pública de ACRA calendariza las etapas de una convocatoria (incluida inscripción, resultados y matrícula de admitidos) y separa el catálogo de trámites del estudiante: registro de asignaturas, renovación, aplazamiento, cancelación, reingreso, transferencia y grado. El catálogo no prueba una secuencia universal ni que cada trámite comparta reglas entre modalidad, sede, programa o cohorte.
+El alcance de descubrimiento priorizado es pregrado presencial. El catálogo público de trámites del estudiante (registro de asignaturas, renovación, aplazamiento, cancelación, reingreso, transferencia y grado) sigue siendo un inventario, no una secuencia universal. Para admisiones se localizó la cadena pública Acuerdo 130/1998 → Acuerdo 053/2008 (dos opciones y pruebas adicionales) → Resoluciones 19 y 28/2014 (Saber 11, ponderación, equivalencias y llamados), junto con Acuerdo 015/2021, Resolución 2941/2021 y modificación 5362/2025 para cupos especiales. El Acuerdo 031/2021 deroga el artículo 17 del Acuerdo 130; el Acuerdo 015/2021 deroga expresamente los Acuerdos 017/2001 y 120/2006. El proceso técnico permanece futuro hasta que ACRA, Jurídica y Secretaría General validen la matriz consolidada, operación, contratos y datos.
 
 ```mermaid
 flowchart LR
@@ -84,34 +84,52 @@ flowchart LR
 
 La flecha punteada hacia el gate es una dependencia por descubrir, no un estado confirmado del estudiante. La lista de servicios se mantiene desconectada deliberadamente hasta que los responsables aprueben el proceso y su relación. El detalle de las fuentes y decisiones pendientes está en [descubrimiento del ciclo](../discovery/student-lifecycle-baseline.md).
 
-### Hitos públicos de inscripción y selección para 2027-I
+### Flujo público de inscripción y selección para 2027-I
 
-El siguiente mapa separa las etapas que ACRA publica para pregrado presencial de las reglas que todavía no están aprobadas para el software. No crea estados de aspirante ni automatiza selección. ISE y matrícula inicial aparecen como etapas posteriores y quedan fuera del primer alcance funcional priorizado.
+El mapa separa fechas y reglas que aparecen en actos públicos de los puntos operativos pendientes. Es una guía para el taller, no una máquina de estados ni autorización para automatizar decisiones. ISE, pago y matrícula/asignaturas quedan fuera del primer corte funcional.
 
 ```mermaid
 flowchart LR
-  ACRA[ACRA publica convocatoria y resolución]
-  PIN[Venta de PIN<br/>21 sep–21 oct]
-  Apply[Inscripción<br/>hasta 23 oct]
-  Saber[Saber 11 disponible<br/>coincidir nombre y SNP]
-  Special{Programa con<br/>prueba especial?}
-  Exam[Pruebas especiales<br/>28–29 oct]
-  Selection[Selección con reglas,<br/>cupos y desempates aprobados]
-  Results[Resultados<br/>13 nov]
-  Waitlist[Llamado de opcionados<br/>9–15 dic]
-  ISE[ISE<br/>17–27 nov]
-  Tuition[Matrícula ordinaria<br/>23 nov–10 dic]
-  Gap[Reglas, recursos,<br/>correcciones y excepciones<br/>por validar]
+  Call[ACRA publica convocatoria y calendario]
+  Register[Venta PIN e inscripción web<br/>21 sep–23 oct<br/>primera y segunda opción]
+  ICFES[Verificación ICFES<br/>28–29 oct]
+  Assess{Programa o condición<br/>requiere evaluación?}
+  Aptitude[Prueba adicional/aptitud<br/>según programa y convocatoria]
+  Support[Examen médico/discapacidad<br/>y lengua de señas<br/>según calendario]
+  Correction[Revisar errores y actuaciones<br/>hasta 10 nov]
+  SIRA[Proceso de admisión SIRA<br/>11–12 nov]
+  Rank[Aplicar ponderación Saber 11<br/>y reglas/cupos versionados;<br/>aprobar prueba adicional si aplica]
+  First[Selección de primera opción]
+  RegularSecond[Lista de opcionados a segunda opción<br/>si no admitido en primera y hay cupo]
+  Special[Lista de casos especiales<br/>primera y segunda opción<br/>según actos aprobados]
+  Results[Publicar admitidos<br/>13 nov]
+  SpecialSecond[Asignar cupo especial<br/>en segunda opción<br/>14 dic]
+  Calls[Llamados de opcionados<br/>9–15 dic]
+  Next[ISE, pagos y registro de asignaturas<br/>etapas posteriores]
+  Normalista[Inscripción normalista publicada<br/>4 ciclos + diploma;<br/>vía, convenio y semestre por validar]
+  Gate[Redondeo, empates, apelaciones,<br/>pruebas y excepciones completas<br/>por validar]
 
-  ACRA --> PIN --> Apply --> Saber --> Special
-  Special -->|sí| Exam --> Selection
-  Special -->|no| Selection
-  Selection --> Results --> Waitlist
-  Results -. etapa posterior .-> ISE -.-> Tuition
-  Gap -.-> Selection
+  Call --> Register --> ICFES --> Assess
+  Register --> Assess
+  Assess -->|aptitud| Aptitude --> Correction
+  Assess -->|condición especial| Support --> Correction
+  Assess -->|ninguna adicional| Correction
+  Correction --> SIRA --> Rank --> First --> Results
+  Rank --> Special --> Results
+  First -->|no obtiene cupo primera opción| RegularSecond --> Calls
+  Special -->|no obtiene cupo primera opción| SpecialSecond
+  Results --> SpecialSecond --> Calls --> Next
+  Results --> Next
+  Register -. vía diferenciada publicada .-> Normalista
+  Normalista -. no integrar a selección ordinaria sin validación .-> Gate
+  Gate -. define antes de automatizar .-> SIRA
 ```
 
-ACRA advierte que el aspirante debe contar con resultados Saber 11, revisar el código SNP y mantener nombres/apellidos iguales a ICFES; el comunicado de apertura dice que Saber 11 es el único requisito de selección y anuncia pruebas de aptitud para algunos programas. La relación exacta entre esas pruebas y el orden de selección requiere lectura y aprobación de la Resolución 111 de 2026. Existe además una diferencia entre el texto base del Acuerdo 130 de 1998, artículo 14, y las instrucciones históricas del portal de registro sobre una o dos opciones. Ver [especificación de descubrimiento de admisiones](../superpowers/specs/2026-09-30-pregrado-admissions-process-discovery.md) y [cronograma de implementación propuesto](../superpowers/plans/2026-09-30-pregrado-admissions.md).
+El [Acuerdo 053 de 2008](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/11) resuelve la antigua diferencia del artículo 14 sin modificar: permite primera y segunda opción. El [simulador y tabla que ACRA enlaza actualmente](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pas/asp_simpunt.html) se basan en Saber 11; las [Resoluciones 19 y 28 de 2014](https://www.uptc.edu.co/secretaria_general/consejo_academico/resoluciones_2014/index.html) también describen pruebas adicionales, empates, equivalencias y tres llamados. La relación exacta de esos llamados con el calendario 2027-I se confirma con ACRA.
+
+La [Resolución 111 de 2026](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/9906) fija verificación por ICFES (28–29 oct.), verificación/anulación por información errada (hasta 10 nov.), proceso SIRA (11–12 nov.), resultados (13 nov.) y asignación de cupos especiales de segunda opción (14 dic.). Para condición especial de discapacidad fija examen/certificación el 27 oct. y prueba de lengua de señas para discapacidad auditiva; para Educación Física fija examen médico y aptitud física en sede del programa el 28–29 oct. Artes Plásticas y Visuales y Música aparecen en el listado de pruebas de aptitud, sin rúbrica o modalidad especificada en esa resolución.
+
+La [Resolución 5362 de 2025](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/9313) coloca la asignación de segunda opción especial después de admisión/matrícula de admitidos y antes de admitir opcionados; la ventana de opcionados (9–15 dic.) se solapa con la fecha puntual especial (14 dic.). El Acuerdo 015/2021 enumera ocho grupos de política en su artículo 3 y seis categorías de cupo en el artículo 7; la Resolución 2941/2021 describe además una disposición de discapacidad. ACRA/Jurídica deben confirmar cómo operan estas disposiciones sin duplicar cupos ni mezclar caracterización de apoyos con selección. La página ACRA actualizada el 30 de septiembre de 2026 publica además inscripción normalista para 2027-I; las Resoluciones 026/2009, 1577/2019 y 3418/2019 y la Ley 2481/2025 apuntan a una vía diferenciada de articulación/ingreso que debe mapearse por convenio, programa, sede y semestre. El diagrama la separa de la selección ordinaria hasta aclarar sus reglas. También se debe confirmar el orden de segunda opción especial frente a opcionados, y la mención de segundo semestre de 2026 en un considerando de la Resolución 111, cuyo título y artículo primero dicen primer semestre de 2027. El detalle de fuentes, cronograma completo y decisiones pendientes está en la [especificación de descubrimiento de admisiones](../superpowers/specs/2026-09-30-pregrado-admissions-process-discovery.md) y el [plan de implementación propuesto](../superpowers/plans/2026-09-30-pregrado-admissions.md).
 
 ## Catálogo académico — importar, revisar y publicar
 

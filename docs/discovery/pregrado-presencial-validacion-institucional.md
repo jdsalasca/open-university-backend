@@ -28,6 +28,7 @@ Los nombres siguientes provienen del inventario público de ACRA y son temas por
 | Proceso que abre el primer corte: inscripción/selección, matrícula inicial, renovación, registro de asignaturas u otro |  |  |  |
 | Sede(s), programa(s), modalidad presencial y cohorte(s) incluidas |  |  |  |
 | Población fuera del primer corte y motivo |  |  |  |
+| Ruta de ingreso normalista: programas/sedes, semestre, convenios vigentes, reconocimiento/evaluación, selección y canal documental, separada de ingreso ordinario y de cupos especiales |  |  |  |
 | Procesos que seguirán operando en el sistema actual |  |  |  |
 | Fuente de verdad durante el piloto y dueño de escritura |  |  |  |
 | Autoridad para aceptar resultados y autorizar un eventual corte |  |  |  |
@@ -35,6 +36,8 @@ Los nombres siguientes provienen del inventario público de ACRA y son temas por
 ## 3. Inventario normativo aprobado
 
 Registrar actos originales y modificaciones con vínculo institucional. No derivar reglas solo del resumen de una página web.
+
+En la revisión pública preliminar se localizaron, entre otros, el Acuerdo 031/2021 (deroga artículo 17 del Acuerdo 130), el Acuerdo 015/2021 (deroga expresamente Acuerdos 017/2001 y 120/2006), Resoluciones 026/2009, 1577/2019 y 3418/2019 para normalistas, y Ley 2481/2025. Marcar cada efecto como confirmado por acto o pendiente de ratificación institucional; conservar por separado la ruta normalista y los seis cupos del artículo 7 del Acuerdo 015.
 
 | ID | Acto/documento y emisor | Publicación/vigencia | Proceso, modalidad y cohortes aplicables | Modifica/deroga | URL o repositorio oficial | Confirmado por / fecha |
 |---|---|---|---|---|---|---|

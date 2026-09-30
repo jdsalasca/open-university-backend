@@ -1,87 +1,173 @@
 # Inscripción y selección de aspirantes — descubrimiento inicial
 
-**Corte de fuentes:** 30 de septiembre de 2026
-**Estado:** alcance priorizado; requisitos funcionales y reglas institucionales sin aprobar
-**Ruta:** pregrado presencial
+**Corte de fuentes públicas:** 30 de septiembre de 2026<br>
+**Estado:** investigación normativa pública ampliada; reglas y contratos aún no aprobados por los responsables institucionales<br>
+**Ruta:** pregrado presencial<br>
 **Datos personales:** ninguno; no se capturan ni se copian aspirantes reales
 
-## Propósito y límite
+## Propósito, alcance y límite
 
-El patrocinador priorizó el subproceso de inscripción y selección de aspirantes presenciales. Este documento convierte la información pública disponible en un mapa de descubrimiento y en una lista de decisiones para ACRA y la autoridad normativa. No es una especificación aprobada ni autoriza a reemplazar el sistema actual.
+El patrocinador priorizó el subproceso de **inscripción y selección de aspirantes de pregrado presencial**. Este documento registra los actos oficiales y las instrucciones públicas consultadas para preparar la validación con ACRA, Secretaría General, Jurídica y los programas académicos. No es una interpretación jurídica aprobada ni autoriza reemplazar SIRA, procesar aspirantes reales o publicar una decisión automática.
 
-La página de ACRA para 2027-I publica un calendario, la Resolución 111 de 2026 para pregrado presencial y requisitos de consistencia con ICFES. El comunicado institucional dice que Saber 11 es el único requisito de selección, y a la vez anuncia pruebas de aptitud para ciertos programas. Las fuentes visibles no resuelven por sí solas cómo interactúan las pruebas con elegibilidad y orden de selección. Por eso no se implementará cálculo de puntajes, asignación de cupos, desempate, anulación automática ni lista de opcionados hasta validar la resolución completa y sus anexos.
+La convocatoria 2027-I ya está en curso: la venta de PIN comenzó el 21 de septiembre de 2026, la inscripción cierra el 23 de octubre y los resultados están previstos para el 13 de noviembre. Por calendario y por las aprobaciones faltantes, esta convocatoria sirve como evidencia de descubrimiento; no se asume como cohorte objetivo de reemplazo.
+
+## Fuentes oficiales localizadas
+
+| Fuente | Hecho que aporta | Límite que sigue vigente |
+|---|---|---|
+| [Acuerdo 130 de 1998, registro 1 de Compilación Normativa](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/1) | Reglamento estudiantil base. El artículo 14 fue modificado por Acuerdo 053/2008; el artículo 17, que contenía beneficios de mérito y territorio, fue derogado expresamente por Acuerdo 031/2021. | No usar el texto original como regla consolidada. El alcance actual del artículo 18 y sus relaciones normativas requieren revisión separada. |
+| [Acuerdo 053 de 2008, registro 11](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/11) | Modifica los artículos 14 y 16 del Acuerdo 130: permite dos opciones (primera y segunda), regula la competencia por la segunda opción y contempla pruebas adicionales y desempate. | No confirma por sí solo la versión completa aplicable a la cohorte 2027-I ni todas las reglas específicas por programa. |
+| [Acuerdo 031 de 2021](https://www.uptc.edu.co/export/sites/default/secretaria_general/consejo_superior/acuerdos_2021/Acuerdo_031_2021.pdf) | Deroga expresamente el artículo 17 del Acuerdo 130. Sus considerandos dicen que el régimen antiguo no se aplicaba desde 2000 salvo el literal d) y explican que la población allí descrita quedó comprendida en la política del Acuerdo 015/2021. | No trasladar beneficios del artículo 17 derogado al motor de admisión. El texto fuente y la autoridad deben confirmar el alcance residual de otras disposiciones del Acuerdo 130. |
+| [Resolución 19 de 2014, registro 481](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/481) y [Resolución 28 de 2014, registro 482](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/482) | Adoptan las cinco áreas Saber 11, ponderaciones por programa, homologación de pruebas anteriores, pruebas adicionales, desempates y publicación de resultados en tres llamados. La Resolución 28 agrega tratamiento de resultados recalificados y de aplicaciones 2000-1 a 2011-2. | Son actos de 2014. Hay que comprobar vigencia, modificaciones posteriores, precisión/ redondeo y aplicación a cada resultado de examen. |
+| [Tabla de ponderaciones enlazada actualmente por ACRA](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/vic_aca/adm_reg/.content/doc/sim/ponderados_v3.pdf) y [simulador ACRA](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pas/asp_simpunt.html) | La tabla se identifica como proceso de admisiones desde 2015 bajo Resolución 19 de 2014. La página actual de ACRA, actualizada el 18 de septiembre de 2026, indica que la selección usa Saber 11 y enlaza la tabla, simulador, manual y resultados de referencia de 2026. | Los resultados de referencia son históricos, no reglas ni cupos futuros. La tabla publicada debe validarse por versión, código de programa, sede y jornada antes de parametrizarla. |
+| [Resolución 111 de 2026, registro 9906](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/9906) | Calendario concreto de inscripción, admisión y matrícula de pregrado presencial para 2027-I; identifica revisiones ICFES, SIRA, programas con pruebas de aptitud y etapas de opcionados/cupos especiales. | Es un calendario de cohorte, no una regla reutilizable en otras convocatorias. Contiene una mención contradictoria en un considerando que se debe aclarar. |
+| [Acuerdo 015 de 2021](https://www.uptc.edu.co/secretaria_general/consejo_superior/acuerdos_2021/Acuerdo_015_2021.pdf), [Resolución 2941 de 2021](https://www.uptc.edu.co/secretaria_general/rectoria/resoluciones_2021/Resolucion_2941_2021.pdf) y [Resolución 5362 de 2025, registro 9313](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/9313) | El Acuerdo 015 adopta la política inclusiva, enumera poblaciones y asigna seis cupos por programa bajo su artículo 7; su artículo 12 deroga expresamente los Acuerdos 017/2001, 120/2006 y 029/2015, además de la Resolución 2404/2016. La Resolución 2941 reglamenta requisitos y contiene una disposición propia para discapacidad; la Resolución 5362 modifica su artículo 8 para asignación en primera/segunda opción. | Hay que confirmar cómo se aplican conjuntamente el Acuerdo 015, los artículos 1–2 de la Resolución 2941 y la modificación 5362; la lista de poblaciones del artículo 3 de 015 no coincide literalmente con las seis categorías de cupo del artículo 7. No almacenar soportes sensibles antes de aprobar finalidad, campos, permisos y retención. |
+| [Acuerdo 61 de 2000, registro 44](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/44) | Establece un régimen transitorio para resultados antiguos, modalidades numérica/cualitativa y selección ponderada, incluidas pruebas adicionales. | La población y la fórmula transitoria que aún puedan presentarse en una convocatoria actual requieren confirmación; no se infiere un puntaje mínimo desde páginas de FESAD. |
+| [Acuerdo 019 de 2000](https://www.uptc.edu.co/secretaria_general/consejo_superior/acuerdos_2000/Acuerdo_019_2000.pdf) | Establece un régimen transitorio para quienes presentaron el examen en marzo de 2000, con resultados de Núcleo Común ponderados, cupos proporcionales a inscritos y pruebas adicionales si aplica. | Regla con fecha/población histórica; conservar solo como caso de examen transitorio si ACRA confirma que la cohorte puede incluirlo. |
+| [Acuerdo 17 de 2001, registro 48](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/48) y [Acuerdo 120 de 2006](https://www.uptc.edu.co/secretaria_general/consejo_superior/acuerdos_2006/Acuerdo_120_2006.pdf) | Los actos contemplaban cupos diferenciales para personas reinsertadas/desplazadas y grupos territoriales, respectivamente. | El artículo 12 del Acuerdo 015/2021 los deroga expresamente. Se conservan como antecedente normativo, no como reglas activas por defecto. |
+| [Resolución 026 de 2009](https://www.uptc.edu.co/export/sites/default/secretaria_general/consejo_academico/resoluciones_2009/resolucion_26_2009.pdf), Resoluciones [1577/2019 (registro 1872)](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/1872) y [3418/2019 (registro 4097)](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/4097), [Regionalización UPTC](https://dsp.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/vic_acad/regi/index.html) y [ACRA: cupos especiales](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pas/p1_cupsaesp.html) | La Resolución 026 modifica la Resolución 01/2000: contempla ingreso a quinto semestre en programas determinados y otras vías de ingreso a licenciaturas para normalistas con convenios; exige reglas de admisión, y deja ubicación en el plan a homologación/validación del Comité de Currículo. Su artículo 8 encarga a ACRA verificar requisitos. Regionalización sigue listando 1577/2019 (quinto semestre de Licenciatura en Educación Infantil o Básica Primaria) y 3418/2019 (normalistas graduados bajo convenio). La página ACRA, actualizada el 30 de septiembre de 2026, publica el PIN de 2027-I y pide certificados de cuatro ciclos complementarios y diploma de Normalista Superior. | Ruta distinta del ingreso ordinario a primer semestre y de los seis cupos del Acuerdo 015. Confirmar qué disposiciones de 026/2009 subsisten tras 1577/2019, 3418/2019 y Ley 2481/2025; validar convenio, programa/sede, semestre, reconocimiento, selección y canal documental. |
+| [Ley 2481 de 2025 — Gestor Normativo de Función Pública](https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=260801) y [Regionalización UPTC](https://dsp.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/vic_acad/regi/index.html) | La ley crea un marco nacional para las Escuelas Normales Superiores y modifica el artículo 112 de la Ley 115; la UPTC publica la ley junto con normativa de articulación con Normales. Su artículo 14 ordena reglamentación nacional en el plazo de un año. | Confirmar el decreto reglamentario final, transición, convenios y reconocimiento de ciclos; no convertir la ley en un criterio de admisión automática. |
+| [Acuerdo 030 de 2007](https://www.uptc.edu.co/secretaria_general/consejo_superior/acuerdos_2007/Acuerdo_030_2007.pdf) | Prevé hasta tres cupos por municipio para bachilleres de estratos 1–2 de Boyacá, sujeto a definición semestral del Consejo Académico. | No se encontró una derogatoria o confirmación de vigencia; no modelar la vía como activa hasta validar la cadena normativa actual. |
+
+Los identificadores de Compilación Normativa corresponden a los registros visibles en el servicio institucional de UPTC consultado. El corte encontró derogatorias expresas de los Acuerdos 017/2001 y 120/2006 por el artículo 12 del Acuerdo 015/2021, y del artículo 17 del Acuerdo 130/1998 por el Acuerdo 031/2021. La autoridad institucional debe confirmar el estado consolidado de los actos restantes, cualquier modificación posterior y su aplicación a la cohorte.
+
+### Efectos de derogatoria localizados
+
+- El [Acuerdo 015 de 2021](https://www.uptc.edu.co/secretaria_general/consejo_superior/acuerdos_2021/Acuerdo_015_2021.pdf), artículo 12, deroga expresamente los Acuerdos 017/2001 y 120/2006, el Acuerdo 029/2015 y la Resolución 2404/2016. Por tanto, no se modelan las fórmulas antiguas de los acuerdos 017/2001 y 120/2006 como rutas activas. El Acuerdo 030/2007 requiere consulta separada porque no aparece en esa enumeración expresa.
+- El [Acuerdo 031 de 2021](https://www.uptc.edu.co/export/sites/default/secretaria_general/consejo_superior/acuerdos_2021/Acuerdo_031_2021.pdf) deroga expresamente el artículo 17 del Acuerdo 130/1998. Sus considerandos remiten la población del antiguo literal d) a la política de inclusión adoptada por el Acuerdo 015/2021.
+- El artículo 3 del Acuerdo 015 enumera ocho grupos poblacionales y su artículo 7 distribuye seis cupos excepcionales entre seis condiciones. Los literales sobre mujeres en condición de vulnerabilidad y población diversa en perspectiva de género/orientación sexual figuran en el artículo 3, pero no como categorías separadas de cupo en la lista del artículo 7. La norma operativa y los apoyos que correspondan requieren interpretación formal; no se inferirán cupos adicionales.
+- El artículo 7 del Acuerdo 015 asigna un cupo por condición, incluido uno para discapacidad. El artículo 2 de la Resolución 2941 regula además un cupo especial por programa para personas con discapacidad física, visual o auditiva y una caracterización de necesidades de apoyo que declara no afectar el puntaje. El cruce entre estas disposiciones y su total de cupos queda abierto para validación jurídica/ACRA.
 
 ## Hechos publicados para la convocatoria 2027-I
 
-| Hito publicado | Fecha o alcance publicado | Uso en este proyecto |
+| Hito de la Resolución 111 | Fecha o alcance publicado | Implicación para el diseño |
 |---|---|---|
-| Venta de PIN presencial | 21 de septiembre a 21 de octubre de 2026 | Evidencia de una ventana administrada por convocatoria; no es constante del sistema. |
-| Registro de inscripción presencial | Hasta el 23 de octubre de 2026 | La ventana debe poder versionarse por convocatoria después de validar quién es dueño de su publicación. |
-| Pruebas especiales | 28 y 29 de octubre para Artes Plásticas y Visuales, Licenciatura en Educación Física, Recreación y Deporte, y Licenciatura en Música | El catálogo de programas afectados y el efecto de la prueba en selección requieren la Resolución 111 y validación de ACRA. |
-| Publicación de resultados presencial | 13 de noviembre de 2026 | La página informa la fecha, pero no identifica formato, actor, fuente ni procedimiento de corrección o reclamación. |
-| Formulario ISE | 17 a 27 de noviembre de 2026 | Etapa posterior a resultados; queda fuera del primer flujo funcional de inscripción y selección. |
-| Pago ordinario de matrícula | 23 de noviembre a 10 de diciembre de 2026 | Matrícula inicial queda fuera del primer corte funcional, aunque se conserva como dependencia posterior. |
-| Llamado de opcionados | 9 a 15 de diciembre de 2026 | La existencia del hito está publicada; reglas de elegibilidad, orden y aceptación siguen por validar. |
+| Promoción en página web y emisora universitaria | 21 sep.–23 oct. 2026 | Configuración versionada por convocatoria; fuente operativa por confirmar. |
+| Venta de PIN | 21 sep.–21 oct. 2026 | Separar pago/derecho de inscripción del formulario, sin asumir integración ni sistema fuente. |
+| Inscripción vía web | 21 sep.–23 oct. 2026 | La norma de 2008 permite hasta dos programas, primera y segunda opción. |
+| Examen médico para aspirantes en condición especial de discapacidad; certificado EPS | 27 oct. 2026 | Requiere ruta accesible y tratamiento de evidencia de salud bajo política aprobada. |
+| Prueba de lengua de señas para aspirantes con discapacidad auditiva | 27 oct. 2026 | La resolución no especifica resultado, rúbrica, reprogramación ni efecto de esta prueba. |
+| Pruebas de aptitud para Licenciatura en Educación Física, Recreación y Deporte | Examen médico y aptitud física en la sede del programa, 28–29 oct. 2026 | La resolución da fecha/sede para aptitud física; ACRA debe confirmar condición de aprobación, accesibilidad y efecto en selección. |
+| Artes Plásticas y Visuales y Licenciatura en Música | Incluidas bajo “Aplicación de Pruebas de aptitud”; 28–29 oct. 2026 en el calendario | La Resolución 111 consultada no detalla el tipo ni la rúbrica de prueba de esos dos programas. No inventar modalidad ni efecto. |
+| Verificación de información a través de ICFES | 28–29 oct. 2026 | Definir contrato, campos mínimos, corrección, autorización de consulta y manejo de indisponibilidad de ICFES. |
+| Verificación y anulación de inscripciones con información errada | Hasta 10 nov. 2026 | Es una facultad/proceso calendarizado; no autoriza anulación automática sin causal, revisión humana, notificación y recurso aprobados. |
+| Aplicación del proceso de admisión SIRA | 11–12 nov. 2026 | La resolución nombra SIRA en este hito; el rol actual de SIRA como fuente maestra o sistema de registro requiere confirmar con ACRA/DTIC. |
+| Publicación de resultados de admitidos | 13 nov. 2026 | Confirmar firma, datos expuestos, canal, correcciones y reclamaciones. |
+| Formulario ISE y entrega de documentos | 17–27 nov. 2026 | Etapa posterior al primer corte funcional de inscripción/selección. |
+| Subsanación de información/documentos según ISE | 18 nov.–4 dic. 2026 | Definir reglas, actor, evidencia y cierre de subsanación. |
+| Pago de derechos pecuniarios | 23 nov.–10 dic. 2026 | Etapa posterior; requiere fuente e integración de pagos autorizadas. |
+| Inscripción de asignaturas por las Escuelas | 9–14 dic. 2026 | Límite con matrícula/ciclo académico; fuera del primer corte funcional. |
+| Asignación de cupos especiales en programas de segunda opción | 14 dic. 2026, según Resolución 5362 de 2025 | El acto 5362 sitúa este paso después de admisión/matrícula de admitidos y antes de admisión de opcionados; el calendario ubica la ventana de llamados de opcionados entre 9–15 dic. Se debe precisar el orden operativo dentro de fechas que se solapan. |
+| Llamado/etapa de opcionados | 9–15 dic. 2026 | La selección, orden, aceptación y efecto de renuncias deben tener reglas versionadas. |
+| ISE/documentos de opcionados; subsanación; pagos; asignaturas | 9–15 dic.; 10–16 dic.; 10–17 dic.; 10–18 dic. respectivamente | Flujo posterior y de alcance aparte, aunque depende de la misma convocatoria. |
+| Pago de matrícula | Según el calendario académico 2027-I o su modificación | La Resolución 111 no fija aquí una fecha concreta. |
 
-Fuentes primarias: [calendario ACRA de aspirantes](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/) y [comunicado UPTC del 22 de septiembre de 2026](https://uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-abre-inscripciones-para-estudiar-un-pregrado-presencial-a-distancia-o-virtual-el-proximo-semestre/). Las fechas corresponden a una convocatoria concreta y no deben quedar codificadas como defaults.
+La Resolución 111 (10 de septiembre de 2026) tiene un considerando que dice que se establecieron fechas para “Segundo Semestre de 2026”, mientras su título y artículo primero fijan el calendario para “Primer Semestre de 2027”. El artículo primero es explícito sobre la cohorte, pero ACRA/Jurídica deben confirmar si se emitió corrección. La tabla además repite la numeración “2” en “Pago de matrícula”; registrar como errata editorial, no como una nueva actividad. La resolución fue proyectada por ACRA y revisada por Dirección de TICs, Vicerrectoría Académica y Dirección Jurídica.
 
-La página de ACRA indica que al registrar la inscripción el aspirante ya debe tener resultados Saber 11, que nombres y apellidos deben coincidir con ICFES y que debe verificarse el código SNP; advierte que los errores pueden anular la inscripción. Esto es una advertencia publicada, no autorización para replicar validaciones, acceder a ICFES o anular solicitudes automáticamente. [ACRA — aspirante de pregrado](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/)
+Fuentes principales del calendario: [Resolución 111 de 2026](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/9906) y [página de aspirantes de ACRA](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/). La página de ACRA también advierte sobre coincidencia de nombres/apellidos y código SNP con ICFES; eso no constituye autorización para conectarse a ICFES ni para anular registros automáticamente.
+
+La página vigente de [cupos para casos especiales](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pas/p1_cupsaesp.html), actualizada el 30 de septiembre de 2026, dice que el PIN corresponde a 2027-I y publica una vía de aspirante normalista con certificados de cuatro ciclos complementarios y diploma de Normalista Superior. El texto combina “cargar en la plataforma” con entrega “a los siguientes correos”; ACRA debe confirmar canal, comprobante y fecha límite. La misma página incluye la vía normalista bajo “cupos para casos especiales”, pero los actos 015/2021–2941/2021–5362/2025 no identifican normalista entre las seis categorías de cupo del artículo 7 del Acuerdo 015. Se registra como una vía separada por aclarar, no como un séptimo cupo ni como parte de la selección ordinaria por inferencia.
+
+## Reglas públicas localizadas, aún pendientes de confirmación de vigencia/aplicación
+
+### Opciones, ponderación, pruebas y orden
+
+- **Opciones:** el Acuerdo 053 de 2008 reemplaza el artículo 14 del Acuerdo 130: el aspirante puede inscribirse únicamente a **dos programas presenciales de pregrado**, informados como primera y segunda opción. Si no se admite en la primera, entra al grupo de opcionados de la segunda y compite con el puntaje obtenido para esa opción, si hay cupo y supera las pruebas adicionales aplicables. Esto resuelve la diferencia antigua entre el artículo 14 sin modificar y las instrucciones del portal; queda por verificar en la compilación completa qué actos posteriores afectan el caso.
+- **Selección ordinaria:** la página vigente de simulador ACRA dice que la selección usa Saber 11. La Resolución 19 de 2014 adopta cinco áreas y una tabla por programa; la tabla pública actualmente enlazada señala que el cálculo multiplica cada resultado Saber 11 por su ponderación y suma los valores. Pesos publicados para programas relacionados con pruebas de aptitud:
+
+  | Programa/código según la tabla pública | Sede/jornada publicada | Lectura crítica | Ciencias naturales | Sociales y ciudadanas | Matemáticas | Inglés |
+  |---|---|---:|---:|---:|---:|---:|
+  | Lic. Educación Física, Recreación y Deportes / 31 | Tunja / D | 25% | 25% | 20% | 15% | 15% |
+  | Lic. Educación Física, Recreación y Deportes / 94 | Chiquinquirá / D | 25% | 25% | 20% | 15% | 15% |
+  | Lic. Música / 38 | Tunja / D, anual primer semestre | 45% | 5% | 25% | 5% | 20% |
+  | Lic. Artes Plásticas / 108 | Tunja / E, anual primer semestre | 35% | 15% | 40% | 5% | 5% |
+
+  La tabla es la versión actualmente enlazada por ACRA y está identificada como efectiva desde 2015; nombres/códigos y equivalencia con las denominaciones 2027 deben confirmarse antes de importar datos o automatizar resultados. Los resultados de referencia 2026 publicados por ACRA son históricos y no sustituyen tabla de cupos ni puntajes de corte de una futura convocatoria.
+- **Homologación de resultados históricos:** Resolución 19 regula la equivalencia entre el examen previo de ocho áreas y el Saber 11 de cinco áreas a partir de 2015, con promedios simples para Lectura Crítica y Ciencias Naturales. Resolución 28 agrega que pruebas 2012-1 a 2014-1 toman resultados recalificados del ICFES y que pruebas 2000-1 a 2011-2 siguen la equivalencia del artículo 4. Acuerdo 61 de 2000 contempla un régimen transitorio para resultados antiguos numéricos/cualitativos; Acuerdo 019 de 2000 se refiere a quienes presentaron la prueba en marzo de ese año. También se prevé revisar exámenes similares en el exterior avalados por ICFES, con evaluación por Comités de Currículo y recomendación de consejos. La población vigente, datos y fórmula de cada caso siguen por validar.
+- **Pruebas adicionales:** Acuerdo 053/2008 y Resolución 19/2014 establecen, cuando el programa las requiere, preselección por examen de aptitud y definición de admitidos por mejor ponderado ICFES entre quienes aprobaron. La Resolución 111 calendariza evaluaciones para Educación Física, Artes Plásticas y Música; no da rúbricas ni reglas de aprobación para todas. La frase pública “Saber 11 como único parámetro” debe leerse junto con esta etapa adicional; no se concluye que la aptitud sea irrelevante ni que el resultado de aptitud reemplace el puntaje ponderado.
+- **Empates:** Acuerdo 053/2008 dice que se dirimen por el puntaje mayor en el área de conocimiento correspondiente al programa, con criterios del Consejo de Facultad aprobados por el Consejo Académico. Resolución 19/2014 establece una secuencia: Lectura Crítica, Matemáticas, Ciencias Naturales y Sociales y Ciudadanas. La regla efectiva hoy y su interacción con criterios por programa no debe decidirse por inferencia; ACRA/Jurídica deben identificar la norma vigente y resolver casos de empate completo.
+- **Llamados:** Resolución 19/2014 dispone publicación en tres etapas/llamados hasta completar cupos; la Resolución 111/2026 calendariza resultados iniciales y una ventana de opcionados. ACRA debe explicar el mecanismo operativo actual, especialmente cómo cada llamado se relaciona con vacantes, aceptación, matrícula y Resolución 5362.
+
+### Cupos especiales y poblaciones con tratamiento diferencial
+
+- El artículo 3 del Acuerdo 015/2021 enumera ocho grupos de la política inclusiva: étnicos, víctimas, desmovilizados en reinserción, habitantes de frontera/difícil acceso, personas con discapacidad, mujeres en condición de vulnerabilidad, población diversa en perspectiva de género/orientación sexual y veteranos. Su artículo 7 distribuye seis cupos excepcionales —uno por condición— entre población étnica, víctimas, desmovilizados, frontera/difícil acceso, discapacidad y veteranos; no crea cupos separados con nombre propio para los dos grupos de mujeres y población diversa. La política puede contener otras medidas de inclusión, pero no se inferirá una asignación de cupo que el artículo no especifica.
+- La Resolución 2941/2021 establece requisitos y documentos. Su artículo 2 describe además un cupo especial por programa para personas con discapacidad física, visual o auditiva, su verificación por Bienestar Universitario y ACRA, pruebas y caracterización de apoyos. Declara que la caracterización no altera el puntaje de selección. Se debe interpretar con el cupo único para discapacidad del artículo 7 del Acuerdo 015 y con la asignación en primera/segunda opción de la Resolución 5362; no sumar cupos ni mezclar datos de apoyo con selección por inferencia.
+- La página ACRA de [cupos especiales](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pas/p1_cupsaesp.html) publica soportes por condición y remite a la Resolución 5362/2025. Las instrucciones de página son operativas secundarias y deben cotejarse con el calendario 2027-I y el acto aplicable antes de configurar campos o plazos. La evidencia no debe convertirse en una etiqueta de clasificación no autorizada.
+- Resolución 5362/2025 modifica el artículo 8 de la Resolución 2941. Para primera opción fija máximo seis cupos especiales por programa, uno por condición, soporte documental antes del cierre, mayor puntaje ponderado ICFES-UPTC y aprobación de pruebas adicionales cuando apliquen. Quien no obtiene cupo en primera opción queda en una lista de casos especiales de segunda opción, ordenada en forma descendente por ponderado entre las condiciones.
+- Para segunda opción, la Resolución 5362 sitúa la asignación después de completar admisión y matrícula de los admitidos y antes de admitir opcionados; ACRA revisa cupos disponibles y asigna uno por condición si no hay ya una persona admitida/matriculada de esa condición en el programa, con mejor ponderado y pruebas superadas cuando apliquen. La Resolución 111 agenda esta asignación para 14 de diciembre de 2026.
+- El Acuerdo 015/2021, artículo 12, deroga expresamente los Acuerdos 017/2001 y 120/2006, además del Acuerdo 029/2015 y la Resolución 2404/2016. El Acuerdo 031/2021 deroga el artículo 17 del Acuerdo 130/1998, cuyos beneficios ya no deben tratarse como vigentes. El Acuerdo 030/2007 prevé hasta tres cupos por municipio para bachilleres de estratos 1–2 de Boyacá bajo definición semestral del Consejo Académico; no se halló una derogatoria o confirmación de vigencia. Para normalistas se localizó la Resolución 026/2009 y la UPTC publica también las Resoluciones 1577/2019 y 3418/2019, además de una vía normalista en ACRA para 2027-I. Esto demuestra una ruta operativa separada, pero no aclara su relación con el proceso ordinario, el semestre aplicable a cada programa/sede, los convenios vigentes ni los criterios de selección.
+
+Las condiciones especiales implican información sensible y soportes de terceros. Antes de crear captura/almacenamiento se necesitan propósito y base jurídica, minimización de campos, personal autorizado, segregación, auditoría, retención, eliminación y controles para que los datos de caracterización de apoyos no alteren la selección académica.
 
 ## Mapa provisional del proceso
 
-El diagrama refleja hitos que ACRA publica; no establece una máquina de estados de software ni ordena operaciones que se solapan. La caja de selección está deliberadamente sin fórmula.
+El diagrama representa reglas y fechas **publicadas**, no una máquina de estados lista para codificar. Las fechas corresponden a 2027-I y el calendario contiene fases que se solapan.
 
 ```mermaid
 flowchart LR
-  Call[ACRA publica convocatoria, resolución y calendario]
-  Pin[Venta de PIN]
-  Registration[Registro de inscripción]
-  Saber[Saber 11 disponible; validar nombre y código SNP según convocatoria]
-  Special{Programa requiere prueba especial?}
-  Exam[Aplicación de prueba especial]
-  Rule[Aplicar reglas y cupos aprobados por cohorte]
-  Results[Publicación de resultados]
-  Waitlist[Llamado de opcionados]
-  ISE[Formulario ISE]
-  Tuition[Matrícula inicial]
-  Pending[Reclamaciones, correcciones, anulaciones y desempates por validar]
+  Publish[ACRA publica convocatoria y calendario versionado]
+  Pin[Venta de PIN<br/>21 sep–21 oct]
+  Register[Inscripción web<br/>21 sep–23 oct<br/>primera y segunda opción]
+  Verify[Verificación por ICFES<br/>28–29 oct]
+  Exams{Programa o condición<br/>requiere evaluación?}
+  Aptitude[Pruebas adicionales/aptitud<br/>según programa y convocatoria]
+  Disability[Examen médico / lengua de señas<br/>según condición y calendario]
+  Correct[Revisión de datos errados<br/>y actuaciones hasta 10 nov]
+  SIRA[Proceso de admisión SIRA<br/>11–12 nov]
+  Rank[Aplicar ponderación Saber 11<br/>y cupos aprobados; aptitud aprobada cuando aplica]
+  First[Admitir primera opción<br/>por orden/reglas vigentes]
+  Second[Opcionados a segunda opción<br/>si no admitido en primera y hay cupos]
+  Special[Lista de casos especiales<br/>primera/segunda opción según 015/2021,<br/>2941/2021 y 5362/2025]
+  Results[Publicar resultados admitidos<br/>13 nov]
+  Special2[Asignar cupos especiales de segunda opción<br/>14 dic; antes de admitir opcionados]
+  Calls[Llamados de opcionados<br/>9–15 dic]
+  ISE[ISE, documentos y subsanación]
+  Tuition[Pagos y registro de asignaturas]
+  Open[Recursos, redondeo, duplicados,<br/>revisión humana y datos fuente<br/>por confirmar]
 
-  Call --> Pin --> Registration
-  Registration --> Saber
-  Saber --> Special
-  Special -->|sí| Exam --> Rule
-  Special -->|no| Rule
-  Rule --> Results --> Waitlist
-  Results -. etapa posterior .-> ISE -.-> Tuition
-  Pending -. debe quedar definido antes de automatizar .-> Rule
+  Publish --> Pin --> Register --> Verify --> Exams
+  Exams -->|sí, aptitud| Aptitude --> Correct
+  Exams -->|sí, condición de discapacidad| Disability --> Correct
+  Exams -->|no| Correct
+  Verify --> Correct --> SIRA --> Rank --> First --> Results
+  Rank --> Special --> Results
+  First -->|no obtiene cupo primera opción| Second --> Results
+  Results --> ISE --> Tuition
+  Results --> Special2 --> Calls --> ISE
+  Open -. define controles previos .-> SIRA
 ```
 
-## Conflictos y decisiones que no se pueden inferir
+## Decisiones que siguen abiertas para ACRA, Jurídica y Secretaría General
 
-| Tema | Evidencia pública encontrada | Decisión requerida |
+| Tema | Lo que ya se encontró | Confirmación requerida |
 |---|---|---|
-| Cantidad de programas/opciones por aspirante | El texto base del [Acuerdo 130 de 1998](https://cnormativa.uptc.edu.co/DocCompNormativa/130DE1998.pdf) señala en su artículo 14 que el aspirante solo puede inscribirse a un programa. Una [instrucción del portal de registro](https://registro.uptc.edu.co/Instrucciones_web.htm) describe primera y segunda opción. | Confirmar si esa instrucción sigue vigente, qué acto la soporta y qué dispone la Resolución 111 de 2026 para 2027-I. No modelar una o dos opciones por inferencia. |
-| Base de selección | El comunicado 2027-I dice que se usa Saber 11; el texto base del Acuerdo 130 describe orden por puntaje y cupos. | Obtener fórmula vigente por convocatoria, componentes Saber 11, normalización, criterios diferenciales y trazabilidad del cálculo. |
-| Pruebas especiales | ACRA publica tres programas y fechas; el comunicado mantiene la referencia a Saber 11 como criterio de selección. | Aclarar requisito de participación, escala, umbral, efecto en elegibilidad/orden, accesibilidad, ausencia y reprogramación. |
-| Cupos y desempates | Las páginas describen resultados y opcionados, pero no publican la configuración completa por sede/cohorte. | Obtener acto y fuente de cupos; fijar reglas deterministas y escenarios frontera con aprobación funcional. |
-| Identidad y corrección | ACRA exige coincidencia de nombres y SNP y advierte posible anulación. | Definir fuente maestra, cómo corregir discrepancias, quién puede hacerlo, evidencia, revisión humana y notificación. |
-| Resultados, recursos y opcionados | El calendario anuncia resultados y llamados posteriores. | Documentar publicación, reclamaciones, corrección de errores, orden y aceptación de opcionados, auditoría y reversas. |
-| Datos e integración | Las páginas no identifican contrato actual, API ni sistema maestro de aspirantes/Saber 11. | Confirmar propietario, identificadores, campos mínimos, propósito, retención, seguridad y autorización de intercambio. |
+| Vigencia e integridad normativa | Actos base y varias modificaciones/actos relevantes localizados en Compilación Normativa. | Descargar/conciliar la compilación actual completa, cadena de modificaciones, derogatorias, regímenes transitorios y vigencia específica para 2027-I. |
+| Códigos y tabla de puntajes | ACRA enlaza tabla de ponderaciones basada en Resolución 19/2014 y la página actual dice que Saber 11 determina selección. | Confirmar archivo vigente, programa/sede/jornada y código, cálculo decimal/redondeo, actualización por cohorte y procedimiento reproducible. |
+| Pruebas adicionales y accesibilidad | 2008/2014 contemplan aptitud; Resolución 111 agenda pruebas para tres programas y actividades ligadas a discapacidad. | Rúbrica, prueba válida, criterio de aprobación, ajustes razonables, inasistencia, reprogramación y efecto exacto sobre elegibilidad/orden. |
+| Empates y múltiples llamados | Normas 2008/2014 publican criterios distintos de desempate y llamados; calendario 2027 fija fechas concretas. | Regla prevalente por cohorte/programa y secuencia de tres llamados/opcionados, renuncias, vacantes y notificación. |
+| Cupos especiales | Acuerdo 015/2021, Resolución 2941/2021, modificación 5362/2025 y acto histórico 017/2001 localizados. | Vigencia, número total por programa, relación entre cupo de discapacidad y categoría diferencial, coexistencia con normas previas, evidencia requerida y orden de asignación. |
+| Errores/recursos | Resolución 111 establece verificación/anulación hasta 10 nov.; portal advierte coincidencia de nombres y SNP con ICFES. | Quién corrige/anula, causales, validación humana, aviso, recursos, reinstalación y trazabilidad. |
+| Exámenes antiguos/extranjeros | Acuerdo 61/2000, Resoluciones 19/2014 y 28/2014 contemplan equivalencias y casos externos. | Qué tipos/años de pruebas acepta la convocatoria actual, equivalencias vigentes y autoridad que resuelve. |
+| Sistemas y datos | Resolución 111 menciona proceso SIRA y verificación por ICFES. | Sistema maestro actual, APIs/autorizaciones, contrato mínimo, identificadores, conciliación, continuidad y tiempos de respuesta. |
+| Resolución 111 | Título/artículo primero dicen primer semestre 2027; un considerando dice segundo semestre 2026. | Confirmar fe de erratas o interpretación formal y orden exacto de la asignación especial frente a la ventana de opcionados que se solapa. |
 
-## Diseño técnico propuesto, sujeto a aprobación
+## Diseño técnico propuesto, sujeto a gates
 
-- El futuro módulo `admissions` vivirá dentro del monolito Spring Boot y compartirá MySQL con límites de escritura explícitos. No se introduce microservicio ni motor genérico de reglas sin necesidad demostrada.
-- No unificar aspirante, persona y estudiante ni reutilizar una identidad canónica hasta que el dueño de datos confirme identificadores y ciclo de vida.
-- Versionar convocatoria, reglas, cupos y resultados de selección con referencia al acto aprobado que los origina. Un resultado deberá poder reproducirse con la versión exacta de reglas y datos de entrada autorizados.
-- Mantener la captura y modificación bajo permisos de backend. El mapeo de grupos institucionales, documentos personales, retención y auditoría deben estar aprobados antes de almacenar datos reales.
-- Si se construye antes una vista de calendario, será una capacidad acotada, versionada y de solo lectura pública; no presentará aspirantes, admisión ni elegibilidad como funcionales.
+- El futuro módulo `admissions` residirá en el monolito Spring Boot. No se introducen microservicios ni un motor genérico de reglas sin una necesidad medida.
+- Separar convocatoria, persona/aspirante, solicitud por opción, prueba/evidencia, cupo, decisión, resultado y etapa de matrícula; no suponer que son un único registro.
+- Diseñar contratos e interfaces de aplicación antes de persistencia/API. Versionar reglas, cupos, ponderaciones, fuente normativa, resultados y eventos por convocatoria; cada decisión debe reproducirse con la versión de entrada autorizada.
+- Si se aprueba implementar ponderación, evitar fórmulas por nombre visible: mapear identificadores oficiales de programa/sede/jornada a una tabla autorizada e inmutable por versión, validar que pesos sean válidos y guardar entradas, escala, regla de empate y trazabilidad. No usar puntajes de corte históricos como cupos o criterio de decisión.
+- Mantener en el backend la autorización, la verificación y los cambios de estado. Implementar revisión/aprobación humana donde el procedimiento lo exija; denegar por defecto reglas, pruebas, cupos o excepciones incompletas.
+- Datos personales y particularmente soportes de condiciones sensibles requieren contrato y permisos aprobados antes de captura; fixtures siempre sintéticos.
+- La vista pública temprana permitida es un calendario versionado de solo lectura; no afirmará elegibilidad ni presentará resultados reales.
 
-## Criterios de entrada a implementación
+## Criterios de entrada a implementación funcional
 
-1. ACRA y la autoridad normativa entregan y confirman Resolución 111 de 2026, anexos, modificaciones, vigencias y reglas por cohorte.
-2. Quedan definidos programa(s), sede(s), cohorte y el punto final del primer corte; la decisión actual cubre inscripción y selección, no matrícula inicial.
-3. El dueño de proceso aprueba el mapa de estados, reglas, excepciones, recursos, actores y salidas, incluida la relación entre Saber 11 y pruebas especiales.
-4. Dueños de datos y seguridad aprueban sistema fuente, identificadores, campos mínimos, integración, permisos, retención y casos de corrección.
-5. Los casos de aceptación AAA contienen fixtures sintéticos y cubren cupos, empates, repetidos, datos discordantes, reintentos y concurrencia que correspondan a las reglas aprobadas.
+1. ACRA y autoridad normativa validan matriz de actos, vigencia por cohorte, Resolución 111 y tratamiento de sus erratas.
+2. ACRA confirma programas/sedes/cohorte, opciones, cupos, versión de tabla, cálculo, empates, reglas de aptitud y de opcionados.
+3. Se concilia la normativa de condiciones especiales, soportes, accesibilidad y datos sensibles con Secretaría General/Jurídica/Bienestar.
+4. Dueños de datos/DTIC aprueban fuente maestra, identificadores, contratos con ICFES/SIRA, datos mínimos, corrección, permisos, retención y seguridad.
+5. Proceso y resultados/recursos son aprobados por el dueño de dominio; ninguna anulación o selección se ejecuta por heurística.
+6. Casos AAA contienen datos sintéticos y cubren primeras/segundas opciones, cupos, empate, prueba no aprobada, estado de ICFES discordante, examen histórico, soporte especial incompleto, duplicado, reintento, concurrencia y fallos de dependencia que correspondan a reglas aprobadas.
 
-Hasta que se cumplan estos criterios, se permite documentación, arquitectura y prototipos sin PII; no se codifica una decisión de admisión.
+Hasta completar estos criterios se puede avanzar en documentación, modelo técnico sin PII y calendario público. No se publican rankings ni decisiones de admisión ni se conecta a sistemas productivos.
