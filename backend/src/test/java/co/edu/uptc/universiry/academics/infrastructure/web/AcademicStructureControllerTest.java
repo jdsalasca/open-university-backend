@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -218,6 +219,194 @@ class AcademicStructureControllerTest {
     }
 
     @Test
+    void authorized_operator_can_correct_all_academic_display_orders_and_audit_each_change() throws Exception {
+        // Arrange
+        UUID facultyId = createUnit("FAC-ORDER-MAINT", "FACULTY", "Facultad para reordenar", 8);
+        UUID schoolId = createUnit("SCHOOL-ORDER-MAINT", "SCHOOL", "Escuela para reordenar", 9);
+        UUID centralSiteId = createSite("SITE-ORDER-CENTRAL", "CENTRAL", "Sede central orden", 7);
+        UUID regionalSiteId = createSite("SITE-ORDER-REGIONAL", "REGIONAL", "Sede regional orden", 8);
+        createOrganizationEdge(facultyId, schoolId, "2026-01-01", null, 6);
+        createSiteEdge(centralSiteId, regionalSiteId, 5);
+        UUID programId = UUID.randomUUID();
+        jdbcTemplate.update("""
+                INSERT INTO academic_program
+                    (program_id, program_code, academic_level, study_modality, campus_code, created_at)
+                VALUES (?, 'ORDER-01', 'PREGRADO', 'PRESENCIAL', 'TUNJA', CURRENT_TIMESTAMP)
+                """, programId.toString());
+        UUID programUnitId = createUnit("UNIT-PROGRAM-ORDER", "ACADEMIC_UNIT", "Unidad de programa", 1);
+        UUID programSiteId = createSite("SITE-PROGRAM-ORDER", "CAMPUS", "Lugar de programa", 1);
+        mockMvc.perform(post("/api/v1/admin/academic-structure/programs/{programId}/affiliations", programId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"organizationUnitId\":\"" + programUnitId + "\",\"siteId\":\""
+                                + programSiteId + "\",\"displayOrder\":4,\"validFrom\":\"2026-01-01\","
+                                + "\"validThrough\":null,\"sourceReference\":\"Adscripción inicial\"}"))
+                .andExpect(status().isCreated());
+        UUID affiliationId = UUID.fromString(jdbcTemplate.queryForObject(
+                "SELECT affiliation_id FROM academic_program_affiliation WHERE program_id = ?",
+                String.class, programId.toString()));
+
+        // Act
+        String reference = "Ajuste de orden aprobado";
+        String orderChange = "{\"expectedDisplayOrder\":%d,\"displayOrder\":%d,\"sourceReference\":\""
+                + reference + "\"}";
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", facultyId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(orderChange.formatted(8, 2)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{siteId}/order", centralSiteId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(orderChange.formatted(7, 3)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/order",
+                        facultyId, schoolId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(orderChange.formatted(6, 1)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/order",
+                        centralSiteId, regionalSiteId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(orderChange.formatted(5, 2)))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/order",
+                        programId, affiliationId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(orderChange.formatted(4, 0)))
+                .andExpect(status().isNoContent());
+
+        // Assert
+        mockMvc.perform(get("/api/v1/academic-structure"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.units[?(@.id == '%s')].displayOrder".formatted(facultyId)).value(2))
+                .andExpect(jsonPath("$.organizationRelations[?(@.childUnitId == '%s')].displayOrder"
+                        .formatted(schoolId)).value(1))
+                .andExpect(jsonPath("$.sites[?(@.id == '%s')].displayOrder".formatted(centralSiteId)).value(3))
+                .andExpect(jsonPath("$.siteRelations[?(@.childSiteId == '%s')].displayOrder"
+                        .formatted(regionalSiteId)).value(2))
+                .andExpect(jsonPath("$.programAffiliations[?(@.programId == '%s')].displayOrder"
+                        .formatted(programId)).value(0));
+        assertOrderAudit(facultyId, "UNIT_ORDER_CHANGED", "Organization unit display order changed from 8 to 2", reference);
+        assertOrderAudit(centralSiteId, "SITE_ORDER_CHANGED", "Academic site display order changed from 7 to 3", reference);
+        assertOrderAudit(schoolId, "UNIT_RELATION_ORDER_CHANGED",
+                "Organization unit relation " + facultyId + "/" + schoolId
+                        + " display order changed from 6 to 1", reference);
+        assertOrderAudit(regionalSiteId, "SITE_RELATION_ORDER_CHANGED",
+                "Academic site relation " + centralSiteId + "/" + regionalSiteId
+                        + " display order changed from 5 to 2", reference);
+        assertOrderAudit(programId, "PROGRAM_ORDER_CHANGED",
+                "Program affiliation " + affiliationId + " display order changed from 4 to 0", reference);
+    }
+
+    @Test
+    void stale_order_change_conflicts_without_mutating_or_auditing() throws Exception {
+        // Arrange
+        UUID facultyId = createUnit("FAC-STALE-ORDER", "FACULTY", "Facultad orden desactualizado", 8);
+        String request = "{\"expectedDisplayOrder\":3,\"displayOrder\":2,"
+                + "\"sourceReference\":\"Ajuste de orden\"}";
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", facultyId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isConflict());
+        org.junit.jupiter.api.Assertions.assertEquals(8, jdbcTemplate.queryForObject(
+                "SELECT display_order FROM academic_organization_unit WHERE organization_unit_id = ?",
+                Integer.class, facultyId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
+                Integer.class, "Ajuste de orden"));
+    }
+
+    @Test
+    void missing_inactive_expired_and_future_units_cannot_be_reordered() throws Exception {
+        // Arrange
+        UUID inactiveUnitId = createUnit("FAC-INACTIVE-ORDER", "FACULTY", "Facultad inactiva", 2);
+        UUID expiredUnitId = createUnit("FAC-EXPIRED-ORDER", "FACULTY", "Facultad vencida", 3,
+                "1900-01-01", "1900-12-31");
+        UUID futureUnitId = createUnit("FAC-FUTURE-ORDER", "FACULTY", "Facultad futura", 4,
+                "9999-01-01", null);
+        jdbcTemplate.update("UPDATE academic_organization_unit SET status = 'INACTIVE' WHERE organization_unit_id = ?",
+                inactiveUnitId.toString());
+        String request = "{\"expectedDisplayOrder\":%d,\"displayOrder\":1,"
+                + "\"sourceReference\":\"Prioridad fuera de vigencia\"}";
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", UUID.randomUUID())
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request.formatted(2)))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", inactiveUnitId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request.formatted(2)))
+                .andExpect(status().isConflict());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", expiredUnitId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request.formatted(3)))
+                .andExpect(status().isConflict());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", futureUnitId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request.formatted(4)))
+                .andExpect(status().isConflict());
+        org.junit.jupiter.api.Assertions.assertEquals(2, jdbcTemplate.queryForObject(
+                "SELECT display_order FROM academic_organization_unit WHERE organization_unit_id = ?",
+                Integer.class, inactiveUnitId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(3, jdbcTemplate.queryForObject(
+                "SELECT display_order FROM academic_organization_unit WHERE organization_unit_id = ?",
+                Integer.class, expiredUnitId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(4, jdbcTemplate.queryForObject(
+                "SELECT display_order FROM academic_organization_unit WHERE organization_unit_id = ?",
+                Integer.class, futureUnitId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
+                Integer.class, "Prioridad fuera de vigencia"));
+    }
+
+    @Test
+    void retrying_the_same_order_change_is_idempotent_and_does_not_duplicate_audit() throws Exception {
+        // Arrange
+        UUID centralSiteId = createSite("SITE-IDEMPOTENT-ORDER", "CENTRAL", "Sede sin cambio", 5);
+        String request = "{\"expectedDisplayOrder\":5,\"displayOrder\":2,"
+                + "\"sourceReference\":\"Reintento de orden\"}";
+
+        // Act
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{siteId}/order", centralSiteId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{siteId}/order", centralSiteId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNoContent());
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertEquals(2, jdbcTemplate.queryForObject(
+                "SELECT display_order FROM academic_site WHERE site_id = ?", Integer.class, centralSiteId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
+                Integer.class, "Reintento de orden"));
+    }
+
+    @Test
+    void order_change_requires_write_permission_and_valid_values() throws Exception {
+        // Arrange
+        UUID facultyId = createUnit("FAC-ORDER-PERMISSION", "FACULTY", "Facultad permiso", 4);
+        String request = "{\"expectedDisplayOrder\":4,\"displayOrder\":2,"
+                + "\"sourceReference\":\"Ajuste de orden\"}";
+        String invalidRequest = "{\"expectedDisplayOrder\":4,\"displayOrder\":-1,"
+                + "\"sourceReference\":\"Ajuste inválido\"}";
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", facultyId)
+                        .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", facultyId)
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ)))
+                        .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", facultyId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(invalidRequest))
+                .andExpect(status().isBadRequest());
+        org.junit.jupiter.api.Assertions.assertEquals(4, jdbcTemplate.queryForObject(
+                "SELECT display_order FROM academic_organization_unit WHERE organization_unit_id = ?",
+                Integer.class, facultyId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference IN (?, ?)",
+                Integer.class, "Ajuste de orden", "Ajuste inválido"));
+    }
+
+    @Test
     void operator_cannot_create_a_cycle_in_the_organization_tree() throws Exception {
         // Arrange
         UUID first = createUnit("UNIT-A", "ACADEMIC_UNIT", "Unidad A", 1);
@@ -379,6 +568,14 @@ class AcademicStructureControllerTest {
 
     private UUID createUnit(String code, String type, String name, int order) throws Exception {
         return createUnit(code, type, name, order, "2026-01-01", null);
+    }
+
+    private void assertOrderAudit(UUID entityId, String action, String summary, String reference) {
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = ? AND actor_sub = ?
+                  AND source_reference = ? AND event_summary = ?
+                """, Integer.class, entityId.toString(), action, "structure.operator", reference, summary));
     }
 
     private UUID createUnit(String code, String type, String name, int order,

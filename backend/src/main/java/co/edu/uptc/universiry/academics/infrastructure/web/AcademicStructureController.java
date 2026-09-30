@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -82,5 +83,58 @@ public class AcademicStructureController {
     ) {
         service.affiliateProgram(programId, request.toCommand(), authentication.getName());
         return ResponseEntity.status(CREATED).body(new AcademicStructureMutationResponse(programId));
+    }
+
+    @PatchMapping("/api/v1/admin/academic-structure/units/{unitId}/order")
+    public ResponseEntity<Void> changeUnitOrder(
+            @PathVariable UUID unitId,
+            @Valid @RequestBody ChangeAcademicDisplayOrderRequest request,
+            Authentication authentication
+    ) {
+        service.changeOrganizationUnitOrder(unitId, request.toCommand(), authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/api/v1/admin/academic-structure/sites/{siteId}/order")
+    public ResponseEntity<Void> changeSiteOrder(
+            @PathVariable UUID siteId,
+            @Valid @RequestBody ChangeAcademicDisplayOrderRequest request,
+            Authentication authentication
+    ) {
+        service.changeSiteOrder(siteId, request.toCommand(), authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/order")
+    public ResponseEntity<Void> changeOrganizationRelationOrder(
+            @PathVariable UUID parentId,
+            @PathVariable UUID childId,
+            @Valid @RequestBody ChangeAcademicDisplayOrderRequest request,
+            Authentication authentication
+    ) {
+        service.changeOrganizationRelationOrder(parentId, childId, request.toCommand(), authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/order")
+    public ResponseEntity<Void> changeSiteRelationOrder(
+            @PathVariable UUID parentId,
+            @PathVariable UUID childId,
+            @Valid @RequestBody ChangeAcademicDisplayOrderRequest request,
+            Authentication authentication
+    ) {
+        service.changeSiteRelationOrder(parentId, childId, request.toCommand(), authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/order")
+    public ResponseEntity<Void> changeProgramAffiliationOrder(
+            @PathVariable UUID programId,
+            @PathVariable UUID affiliationId,
+            @Valid @RequestBody ChangeAcademicDisplayOrderRequest request,
+            Authentication authentication
+    ) {
+        service.changeProgramAffiliationOrder(programId, affiliationId, request.toCommand(), authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 }

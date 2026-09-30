@@ -24,4 +24,17 @@ public interface AcademicStructureRepository {
     void relateSites(AcademicSiteRelation relation, String actorSub, String sourceReference);
 
     void affiliateProgram(AcademicProgramAffiliation affiliation, String actorSub);
+
+    void changeOrganizationUnitOrder(UUID unitId, AcademicDisplayOrderCommand command, String actorSub);
+
+    void changeSiteOrder(UUID siteId, AcademicDisplayOrderCommand command, String actorSub);
+
+    void changeOrganizationRelationOrder(UUID parentId, UUID childId,
+                                         AcademicDisplayOrderCommand command, String actorSub);
+
+    void changeSiteRelationOrder(UUID parentId, UUID childId,
+                                 AcademicDisplayOrderCommand command, String actorSub);
+
+    void changeProgramAffiliationOrder(UUID programId, UUID affiliationId,
+                                       AcademicDisplayOrderCommand command, String actorSub);
 }

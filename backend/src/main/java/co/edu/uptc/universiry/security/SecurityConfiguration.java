@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -109,6 +110,13 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/academic-structure/units/*/children/*",
                                 "/api/v1/admin/academic-structure/sites/*/children/*",
                                 "/api/v1/admin/academic-structure/programs/*/affiliations")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_WRITE.authority())
+                        .requestMatchers(PATCH,
+                                "/api/v1/admin/academic-structure/units/*/order",
+                                "/api/v1/admin/academic-structure/sites/*/order",
+                                "/api/v1/admin/academic-structure/units/*/children/*/order",
+                                "/api/v1/admin/academic-structure/sites/*/children/*/order",
+                                "/api/v1/admin/academic-structure/programs/*/affiliations/*/order")
                         .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()
                         .anyRequest().denyAll()

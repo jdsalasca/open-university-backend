@@ -253,6 +253,35 @@ sequenceDiagram
 
 Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` consulta datos vigentes, pero el Compose no contiene filas institucionales ni proveedor OIDC; los comandos anteriores son APIs protegidas, no botones de escritura disponibles en esta vista.
 
+### Corrección de prioridad organizacional
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Structure as Servicio de estructura
+  participant DB as MySQL
+  Operator->>API: PATCH orden con expectedDisplayOrder, displayOrder y referencia
+  API->>Auth: exige academic:structure:write
+  Auth-->>API: principal autorizado
+  API->>Structure: solicita cambio tipado de nodo, relación o afiliación
+  Structure->>DB: bloquea control; lee vigencia y orden actual
+  alt elemento ausente
+    DB-->>API: 404 sin modificación
+  else elemento no vigente o expectedDisplayOrder cambió
+    DB-->>API: 409 sin auditoría parcial
+  else el orden objetivo ya está vigente
+    DB-->>API: 204 idempotente sin auditoría duplicada
+  else cambio válido
+    Structure->>DB: actualiza con orden esperado + inserta auditoría
+    DB-->>Structure: commit atómico
+    Structure-->>API: 204
+  end
+```
+
+La ruta no edita afiliaciones si el programa/unidad/sede no coincide y solo cambia metadatos de prioridad; un reordenamiento no reasigna unidades o lugares. La referencia se conserva junto con el actor y los valores anterior/nuevo. El resumen identifica también la pareja padre/hijo de una relación o el ID de la afiliación de programa, evitando eventos ambiguos cuando existen vínculos históricos. Las rutas están en la allowlist de `PATCH` y requieren permiso de escritura. La página React no expone estos comandos hasta que DTIC valide OIDC y grupos institucionales.
+
 ```mermaid
 sequenceDiagram
   actor Operator as Operador de calendario autorizado

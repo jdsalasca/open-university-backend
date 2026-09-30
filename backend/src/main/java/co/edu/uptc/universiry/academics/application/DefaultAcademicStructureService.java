@@ -77,6 +77,37 @@ public class DefaultAcademicStructureService implements AcademicStructureService
         repository.affiliateProgram(affiliation, actor);
     }
 
+    @Override
+    public void changeOrganizationUnitOrder(UUID unitId, AcademicDisplayOrderCommand command, String actorSub) {
+        repository.changeOrganizationUnitOrder(unitId, command, AcademicCatalogActorSub.require(actorSub));
+    }
+
+    @Override
+    public void changeSiteOrder(UUID siteId, AcademicDisplayOrderCommand command, String actorSub) {
+        repository.changeSiteOrder(siteId, command, AcademicCatalogActorSub.require(actorSub));
+    }
+
+    @Override
+    public void changeOrganizationRelationOrder(UUID parentId, UUID childId,
+                                                AcademicDisplayOrderCommand command, String actorSub) {
+        repository.changeOrganizationRelationOrder(parentId, childId, command,
+                AcademicCatalogActorSub.require(actorSub));
+    }
+
+    @Override
+    public void changeSiteRelationOrder(UUID parentId, UUID childId,
+                                        AcademicDisplayOrderCommand command, String actorSub) {
+        repository.changeSiteRelationOrder(parentId, childId, command,
+                AcademicCatalogActorSub.require(actorSub));
+    }
+
+    @Override
+    public void changeProgramAffiliationOrder(UUID programId, UUID affiliationId,
+                                              AcademicDisplayOrderCommand command, String actorSub) {
+        repository.changeProgramAffiliationOrder(programId, affiliationId, command,
+                AcademicCatalogActorSub.require(actorSub));
+    }
+
     private static String requiredReference(String value) {
         if (value == null || value.isBlank() || value.trim().length() > 240) {
             throw new IllegalArgumentException("academicStructure.sourceReference is invalid");

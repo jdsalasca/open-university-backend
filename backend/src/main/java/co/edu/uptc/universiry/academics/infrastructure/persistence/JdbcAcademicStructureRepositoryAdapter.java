@@ -1,6 +1,7 @@
 package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
 import co.edu.uptc.universiry.academics.application.AcademicStructureConflictException;
+import co.edu.uptc.universiry.academics.application.AcademicDisplayOrderCommand;
 import co.edu.uptc.universiry.academics.application.AcademicStructureNotFoundException;
 import co.edu.uptc.universiry.academics.application.AcademicStructureRepository;
 import co.edu.uptc.universiry.academics.domain.AcademicEntityStatus;
@@ -52,6 +53,9 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                     uuid(rs.getString("program_id")), uuid(rs.getString("organization_unit_id")),
                     uuid(rs.getString("site_id")), rs.getInt("display_order"), localDate(rs, "valid_from"),
                     nullableDate(rs, "valid_through"), rs.getString("source_reference"));
+    private static final RowMapper<OrderState> ORDER_STATE_MAPPER = (rs, row) -> new OrderState(
+            rs.getInt("display_order"), localDate(rs, "valid_from"), nullableDate(rs, "valid_through"),
+            rs.getString("status"), uuid(rs.getString("organization_unit_id")), uuid(rs.getString("site_id")));
 
     private final JdbcTemplate jdbcTemplate;
     private final Clock clock;
@@ -253,6 +257,168 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 "Academic program affiliated: " + affiliation.programId());
     }
 
+    @Override
+    @Transactional
+    public void changeOrganizationUnitOrder(UUID unitId, AcademicDisplayOrderCommand command, String actorSub) {
+        lockStructure();
+        LocalDate today = LocalDate.now(clock);
+        OrderState current = currentOrder("""
+                SELECT display_order, valid_from, valid_through, status,
+                       NULL AS organization_unit_id, NULL AS site_id
+                FROM academic_organization_unit WHERE organization_unit_id = ?
+                """, today, unitId.toString());
+        applyOrderChange(unitId, "UNIT_ORDER_CHANGED", "Organization unit", actorSub, command, current,
+                """
+                UPDATE academic_organization_unit SET display_order = ?
+                WHERE organization_unit_id = ? AND display_order = ? AND status = 'ACTIVE'
+                  AND valid_from <= ? AND (valid_through IS NULL OR valid_through >= ?)
+                """, command.displayOrder(), unitId.toString(), command.expectedDisplayOrder(), today, today);
+    }
+
+    @Override
+    @Transactional
+    public void changeSiteOrder(UUID siteId, AcademicDisplayOrderCommand command, String actorSub) {
+        lockStructure();
+        LocalDate today = LocalDate.now(clock);
+        OrderState current = currentOrder("""
+                SELECT display_order, valid_from, valid_through, status,
+                       NULL AS organization_unit_id, NULL AS site_id
+                FROM academic_site WHERE site_id = ?
+                """, today, siteId.toString());
+        applyOrderChange(siteId, "SITE_ORDER_CHANGED", "Academic site", actorSub, command, current,
+                """
+                UPDATE academic_site SET display_order = ?
+                WHERE site_id = ? AND display_order = ? AND status = 'ACTIVE'
+                  AND valid_from <= ? AND (valid_through IS NULL OR valid_through >= ?)
+                """, command.displayOrder(), siteId.toString(), command.expectedDisplayOrder(), today, today);
+    }
+
+    @Override
+    @Transactional
+    public void changeOrganizationRelationOrder(UUID parentId, UUID childId,
+                                                AcademicDisplayOrderCommand command, String actorSub) {
+        lockStructure();
+        LocalDate today = LocalDate.now(clock);
+        requireCurrentUnit(parentId, today);
+        requireCurrentUnit(childId, today);
+        OrderState current = currentOrder("""
+                SELECT display_order, valid_from, valid_through, 'ACTIVE' AS status,
+                       NULL AS organization_unit_id, NULL AS site_id
+                FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ?
+                ORDER BY valid_from
+                """, today, parentId.toString(), childId.toString());
+        applyOrderChange(childId, "UNIT_RELATION_ORDER_CHANGED",
+                "Organization unit relation " + parentId + "/" + childId,
+                actorSub, command, current,
+                """
+                UPDATE academic_organization_relation SET display_order = ?
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_from = ?
+                  AND display_order = ? AND valid_from <= ?
+                  AND (valid_through IS NULL OR valid_through >= ?)
+                """, command.displayOrder(), parentId.toString(), childId.toString(), current.validFrom(),
+                command.expectedDisplayOrder(), today, today);
+    }
+
+    @Override
+    @Transactional
+    public void changeSiteRelationOrder(UUID parentId, UUID childId,
+                                       AcademicDisplayOrderCommand command, String actorSub) {
+        lockStructure();
+        LocalDate today = LocalDate.now(clock);
+        requireCurrentSite(parentId, today);
+        requireCurrentSite(childId, today);
+        OrderState current = currentOrder("""
+                SELECT display_order, valid_from, valid_through, 'ACTIVE' AS status,
+                       NULL AS organization_unit_id, NULL AS site_id
+                FROM academic_site_relation
+                WHERE parent_site_id = ? AND child_site_id = ?
+                ORDER BY valid_from
+                """, today, parentId.toString(), childId.toString());
+        applyOrderChange(childId, "SITE_RELATION_ORDER_CHANGED",
+                "Academic site relation " + parentId + "/" + childId,
+                actorSub, command, current,
+                """
+                UPDATE academic_site_relation SET display_order = ?
+                WHERE parent_site_id = ? AND child_site_id = ? AND valid_from = ?
+                  AND display_order = ? AND valid_from <= ?
+                  AND (valid_through IS NULL OR valid_through >= ?)
+                """, command.displayOrder(), parentId.toString(), childId.toString(), current.validFrom(),
+                command.expectedDisplayOrder(), today, today);
+    }
+
+    @Override
+    @Transactional
+    public void changeProgramAffiliationOrder(UUID programId, UUID affiliationId,
+                                              AcademicDisplayOrderCommand command, String actorSub) {
+        lockStructure();
+        LocalDate today = LocalDate.now(clock);
+        OrderState current = currentOrder("""
+                SELECT display_order, valid_from, valid_through, 'ACTIVE' AS status,
+                       organization_unit_id, site_id
+                FROM academic_program_affiliation
+                WHERE program_id = ? AND affiliation_id = ?
+                """, today, programId.toString(), affiliationId.toString());
+        requireCurrentUnit(current.organizationUnitId(), today);
+        requireCurrentSite(current.siteId(), today);
+        applyOrderChange(programId, "PROGRAM_ORDER_CHANGED", "Program affiliation " + affiliationId,
+                actorSub, command, current,
+                """
+                UPDATE academic_program_affiliation SET display_order = ?
+                WHERE program_id = ? AND affiliation_id = ? AND display_order = ?
+                  AND valid_from = ? AND valid_from <= ?
+                  AND (valid_through IS NULL OR valid_through >= ?)
+                """, command.displayOrder(), programId.toString(), affiliationId.toString(),
+                command.expectedDisplayOrder(), current.validFrom(), today, today);
+    }
+
+    private OrderState currentOrder(String sql, LocalDate today, Object... parameters) {
+        List<OrderState> values = jdbcTemplate.query(sql, ORDER_STATE_MAPPER, parameters);
+        if (values.isEmpty()) throw new AcademicStructureNotFoundException();
+        List<OrderState> current = values.stream()
+                .filter(value -> value.status().equals(AcademicEntityStatus.ACTIVE.name()))
+                .filter(value -> value.validFrom() != null && !value.validFrom().isAfter(today))
+                .filter(value -> value.validThrough() == null || !value.validThrough().isBefore(today))
+                .toList();
+        if (current.size() != 1) throw new AcademicStructureConflictException();
+        return current.getFirst();
+    }
+
+    private void requireCurrentUnit(UUID unitId, LocalDate today) {
+        Validity validity = requireActiveUnit(unitId);
+        requireCurrent(validity, today);
+    }
+
+    private void requireCurrentSite(UUID siteId, LocalDate today) {
+        Validity validity = requireActiveSite(siteId);
+        requireCurrent(validity, today);
+    }
+
+    private static void requireCurrent(Validity validity, LocalDate today) {
+        if (validity.validFrom().isAfter(today)
+                || validity.validThrough() != null && validity.validThrough().isBefore(today)) {
+            throw new AcademicStructureConflictException();
+        }
+    }
+
+    private void applyOrderChange(UUID entityId,
+                                  String action,
+                                  String entityName,
+                                  String actorSub,
+                                  AcademicDisplayOrderCommand command,
+                                  OrderState current,
+                                  String updateSql,
+                                  Object... updateParameters) {
+        if (command.displayOrder() == current.displayOrder()) return;
+        if (current.displayOrder() != command.expectedDisplayOrder()) {
+            throw new AcademicStructureConflictException();
+        }
+        int changed = jdbcTemplate.update(updateSql, updateParameters);
+        if (changed != 1) throw new AcademicStructureConflictException();
+        audit(entityId, action, actorSub, command.sourceReference(), entityName
+                + " display order changed from " + current.displayOrder() + " to " + command.displayOrder());
+    }
+
     private void lockStructure() {
         jdbcTemplate.queryForObject("SELECT control_id FROM academic_structure_control WHERE control_id = 1 FOR UPDATE",
                 Integer.class);
@@ -346,5 +512,15 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
     }
 
     private record ExistingRelation(UUID childId, LocalDate validFrom, LocalDate validThrough) {
+    }
+
+    private record OrderState(
+            int displayOrder,
+            LocalDate validFrom,
+            LocalDate validThrough,
+            String status,
+            UUID organizationUnitId,
+            UUID siteId
+    ) {
     }
 }

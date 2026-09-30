@@ -103,6 +103,38 @@ class AcademicStructureSchemaTest {
     }
 
     @Test
+    void structure_audit_schema_accepts_order_changes_and_rejects_unknown_actions() {
+        // Arrange
+        String entityId = UUID.randomUUID().toString();
+        String[] actions = {
+                "UNIT_ORDER_CHANGED",
+                "SITE_ORDER_CHANGED",
+                "UNIT_RELATION_ORDER_CHANGED",
+                "SITE_RELATION_ORDER_CHANGED",
+                "PROGRAM_ORDER_CHANGED"
+        };
+
+        // Act
+        for (String action : actions) {
+            jdbcTemplate.update("""
+                    INSERT INTO academic_structure_audit_event
+                        (entity_id, action_key, actor_sub, source_reference, occurred_at, event_summary)
+                    VALUES (?, ?, 'structure.operator', 'Ajuste de orden', CURRENT_TIMESTAMP, 'Orden 8 -> 2')
+                    """, entityId, action);
+        }
+
+        // Assert
+        assertEquals(actions.length, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
+                Integer.class, "Ajuste de orden"));
+        assertThrows(DataIntegrityViolationException.class, () -> jdbcTemplate.update("""
+                INSERT INTO academic_structure_audit_event
+                    (entity_id, action_key, actor_sub, source_reference, occurred_at, event_summary)
+                VALUES (?, 'UNKNOWN_ORDER_CHANGED', 'structure.operator', 'Referencia', CURRENT_TIMESTAMP, 'Orden')
+                """, UUID.randomUUID().toString()));
+    }
+
+    @Test
     void v10_backfills_existing_relation_order_from_child_node_order() throws Exception {
         // Arrange
         Path databaseDirectory = Files.createTempDirectory("academic-structure-v10-backfill-");
