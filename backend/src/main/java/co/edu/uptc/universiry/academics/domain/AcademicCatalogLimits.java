@@ -24,6 +24,7 @@ public final class AcademicCatalogLimits {
     public static final int MAX_FORMATION_SPACE_LENGTH = 120;
     public static final int MAX_COMPONENT_LENGTH = 120;
     public static final int MAX_CHOICE_GROUP_LENGTH = 100;
+    public static final int MAX_ACTOR_SUB_LENGTH = 180;
     public static final int MAX_SEMESTER_NUMBER = Short.MAX_VALUE;
     public static final int MAX_CREDIT_SCALE = 2;
     public static final BigDecimal MAX_CREDITS = new BigDecimal("999.99");

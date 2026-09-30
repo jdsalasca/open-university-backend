@@ -69,7 +69,7 @@
 - [x] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=ApacheCommonsCurriculumCsvParserTest,CurriculumImportServiceTest test` from `backend/`; confirm each first failure is the expected behavior.**
 - [x] **Step 3: Add Commons CSV 1.14.1 and implement the parser using RFC 4180 UTF-8 with strict decoding and no file-system writes. Implement whole-file validation without database access.**
 - [x] **Step 4: Rerun targeted tests and verify no input row reaches persistence when any row fails.**
-- [ ] **Step 5: Commit `feat: validate curriculum csv imports`.**
+- [x] **Step 5: Commit `feat: validate curriculum csv imports`.**
 
 ### Task 3: MySQL schema and repository adapter
 
@@ -80,15 +80,15 @@
 - Create: `academics/infrastructure/persistence/AcademicCatalogSchemaTest.java` and `AcademicCatalogRepositoryIntegrationTest.java`.
 
 **Interfaces:**
-- `AcademicCatalogRepository.createDraft(ValidatedCurriculum, sourceSha256, actorSub) -> CurriculumSummary`.
+- `AcademicCatalogRepository.createDraft(ValidatedCurriculum, actorSub) -> CurriculumSummary`; the validated value is the single source of the CSV hash.
 - `AcademicCatalogRepository.findCurriculum(UUID)`, `listPublishedPrograms()`, `listPublishedCurricula(UUID)`, `listDrafts()`, and `publishDraft(UUID, actorSub)` return typed projections.
 - V2 adds `academic_program`, `academic_program_revision`, `academic_subject`, `academic_subject_revision`, `academic_curriculum`, `academic_curriculum_entry`, and `academic_catalog_audit_event`; it does not alter V1 or branding audit.
 - Unique constraints prevent duplicate program identity, subject code, subject revision content, curriculum version per program, and duplicate subject entry per curriculum. FK/indexes cover all reads and publication lookup.
 
-- [ ] **Step 1: Write failing H2/Flyway schema tests** for all seven tables, foreign keys, constraints and indexes.
-- [ ] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=AcademicCatalogSchemaTest test` from `backend/`; observe missing-schema failure.**
-- [ ] **Step 3: Add the additive V2 migration and implement atomic draft creation, identical-revision reuse, new subject/program revisions, safe summaries and public published-only reads.**
-- [ ] **Step 4: Write and run repository tests for successful draft, duplicate version conflict, no writes after validation failure, repeated import conflict, historical revision immutability, draft/published visibility, audit actor/hash, and concurrent publish winner.**
+- [x] **Step 1: Write failing H2/Flyway schema tests** for all seven tables, foreign keys, constraints and indexes.
+- [x] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=AcademicCatalogSchemaTest test` from `backend/`; observe missing-schema failure.**
+- [x] **Step 3: Add the additive V2 migration and implement atomic draft creation, identical-revision reuse, new subject/program revisions, safe summaries and public published-only reads.**
+- [x] **Step 4: Write and run repository tests for successful draft creation, duplicate-version rollback, identical revision reuse, historical immutability, draft/published visibility, audit actor/hash, missing records and concurrent publication; the composed bad-file/no-write guarantee belongs to Task 4 API tests.**
 - [ ] **Step 5: Commit `feat: persist versioned academic curricula`.**
 
 ### Task 4: Application use cases, secured API and internal permissions
