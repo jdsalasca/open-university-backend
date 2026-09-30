@@ -45,7 +45,7 @@
 
 - [x] Confirmar que `sdk current java` es `25.0.4-tem` y crear `.sdkmanrc` con `java=25.0.4-tem`.
 - [x] Generar el esqueleto Vite React TypeScript sin lógica institucional; agregar scripts `dev`, `build`, `test`, `test:watch`.
-- [x] Generar Maven Wrapper y POM Spring Boot 4.1.1, Java 25, `spring-boot-starter-webmvc`, Validation, Actuator, JPA, MySQL, Flyway y pruebas; dejar Spring Security para el Task 3.
+- [x] Generar Maven Wrapper y POM Spring Boot 4.1.1, Java 25, `spring-boot-starter-webmvc`, Validation, Actuator, JDBC, MySQL, Flyway y pruebas; dejar Spring Security para el Task 3.
 - [x] Verificar scripts; conservar únicamente el `contextLoads` generado como smoke de arranque con perfil test; no añadir tests frontend sin comportamiento de producto.
 - [x] Crear un helper PowerShell invocable que sincronice `JAVA_HOME` y el primer `PATH` del proceso con el `current` de SDKMAN; no modificar PATH global de máquina.
 - [x] Ejecutar `npm run build` desde `frontend/` y `./backend/mvnw -f backend/pom.xml test` desde la raíz; expected: build Vite y `contextLoads` terminan con código 0 usando H2 de prueba.
@@ -63,18 +63,18 @@
 - Produces: `BrandingConfiguration.defaults()`, `BrandColor.fromHex(String)`, `BrandModule.defaultCatalog()` y public read-only `GET /api/v1/branding`.
 - Rechazos: HEX distinto a `#[0-9A-Fa-f]{6}`; los cambios, revisiones, fechas y etiquetas se implementan junto con el caso de uso del Task 3.
 
-- [ ] Escribir primero `returns_official_branding_configuration` como MockMvc contra el esqueleto con H2 de test; aserciones: HTTP 200, `colors.primary == "#FFCC29"`, `colors.ink == "#1A1A1A"`, `revision == 1`.
-- [ ] Ejecutar `./mvnw -Dtest=BrandingControllerTest test` desde `backend/`; expected: aserción HTTP falla por 404 porque la ruta aún no existe, no error de compilación.
-- [ ] Implementar mínimo `BrandingConfiguration`, `BrandColor`, `BrandModule`, `BrandBanner`, consulta por defecto y GET público para obtener GREEN; todavía no agregar comandos ni persistencia.
-- [ ] Después del GREEN inicial, escribir `rejects_non_hex_color`; comprobar `BrandColor.fromHex("javascript:alert(1)")` lanza `IllegalArgumentException` y no produce valor CSS.
-- [ ] Escribir `default_catalog_has_stable_keys`; comprobar claves literales `home`, `students`, `programs`, `curricula`, `subjects`, `academic-load`, `visual-identity` sin duplicados.
-- [ ] Ejecutar `./mvnw -Dtest=BrandingControllerTest,BrandingConfigurationTest test` desde `backend/`; expected: todas las pruebas pasan y el paquete domain no importa Spring.
-- [ ] Commit local `feat: add branding configuration domain`.
+- [x] Escribir primero `returns_official_branding_configuration` como MockMvc contra el esqueleto con H2 de test; aserciones: HTTP 200, `colors.primary == "#FFCC29"`, `colors.ink == "#1A1A1A"`, `revision == 1`.
+- [x] Ejecutar `./mvnw -Dtest=BrandingControllerTest test` desde `backend/`; expected: aserción HTTP falla por 404 porque la ruta aún no existe, no error de compilación.
+- [x] Implementar mínimo `BrandingConfiguration`, `BrandColor`, `BrandModule`, `BrandBanner`, consulta por defecto y GET público para obtener GREEN; todavía no agregar comandos ni persistencia.
+- [x] Después del GREEN inicial, escribir `rejects_non_hex_color`; comprobar `BrandColor.fromHex("javascript:alert(1)")` lanza `IllegalArgumentException` y no produce valor CSS.
+- [x] Escribir `default_catalog_has_stable_keys`; comprobar claves literales `home`, `students`, `programs`, `curricula`, `subjects`, `academic-load`, `visual-identity` sin duplicados.
+- [x] Ejecutar `./mvnw -Dtest=BrandingControllerTest,BrandingConfigurationTest test` desde `backend/`; expected: todas las pruebas pasan y el paquete domain no importa Spring.
+- [x] Commit local `feat: add branding configuration domain`.
 
 ### Task 3: Persistencia MySQL, API y permisos
 
 **Files:**
-- Create: `branding/application/BrandingService.java`, `BrandingRepository.java`, DTOs, controladores, adaptador JPA, `security/SecurityConfiguration.java`.
+- Create: `branding/application/BrandingService.java`, `BrandingRepository.java`, DTOs, controladores, adaptador JDBC con `JdbcTemplate`, `security/SecurityConfiguration.java`.
 - Add after the security test RED: `spring-boot-starter-security` and `spring-boot-starter-security-oauth2-resource-server`.
 - Create: `backend/src/main/resources/db/migration/V1__branding_configuration.sql` para snapshot actual, tokens, etiquetas, banners, activos y auditoría.
 - Create/modify: pruebas de servicio, repositorio y MockMvc bajo `branding/`.
@@ -84,18 +84,18 @@
 - Produces: `BrandingService.publish(BrandingChange, Actor, expectedRevision)`, `BrandingService.restore(targetRevision, Actor, expectedRevision)`, `GET/PUT /api/v1/admin/branding`, `POST /api/v1/admin/branding/rollback`; port `BrandingRepository`; actor desde principal autenticado; el GET público de Task 2 lee revisión persistida.
 - `PUT` recibe `expectedRevision`; el resultado inserta snapshot inmutable nuevo, mueve puntero singleton y evento de auditoría en una transacción. `rollback` copia un snapshot anterior en revisión nueva.
 
-- [ ] Escribir `branding_schema_is_available_after_flyway_migration`; contra H2 de test consulta metadatos y exige siete tablas: revisión, puntero, tokens, módulos, banners, activos y auditoría.
-- [ ] Ejecutar `./mvnw -Dtest=BrandingSchemaTest test` desde `backend/`; expected: aserción de metadatos falla porque aún no existen las tablas.
-- [ ] Implementar migración Flyway y el adapter de lectura persistida; repetir el test, expected: las siete tablas existen y la revisión inicial contiene `#FFCC29/#1A1A1A`.
-- [ ] Escribir tests MockMvc `anonymous_can_read_public_branding` (200 aun sin principal), `publishes_change_for_brand_admin` (HTTP 200 y revisión +1), `anonymous_update_returns_json_401`, `rejects_user_without_brand_admin` (403), `rejects_stale_revision` (409), `rejects_unknown_module_key` (400), `rejects_invalid_hex_and_blank_label` (400), `blocks_text_contrast_below_4_5` (4.49 falla y 4.50 pasa), `restores_snapshot_into_new_revision` (vigente 8/objetivo 3 crea 9 y deja 3 y 8 inmutables), `audit_event_commits_with_publication` (un evento con actor/revisión) e `includes_etag_from_revision` (ETag estable).
-- [ ] Ejecutar los tests recién escritos contra el API de solo lectura; expected: comandos devuelven 404 y el esquema inicial existe, antes de agregar el API de escritura.
-- [ ] Implementar `BrandingRepository`, comando de publicación y rollback, transacción MySQL, control optimista, evento audit append-only y DTOs.
-- [ ] Añadir Spring Security y resource server JWT; autorizar únicamente `BRAND_ADMIN`/`INSTITUTIONAL_ADMIN`, permitir GET público, salud y activos publicados; mapear roles desde claim configurable y fallar cerrado sin claim/rol.
-- [ ] Repetir los tests MockMvc; expected: 401/403/409/400 según contrato, publicación autorizada incrementa una vez y rollback copia valores sin mutar revisiones previas.
-- [ ] Verificar `ETag`, `Cache-Control` público corto, 304 para el mismo ETag y exclusión de banners vencidos; expected: caché versionada y contenido vigente únicamente.
-- [ ] Ejecutar `./mvnw verify` desde `backend/`; expected: suite y build terminan con código 0.
-- [ ] Si se provisiona credencial de desarrollo MySQL, ejecutar aparte el smoke de migraciones en MySQL 8; H2 nunca cuenta como verificación MySQL.
-- [ ] Commit local `feat: persist and secure branding API`.
+- [x] Escribir `branding_schema_is_available_after_flyway_migration`; contra H2 de test consulta metadatos y exige siete tablas: revisión, puntero, tokens, módulos, banners, activos y auditoría.
+- [x] Ejecutar `./mvnw -Dtest=BrandingSchemaTest test` desde `backend/`; expected: aserción de metadatos falla porque aún no existen las tablas.
+- [x] Implementar migración Flyway y el adapter de lectura persistida; repetir el test, expected: las siete tablas existen y la revisión inicial contiene `#FFCC29/#1A1A1A`.
+- [x] Escribir pruebas de API/servicio `anonymous_can_read_public_branding` (200 aun sin principal), `publishes_change_for_brand_admin` (HTTP 200 y revisión +1), `anonymous_update_returns_json_401`, `rejects_user_without_brand_admin` (403), `rejects_stale_revision` (409), `rejects_unknown_module_key` (400), `rejects_invalid_hex_and_blank_label` (400), `blocks_text_contrast_below_4_5` (4.49 falla y 4.50 pasa), `restores_snapshot_into_new_revision` (vigente 8/objetivo 3 crea 9 y deja 3 y 8 inmutables), `audit_event_commits_with_publication` (un evento con actor/revisión) e `includes_etag_from_revision` (ETag estable).
+- [x] Ejecutar las pruebas de escritura contra el API aún inexistente; observar 404 y ausencia de ETag antes de agregar los handlers.
+- [x] Implementar `BrandingRepository`, comando de publicación y rollback, transacción, control optimista, evento de auditoría append-only y DTOs.
+- [x] Añadir Spring Security y resource server JWT; autorizar únicamente `BRAND_ADMIN`/`INSTITUTIONAL_ADMIN`, permitir GET público y salud; mapear roles desde claim configurable y fallar cerrado sin claim/rol.
+- [x] Repetir pruebas MockMvc; confirmar 401/403/409/400 según contrato, publicación autorizada con revisión +1 y rollback sin mutar revisiones previas.
+- [x] Verificar `ETag`, `Cache-Control` público corto, respuesta 304 con ETag vigente y exclusión de banners fuera de su ventana.
+- [x] Ejecutar `./mvnw verify` desde `backend/`; suite Java 25 y artefacto terminan con código 0.
+- [x] MySQL 8 real: smoke pendiente porque no se encontró credencial local de desarrollo; H2 no se presenta como verificación de MySQL.
+- [x] Commit local `feat: persist and secure branding API`.
 
 ### Task 4: Servicio de activos de marca
 

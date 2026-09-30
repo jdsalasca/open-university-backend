@@ -48,6 +48,7 @@ El API no devuelve actor, ruta física, MIME no validado ni historial de auditor
 - Dos monolitos desplegables independientemente dentro de un mismo repositorio.
 - TDD/AAA obligatorio en reglas, API, persistencia, seguridad, validación de activos y UI.
 - Autorización administrativa en servidor; el proveedor de identidad y claims UPTC siguen pendientes de confirmación institucional.
+- El API usa JWT de acceso en `Authorization: Bearer`; no mantiene autenticación en cookie ni sesión. CSRF solo se desactiva mientras esa condición se mantenga; si se adopta una cookie, se debe habilitar protección CSRF antes del despliegue.
 - SQL de producción usa MySQL y migraciones Flyway. Las pruebas aisladas no sustituyen la verificación final contra MySQL.
 - Latencia objetivo: consultas críticas definidas <50 ms promedio bajo conjunto de datos y carga reproducibles; añadir p95/p99.
 - No publicar como listo para producción hasta integrar SSO institucional, almacenamiento institucional persistente, respaldo/restauración, observabilidad y cortes aprobados.

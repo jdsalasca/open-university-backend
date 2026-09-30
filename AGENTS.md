@@ -8,7 +8,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 
 - Un repositorio con dos monolitos desplegables de forma independiente: `frontend/` usa Vite, React y TypeScript; `backend/` usa Java 25 y Spring Boot.
 - Backend monolítico modular organizado por capacidades del negocio. No introducir microservicios, brokers ni duplicación de bases de datos sin una decisión arquitectónica aprobada y evidencia de necesidad.
-- MySQL es la base relacional objetivo. Flyway versiona el esquema; Hibernate nunca crea ni actualiza el esquema en producción.
+- MySQL es la base relacional objetivo. Flyway versiona el esquema; la aplicación nunca crea ni actualiza el esquema en producción.
 - Los módulos se comunican mediante contratos internos explícitos. Las reglas de negocio viven en el backend; el frontend solo ofrece validación temprana de experiencia.
 - SDKMAN es el gestor de Java del proyecto en el equipo principal. El `.sdkmanrc` debe fijar la distribución y versión exactas; no cambiar variables globales de Windows sin verificar que Git Bash, PowerShell, Maven e IDE seleccionan el mismo JDK.
 

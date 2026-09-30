@@ -6,7 +6,7 @@
 - Un solo dominio es dueño de escritura para cada grupo de tablas. Otros dominios consumen contratos de aplicación.
 - Preferir modelo relacional normalizado, claves y restricciones explícitas, fechas UTC y tablas de asociación donde exista relación muchos-a-muchos.
 - Evitar columnas JSON para datos que requieren búsqueda, claves, restricciones o joins; reservar JSON para snapshots de auditoría autocontenidos cuando el esquema de evento lo justifique.
-- Flyway migra el esquema; Hibernate valida en producción y no altera tablas automáticamente.
+- Flyway migra el esquema; la aplicación no altera tablas durante la ejecución. El adaptador JDBC usa consultas explícitas; las migraciones se verifican en H2 y el smoke final en MySQL sigue siendo necesario.
 - Datos históricos mantienen la clave de procedencia durante migraciones; la identidad canónica nunca depende de un correo que puede cambiar.
 
 ## Modelo inicial del Centro de Identidad Visual
