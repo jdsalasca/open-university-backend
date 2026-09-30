@@ -84,6 +84,35 @@ flowchart LR
 
 La flecha punteada hacia el gate es una dependencia por descubrir, no un estado confirmado del estudiante. La lista de servicios se mantiene desconectada deliberadamente hasta que los responsables aprueben el proceso y su relación. El detalle de las fuentes y decisiones pendientes está en [descubrimiento del ciclo](../discovery/student-lifecycle-baseline.md).
 
+### Hitos públicos de inscripción y selección para 2027-I
+
+El siguiente mapa separa las etapas que ACRA publica para pregrado presencial de las reglas que todavía no están aprobadas para el software. No crea estados de aspirante ni automatiza selección. ISE y matrícula inicial aparecen como etapas posteriores y quedan fuera del primer alcance funcional priorizado.
+
+```mermaid
+flowchart LR
+  ACRA[ACRA publica convocatoria y resolución]
+  PIN[Venta de PIN<br/>21 sep–21 oct]
+  Apply[Inscripción<br/>hasta 23 oct]
+  Saber[Saber 11 disponible<br/>coincidir nombre y SNP]
+  Special{Programa con<br/>prueba especial?}
+  Exam[Pruebas especiales<br/>28–29 oct]
+  Selection[Selección con reglas,<br/>cupos y desempates aprobados]
+  Results[Resultados<br/>13 nov]
+  Waitlist[Llamado de opcionados<br/>9–15 dic]
+  ISE[ISE<br/>17–27 nov]
+  Tuition[Matrícula ordinaria<br/>23 nov–10 dic]
+  Gap[Reglas, recursos,<br/>correcciones y excepciones<br/>por validar]
+
+  ACRA --> PIN --> Apply --> Saber --> Special
+  Special -->|sí| Exam --> Selection
+  Special -->|no| Selection
+  Selection --> Results --> Waitlist
+  Results -. etapa posterior .-> ISE -.-> Tuition
+  Gap -.-> Selection
+```
+
+ACRA advierte que el aspirante debe contar con resultados Saber 11, revisar el código SNP y mantener nombres/apellidos iguales a ICFES; el comunicado de apertura dice que Saber 11 es el único requisito de selección y anuncia pruebas de aptitud para algunos programas. La relación exacta entre esas pruebas y el orden de selección requiere lectura y aprobación de la Resolución 111 de 2026. Existe además una diferencia entre el texto base del Acuerdo 130 de 1998, artículo 14, y las instrucciones históricas del portal de registro sobre una o dos opciones. Ver [especificación de descubrimiento de admisiones](../superpowers/specs/2026-09-30-pregrado-admissions-process-discovery.md) y [cronograma de implementación propuesto](../superpowers/plans/2026-09-30-pregrado-admissions.md).
+
 ## Catálogo académico — importar, revisar y publicar
 
 Este es el flujo académico que sí existe en v1. Representa planes de estudio y asignaturas versionados para pregrado presencial; no da de alta estudiantes ni matrícula. El flujo presupone un principal autorizado en un entorno con el proveedor institucional ya configurado. En Compose las rutas administrativas responden 401 porque no hay proveedor ni token de prueba. El formato de intercambio está en [la plantilla de encabezados CSV](../templates/academic-curriculum-template.csv); no contiene registros oficiales ni filas de ejemplo.
