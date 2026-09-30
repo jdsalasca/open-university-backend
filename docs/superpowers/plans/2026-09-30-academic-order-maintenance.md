@@ -90,4 +90,4 @@ El revisor independiente no halló defectos críticos ni funcionales en las cinc
 - [x] **Step 8: Address independent review findings**
 
   Run: `mvn --% -f backend/pom.xml -Duser.timezone=UTC -Dtest=AcademicPeriodConcurrencyTest,AcademicStructureConcurrencyTest test`
-  Result: 3 integration tests pass; audit failure leaves the stored order unchanged, concurrent updates permit one winner, and concurrent opens create one state transition and one audit event. The full backend suite passes with 195 tests, 0 failures, 0 errors and 6 optional MySQL contract tests skipped.
+  Result: 3 integration tests pass; audit failure leaves the stored order unchanged, concurrent updates permit one winner, and concurrent opens create one state transition and one audit event. The full backend suite passes with 195 tests, 0 failures, 0 errors and 6 optional MySQL contract tests skipped. Verification commit `ce3d965` is pushed to `origin/develop`.
