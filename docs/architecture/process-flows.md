@@ -238,20 +238,20 @@ sequenceDiagram
   participant Auth as Spring Security
   participant Structure as Servicio de estructura
   participant DB as MySQL
-  Operator->>API: crea unidades y lugares con código, vigencia y orden
+  Operator->>API: crea unidades y lugares con código, vigencia y orden de raíz
   API->>Auth: exige academic:structure:write
   Auth-->>API: principal autorizado
-  API->>Structure: agrega relaciones fechadas y afilia programId existente
+  API->>Structure: agrega relaciones fechadas con orden entre hermanos y afilia programId existente
   Structure->>Structure: valida referencias, solapamientos y ciclos
   Structure->>DB: guarda cambio + actor + referencia en una transacción
   DB-->>Structure: commit
   Operator->>API: consulta árbol administrativo
   API->>Auth: exige academic:structure:read
-  API->>DB: consulta maestros y afiliaciones por vigencia/orden
-  DB-->>API: unidades, programas y lugares ordenados
+  API->>DB: consulta maestros y afiliaciones vigentes con desempates estables
+  DB-->>API: raíces por orden de nodo; hijos por orden de relación; programas por orden de afiliación
 ```
 
-El orden organizacional se presenta por `displayOrder` y código estable; cada afiliación conserva su propio `displayOrder` de programa, con código/nombre como desempate. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` consulta datos vigentes, pero el Compose no contiene filas institucionales ni proveedor OIDC; los comandos anteriores son APIs protegidas, no botones de escritura disponibles en esta vista.
+Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` consulta datos vigentes, pero el Compose no contiene filas institucionales ni proveedor OIDC; los comandos anteriores son APIs protegidas, no botones de escritura disponibles en esta vista.
 
 ```mermaid
 sequenceDiagram

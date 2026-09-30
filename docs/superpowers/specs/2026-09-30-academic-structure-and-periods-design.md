@@ -34,7 +34,7 @@ Las páginas y acuerdos públicos son insumos de descubrimiento, no un inventari
 - Relaciones fechadas entre unidades permiten ordenar y filtrar escuela bajo facultad, conservando historia al cambiar adscripciones. Una unidad no puede ser su propio ancestro, tener ciclos ni tener dos padres del mismo tipo de relación en el mismo intervalo.
 - Lugares de desarrollo forman otro maestro con código estable, tipo (central, seccional, regional, CREAD u otro confirmado), estado y vigencia. Las relaciones lugar-padre permiten representar campus y centros cuando el inventario oficial lo confirme.
 - El programa del catálogo conserva su identidad existente. Una afiliación fechada enlaza el programa con su unidad responsable y lugar de desarrollo; nombres de facultad, escuela y sede se consultan desde los maestros para el árbol, no se vuelven nuevos campos independientes. Los campos libres actuales del CSV se conservan solo como snapshot histórico mientras se valida el mapeo de una futura importación oficial.
-- Las consultas devuelven un árbol ordenado determinista: unidad y lugar por orden de visualización, programa por orden explícito de afiliación y luego nombre/código. Los catálogos sin datos muestran estado vacío; no se incorporan nombres o códigos institucionales supuestos como seed.
+- Las consultas devuelven un árbol ordenado determinista: raíces de unidades y lugares por orden de nodo; hijos por orden de su relación y luego orden/código del hijo; programas por orden explícito de afiliación y luego código/nombre. Los catálogos sin datos muestran estado vacío; no se incorporan nombres o códigos institucionales supuestos como seed.
 
 ### Calendario y periodo
 
@@ -59,13 +59,13 @@ La ruta nueva del espacio académico muestra secciones “Estructura” y “Per
 
 ## Persistencia propuesta
 
-- `academic_organization_unit` y `academic_organization_relation` como maestro y relación fechada.
-- `academic_site` y `academic_site_relation` para el eje geográfico.
+- `academic_organization_unit` y `academic_organization_relation` como maestro y relación fechada; V10 añade el orden entre hermanos y lo backfillea desde el orden previo del nodo hijo.
+- `academic_site` y `academic_site_relation` para el eje geográfico, con el mismo orden de relación independiente del orden global del nodo.
 - `academic_program_affiliation` enlaza programa existente con unidad responsable y lugar por vigencia, con referencia de origen; la modalidad continúa en la identidad actual del programa.
 - `academic_structure_audit_event` registra cambios de unidades, sedes, relaciones y afiliaciones.
 - `academic_period`, `academic_calendar_revision`, `academic_calendar_activity` y `academic_period_audit_event` para el ciclo y la historia normativa.
 - Índices por código único, padre/tipo/orden, vigencia, periodo/tipo/estado y calendario/clave/fecha; FKs compuestas para evitar relaciones huérfanas.
-- Migraciones aditivas Flyway V6 para estructura/V7 para periodos; ninguna operación DDL a demanda ni migración de datos oficiales en Compose.
+- Migraciones aditivas Flyway V6 para estructura, V7 para periodos, V9 para referencias/afiliación y V10 para orden de relaciones; ninguna operación DDL a demanda ni migración de datos oficiales en Compose.
 
 ## Seguridad, confiabilidad y rendimiento
 
@@ -78,7 +78,7 @@ La ruta nueva del espacio académico muestra secciones “Estructura” y “Per
 ## Criterios de aceptación
 
 1. Una unidad académica y un lugar de desarrollo tienen identidades separadas; la misma facultad o sede no se duplica al asociar varios programas.
-2. El árbol respeta relaciones y orden estable, filtra inactivos para vistas actuales y conserva vigencias históricas.
+2. El árbol respeta relaciones y orden estable —raíces por nodo, hijos por relación y programas por afiliación—, filtra inactivos para vistas actuales y conserva vigencias históricas.
 3. No se crean ciclos, relaciones huérfanas ni asociaciones duplicadas en fechas solapadas.
 4. Un calendario en borrador no se aprueba si está vacío o carece de referencia; publicado y modificado permanece versionado e inmutable.
 5. Un periodo regular puede pasar por DRAFT, APPROVED, OPEN y CLOSED, y un intersemestral usa el mismo ciclo identificado por su tipo.
