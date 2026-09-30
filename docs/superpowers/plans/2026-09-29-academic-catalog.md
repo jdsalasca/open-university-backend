@@ -35,7 +35,7 @@
 ### Task 1: Domain contracts and validation
 
 **Files:**
-- Create: `backend/src/main/java/co/edu/uptc/universiry/academics/domain/AcademicProgram.java`, `AcademicProgramRevision.java`, `AcademicSubject.java`, `AcademicSubjectRevision.java`, `AcademicCurriculum.java`, `AcademicCurriculumEntry.java`, `AcademicCurriculumStatus.java`.
+- Create: `backend/src/main/java/co/edu/uptc/universiry/academics/domain/AcademicProgram.java`, `AcademicProgramRevision.java`, `AcademicLevel.java`, `StudyModality.java`, `AcademicSubject.java`, `AcademicSubjectRevision.java`, `AcademicCurriculum.java`, `AcademicCurriculumEntry.java`, `AcademicCurriculumStatus.java`, `AcademicCatalogLimits.java`, and shared domain-only `AcademicCatalogValueRules.java`.
 - Create: `backend/src/test/java/co/edu/uptc/universiry/academics/domain/AcademicCurriculumTest.java`, `AcademicSubjectRevisionTest.java`, and `AcademicProgramTest.java`.
 
 **Interfaces:**
@@ -44,12 +44,12 @@
 - `AcademicCurriculum` contains program id/revision id, version label, cohort start/end, approval reference, status and immutable entries.
 - `AcademicCurriculumEntry` contains subject id and its subject-revision id (validated as a matching pair), semester number, exact formation-space/component labels, optional choice-group and source row order. A curriculum rejects repeated subject identity even if different revisions were supplied.
 
-- [ ] **Step 1: Add only immutable type signatures/value shapes** (no business validation) so tests compile and the domain interface is explicit before adapters.
-- [ ] **Step 2: Write failing AAA tests** for blank/oversized identities per the field limits in the spec, unsupported v1 level/modality, nonpositive/overprecision/oversized credits, invalid cohort format/range, empty curriculum, duplicate subject identity across revisions, mismatched subject/revision identity, and valid electives/group labels.
-- [ ] **Step 3: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=AcademicCurriculumTest,AcademicSubjectRevisionTest,AcademicProgramTest test` from `backend/`.** Confirm failures are behavior assertions, not compilation/setup errors.
-- [ ] **Step 4: Implement immutable domain values and `AcademicCurriculumStatus` (`DRAFT`, `PUBLISHED`) with validation; add no Spring/JDBC imports to domain.**
-- [ ] **Step 5: Rerun targeted tests, then the backend unit suite; refactor only while green.**
-- [ ] **Step 6: Commit `feat: model versioned academic catalog`.**
+- [x] **Step 1: Add only immutable type signatures/value shapes** (no business validation) so tests compile and the domain interface is explicit before adapters.
+- [x] **Step 2: Write failing AAA tests** for blank/oversized identities per the field limits in the spec, required v1 level/modality, nonpositive/overprecision/oversized credits, invalid cohort format/range, empty curriculum, duplicate subject identity across revisions, mismatched subject/revision identity, and valid electives/group labels. Unsupported CSV level/modality values are covered in Task 2.
+- [x] **Step 3: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=AcademicCurriculumTest,AcademicSubjectRevisionTest,AcademicProgramTest test` from `backend/`.** Confirm failures are behavior assertions, not compilation/setup errors.
+- [x] **Step 4: Implement immutable domain values and `AcademicCurriculumStatus` (`DRAFT`, `PUBLISHED`) with validation; add no Spring/JDBC imports to domain.**
+- [x] **Step 5: Rerun targeted tests, then the backend unit suite; refactor only while green.**
+- [x] **Step 6: Commit `feat: model versioned academic catalog`.**
 
 ### Task 2: CSV v1 parser and whole-file validation
 
@@ -61,7 +61,7 @@
 - Create: `academics/application/CurriculumImportServiceTest.java`.
 
 **Interfaces:**
-- `CurriculumCsvParser.parse(InputStream) -> ParsedCurriculum` enforces the byte bound while reading and parses the exact CSV v1 header from the spec; it never trusts only request `Content-Length`.
+- `CurriculumCsvParser.parse(InputStream) -> ParsedCurriculum` enforces `AcademicCatalogLimits.MAX_IMPORT_BYTES` while reading and parses the exact CSV v1 header from the spec; it never trusts only request `Content-Length`. Reuse the shared domain limits rather than duplicating field/row bounds.
 - `CurriculumImportService.validate(ParsedCurriculum) -> ValidatedCurriculum` checks all metadata consistency, row-level fields, unique subject codes, cohort range and configured row bound before any persistence call. Parser applies byte bound while reading.
 - Validation exceptions contain safe row/column identifiers only, never raw input values or original file name.
 
