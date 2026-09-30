@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.academics.infrastructure.web;
 
+import co.edu.uptc.universiry.academics.application.CurriculumCsvSchema;
 import co.edu.uptc.universiry.academics.domain.AcademicCatalogLimits;
 import co.edu.uptc.universiry.security.WithAcademicCatalogPermissions;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,6 +56,27 @@ class AcademicCatalogControllerTest {
         mockMvc.perform(get("/api/v1/academic-catalog/programs/{id}/curricula", missingProgramId))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void anonymous_user_can_download_the_blank_template_from_the_canonical_csv_schema() throws Exception {
+        // Arrange
+        String expectedTemplate = String.join(",", CurriculumCsvSchema.HEADERS) + "\r\n";
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/academic-catalog/curriculum-template"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                .andExpect(header().string("Content-Disposition", containsString("attachment")))
+                .andExpect(header().string("Content-Disposition", containsString("academic-curriculum-template.csv")))
+                .andExpect(content().string(expectedTemplate));
+    }
+
+    @Test
+    @WithMockUser(username = "catalog-reader-test", authorities = READ)
+    void curriculum_template_download_is_read_only() throws Exception {
+        mockMvc.perform(post("/api/v1/academic-catalog/curriculum-template"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

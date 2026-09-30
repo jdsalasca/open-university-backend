@@ -39,6 +39,8 @@ Estos nombres y formatos son el contrato de integración de esta versión del pr
 
 ## Flujo y reglas
 
+Antes de importar, cualquier visitante puede descargar la plantilla vacía desde `GET /api/v1/academic-catalog/curriculum-template`. El backend renderiza el encabezado RFC 4180 desde `CurriculumCsvSchema.HEADERS` y responde `text/csv; charset=UTF-8` con `Content-Disposition: attachment`; no consulta ni modifica MySQL. El enlace aparece también cuando el panel de administración está bloqueado. Solo ese `GET` está allowlisted como público; otros métodos en la misma ruta se deniegan.
+
 1. Operador con permiso `academic:catalog:write` carga el CSV.
 2. El backend decodifica y valida todo el archivo antes de abrir la transacción. Una sola fila inválida rechaza el archivo completo e informa número de fila/campo; nunca deja una publicación parcial.
 3. Una carga válida crea o reutiliza programa por `(program_code, academic_level, study_modality, campus_code)` y revisiones de asignatura por código, crea una versión `DRAFT` y sus actividades en una sola transacción, y registra actor, fecha, hash, referencia normativa y resumen de auditoría. Reimportar una versión existente produce conflicto, no una segunda copia.
@@ -64,6 +66,7 @@ Modelo normalizado: `academic_program` conserva identidad por `(program_code, ac
 - Mismo código con atributos iguales se reutiliza; cambio de créditos/nombre crea revisión y no muta planes anteriores.
 - Duplicados, UTF-8 inválido, BOM, columnas desconocidas, archivo vacío, tamaños/límites, campos ausentes y metadata inconsistente reciben resultados deterministas.
 - Publicación sólo ocurre con permiso write y estado `DRAFT`; anónimo recibe 401, lector 403 en comandos, usuario sin permiso 403 y cualquier ruta administrativa no registrada se deniega.
+- La plantilla descargada sin autenticación coincide exactamente con `CurriculumCsvSchema.HEADERS`; otros métodos HTTP sobre esa ruta pública siguen denegados.
 - Reimportación concurrente del mismo código de plan no duplica datos ni auditoría; publicaciones y auditoría son atómicas.
 - El front muestra estados vacío, cargando, validación por fila, borrador, publicado, errores de red/permisos y no presenta datos sintéticos como oficiales.
 

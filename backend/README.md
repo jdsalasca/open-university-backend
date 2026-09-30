@@ -28,6 +28,7 @@ El catálogo conserva programa, asignatura, revisiones inmutables, plan y entrad
 | Método | Ruta | Acceso |
 |---|---|---|
 | `GET` | `/api/v1/academic-catalog/programs` | Público; solo planes publicados |
+| `GET` | `/api/v1/academic-catalog/curriculum-template` | Público; CSV vacío derivado del esquema del backend |
 | `GET` | `/api/v1/academic-catalog/programs/{programId}/curricula` | Público; solo versiones publicadas |
 | `GET` | `/api/v1/admin/academic-catalog/drafts` | `academic:catalog:read` |
 | `GET` | `/api/v1/admin/academic-catalog/curricula/{curriculumId}` | `academic:catalog:read` |

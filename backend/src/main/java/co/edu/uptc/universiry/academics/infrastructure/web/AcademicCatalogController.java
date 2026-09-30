@@ -2,9 +2,12 @@ package co.edu.uptc.universiry.academics.infrastructure.web;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogQueryService;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDetails;
+import co.edu.uptc.universiry.academics.application.CurriculumCsvSchema;
 import co.edu.uptc.universiry.academics.application.CurriculumImportSourceException;
 import co.edu.uptc.universiry.academics.application.CurriculumPublicationService;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +43,17 @@ public class AcademicCatalogController {
     @GetMapping("/api/v1/academic-catalog/programs")
     public List<AcademicProgramResponse> publishedPrograms() {
         return queryService.publishedPrograms().stream().map(AcademicProgramResponse::from).toList();
+    }
+
+    @GetMapping(value = "/api/v1/academic-catalog/curriculum-template", produces = "text/csv")
+    public ResponseEntity<byte[]> curriculumTemplate() {
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename("academic-curriculum-template.csv")
+                        .build()
+                        .toString())
+                .body(CurriculumCsvSchema.csvTemplate().getBytes(StandardCharsets.UTF_8));
     }
 
     @GetMapping("/api/v1/academic-catalog/programs/{programId}/curricula")

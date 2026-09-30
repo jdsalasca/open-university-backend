@@ -59,6 +59,7 @@ public class SecurityConfiguration {
                                 GET,
                                 "/api/v1/branding",
                                 "/api/v1/academic-catalog/programs",
+                                "/api/v1/academic-catalog/curriculum-template",
                                 "/api/v1/academic-catalog/programs/*/curricula",
                                 "/assets/**",
                                 "/actuator/health",

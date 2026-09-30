@@ -37,6 +37,8 @@ Endpoints locales: UI `http://localhost:5173`, API `http://localhost:8080`, salu
 
 La vista previa del catálogo está en `http://localhost:5173/#programas`. El API público es `GET /api/v1/academic-catalog/programs`; al inicio responde `[]` y solo incluye programas con una versión publicada. `GET /api/v1/academic-catalog/programs/{programId}/curricula` lista versiones publicadas. La marca institucional `programs.available` sigue desactivada aunque se pueda abrir la ruta de preview.
 
+El panel administrativo muestra el enlace «Descargar plantilla CSV» incluso sin sesión. Descarga el contrato vigente desde `GET /api/v1/academic-catalog/curriculum-template`, que devuelve un archivo UTF-8 generado desde los encabezados Java y no accede a MySQL.
+
 ## Variables locales
 
 Compose ofrece credenciales sencillas solo para desarrollo. Para cambiarlas, copia `.env.example` a `.env`, actualiza claves y reinicia el proyecto. `.env` queda fuera de Git. Las variables `UPTC_OIDC_ISSUER_URI` y `UPTC_OIDC_AUDIENCE` se dejan vacías por defecto; mientras sigan vacías, `GET /api/v1/me` requiere un token que no está disponible en Compose y responderá 401, y no se puede publicar identidad visual mediante el API. No se incluye una cuenta ni token de prueba.
@@ -59,6 +61,7 @@ Comprobaciones manuales del stack:
 docker compose ps
 Invoke-RestMethod http://localhost:8080/actuator/health
 Invoke-RestMethod http://localhost:8080/api/v1/academic-catalog/programs
+Invoke-WebRequest http://localhost:8080/api/v1/academic-catalog/curriculum-template | Select-Object StatusCode,Headers
 docker compose exec -T mysql sh -lc 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -Nse "SELECT version FROM flyway_schema_history WHERE success = 1 ORDER BY installed_rank"'
 ```
 

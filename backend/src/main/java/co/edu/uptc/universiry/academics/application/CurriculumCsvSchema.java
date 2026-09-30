@@ -31,4 +31,8 @@ public final class CurriculumCsvSchema {
 
     private CurriculumCsvSchema() {
     }
+
+    public static String csvTemplate() {
+        return String.join(",", HEADERS) + "\r\n";
+    }
 }

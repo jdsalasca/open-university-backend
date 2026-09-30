@@ -99,6 +99,9 @@ sequenceDiagram
   participant Repo as JDBC AcademicCatalogRepository
   participant DB as MySQL 8.4
 
+  Operador->>UI: solicita la plantilla desde el panel
+  UI->>API: GET /api/v1/academic-catalog/curriculum-template
+  API-->>UI: CSV UTF-8 descargable generado desde CurriculumCsvSchema.HEADERS
   Operador->>UI: carga archivo de una versión curricular
   UI->>API: POST /api/v1/admin/academic-catalog/imports (multipart file)
   API->>Auth: autentica y exige academic:catalog:write
