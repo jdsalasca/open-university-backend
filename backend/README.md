@@ -30,13 +30,14 @@ El catálogo conserva programa, asignatura, revisiones inmutables, plan y entrad
 | `GET` | `/api/v1/academic-catalog/programs` | Público; solo planes publicados |
 | `GET` | `/api/v1/academic-catalog/curriculum-template` | Público; CSV vacío derivado del esquema del backend |
 | `GET` | `/api/v1/academic-catalog/programs/{programId}/curricula` | Público; solo versiones publicadas |
-| `GET` | `/api/v1/academic-catalog/curricula/{curriculumId}` | Público; resumen y asignaturas solo si la versión está publicada; borrador/inexistente responde 404 |
+| `GET` | `/api/v1/academic-catalog/curricula/{curriculumId}` | Público; metadata raíz sin asignaturas para una versión publicada; borrador/inexistente responde 404 |
+| `GET` | `/api/v1/academic-catalog/curricula/{curriculumId}/entries?page=1&pageSize=100&search=&semester=` | Público; página filtrada de hasta 100 asignaturas publicadas; borrador/inexistente responde 404 |
 | `GET` | `/api/v1/admin/academic-catalog/drafts` | `academic:catalog:read` |
 | `GET` | `/api/v1/admin/academic-catalog/curricula/{curriculumId}` | `academic:catalog:read` |
 | `POST` | `/api/v1/admin/academic-catalog/imports` | `academic:catalog:write`; multipart field `file` |
 | `POST` | `/api/v1/admin/academic-catalog/curricula/{curriculumId}/publish` | `academic:catalog:write` |
 
-Estos permisos son contratos internos, no nombres de grupos ni roles oficiales de UPTC. Compose no tiene proveedor OIDC ni usuarios de prueba; por ello, un desarrollador anónimo puede consultar un catálogo vacío pero no importar o publicar. La vista React `/#programas` es preview local, y `programs.available` permanece `false`.
+La consulta paginada valida página, tamaño (1–100), texto (máximo 120 puntos de código Unicode) y semestre (1–32767), devuelve conteos filtrados y ordena por semestre/orden original. Estas lecturas no agregan tablas; el frontend solicita la primera página en paralelo con la metadata, cancela peticiones obsoletas y conserva un máximo de 100 filas visibles. Estos permisos son contratos internos, no nombres de grupos ni roles oficiales de UPTC. Compose no tiene proveedor OIDC ni usuarios de prueba; por ello, un desarrollador anónimo puede consultar un catálogo vacío pero no importar o publicar. La vista React `/#programas` es preview local, y `programs.available` permanece `false`.
 
 ## Integración local y documentos
 

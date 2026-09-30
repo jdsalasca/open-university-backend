@@ -139,21 +139,30 @@ sequenceDiagram
   API-->>UI: versiones publicadas y cohortes
   Comunidad->>UI: elige una versión publicada
   UI->>API: GET /api/v1/academic-catalog/curricula/{id}
-  API->>UseCase: consulta detalle público por UUID
-  UseCase->>Repo: buscar versión y entradas ordenadas
-  Repo->>DB: leer currículo, programa y asignaturas
-  DB-->>Repo: detalle con estado
+  API->>UseCase: consultar metadata pública por UUID
+  UseCase->>Repo: buscar resumen de versión publicada
+  Repo->>DB: leer currículo y programa, sin asignaturas
+  DB-->>Repo: metadata y estado
   alt Borrador o versión inexistente
     UseCase-->>API: no encontrada
     API-->>UI: 404 curriculum_not_found
   else Estado PUBLISHED
-    UseCase-->>API: resumen y entradas
-    API-->>UI: 200; solo datos del plan publicado
-    UI-->>Comunidad: muestra tabla accesible de asignaturas
+    UseCase-->>API: resumen público
+    API-->>UI: 200 con metadata raíz sin entradas
+    UI->>API: GET /api/v1/academic-catalog/curricula/{id}/entries?page=1&pageSize=100
+    API->>UseCase: consultar página pública de asignaturas
+    UseCase->>Repo: contar y leer la página solicitada
+    Repo->>DB: transacción de solo lectura; filtro PUBLISHED y parámetros enlazados
+    DB-->>Repo: total filtrado + hasta 100 filas en orden estable
+    Repo-->>UseCase: metadata de página y asignaturas
+    UseCase-->>API: respuesta acotada
+    API-->>UI: página, totalItems, totalPages y filas
+    UI->>UI: renderiza solo las asignaturas de la página
+    UI-->>Comunidad: muestra tabla accesible de máximo 100 filas
   end
 ```
 
-La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. El detalle público devuelve entradas solo para estado `PUBLISHED`; borradores y UUID inexistentes comparten respuesta 404. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la importación y publicación requieren `academic:catalog:write`. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
+La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. El detalle público obtiene metadata separada de entradas y consulta páginas filtradas por código/nombre o semestre; solo `PUBLISHED` puede producir conteos o filas, y borradores y UUID inexistentes comparten 404 en ambos endpoints. La consulta de página fija el tamaño máximo en 100, enlaza parámetros, escapa los comodines SQL y mantiene orden `(semester, row_order)`. La interfaz pide la metadata y su primera página en paralelo; espera 250 ms para búsqueda de texto, vuelve a página 1 al cambiar filtros y cancela solicitudes anteriores con `AbortSignal`. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la importación y publicación requieren `academic:catalog:write`. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
 
 ## Consulta de identidad propia
 

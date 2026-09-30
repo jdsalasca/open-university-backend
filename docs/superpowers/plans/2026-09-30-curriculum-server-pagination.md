@@ -69,28 +69,28 @@ Expected: behavior assertions fail because metadata still wraps all rows, and an
 
 **Interfaces:**
 - Add `AcademicCurriculumEntriesPage` and a typed client call `listPublishedCurriculumEntries(id, { page, pageSize, search, semester }, signal)`; runtime parsing rejects malformed IDs, counts, entries, out-of-range values and oversized page payloads. Change `getPublishedCurriculum(id)` to parse the top-level metadata object as `AcademicCurriculum`.
-- Public details use the curriculum card's metadata and call the paged entries route; authorized draft review continues to use `AcademicCurriculumDetails` and its existing client method.
+- Public details request metadata and the first entries page in parallel, validate metadata against the selected curriculum card, then use server pages for subsequent filters and navigation; authorized draft review continues to use `AcademicCurriculumDetails` and its existing client method.
 - Search is debounced 250 ms; page/filter requests use `AbortSignal`. Changing search or semester resets to page 1. Rendered entry rows never exceed the server page.
 
-- [ ] **Step 1: Write client RED tests** named `parses_public_curriculum_metadata_without_entries`, `requests_public_curriculum_entries_with_encoded_filters`, `parses_bounded_entry_pages`, and `rejects_malformed_or_oversized_page_responses`; assert parameters are encoded and bearer credentials are omitted.
-- [ ] **Step 2: Run the focused client tests** with `npm.cmd test -- src/features/academics/academicCatalogClient.test.ts` from `frontend/`. Expected: absent page client/parser assertions fail, without import or compilation errors.
-- [ ] **Step 3: Implement page contract parsing and URLSearchParams query construction**; do not store credentials or include cookies.
-- [ ] **Step 4: Write UI RED tests** named `requests_only_the_first_bounded_page`, `loads_the_next_server_page`, `debounces_search_and_resets_pagination`, `filters_by_numeric_semester`, `shows_no_server_matches`, and `rejects_entries_for_another_curriculum`. Assert a maximum of 100 rows and that draft/admin review behavior remains unchanged.
-- [ ] **Step 5: Run the focused UI tests** with `npm.cmd test -- src/features/academics/AcademicCatalogPage.test.tsx`. Expected: the old all-entries client flow fails the new server-page behavior assertions.
-- [ ] **Step 6: Implement the bounded table, server query effects, cancellable debounce, numeric semester filter and accessible page controls**; remove local slicing of a full curriculum response.
-- [ ] **Step 7: Run the complete frontend suite, production build, lint and `git diff --check`**; expected: all pass, including catalog, branding and navigation regressions.
-- [ ] **Step 8: Commit frontend code** as `feat: browse curriculum entries by server page`.
+- [x] **Step 1: Write client RED tests** named `parses_public_curriculum_metadata_without_entries`, `requests_public_curriculum_entries_with_encoded_filters`, `parses_bounded_entry_pages`, and `rejects_malformed_or_oversized_page_responses`; assert parameters are encoded and bearer credentials are omitted.
+- [x] **Step 2: Run the focused client tests** with `npm.cmd test -- src/features/academics/academicCatalogClient.test.ts` from `frontend/`. Expected: absent page client/parser assertions fail, without import or compilation errors. RED: 17 tests, 9 expected failures, 0 errors.
+- [x] **Step 3: Implement page contract parsing and URLSearchParams query construction**; do not store credentials or include cookies.
+- [x] **Step 4: Write UI RED tests** named `requests_only_the_first_bounded_page`, `loads_the_next_server_page`, `debounces_search_and_resets_pagination`, `filters_by_numeric_semester`, `shows_no_server_matches`, and `rejects_entries_for_another_curriculum`. Assert a maximum of 100 rows and that draft/admin review behavior remains unchanged.
+- [x] **Step 5: Run the focused UI tests** with `npm.cmd test -- src/features/academics/AcademicCatalogPage.test.tsx`. RED observed: 24 tests, 6 expected UI failures, 0 errors before the public detail component changed.
+- [x] **Step 6: Implement the bounded table, server query effects, cancellable debounce, numeric semester filter and accessible page controls**; remove local slicing of a full curriculum response.
+- [x] **Step 7: Run the complete frontend suite, production build, lint and `git diff --check`**; expected: all pass, including catalog, branding and navigation regressions. GREEN: 7 files/68 tests; production build and lint pass.
+- [x] **Step 8: Commit frontend code** as `feat: browse curriculum entries by server page` (`ca2841c`, pushed to `origin/develop`). Frontend contract documentation followed in `4ecfda3`, also pushed.
 
 ### Task 3: Documents and integrated milestone
 
 **Files:**
-- Modify: `docs/architecture/data-model.md`, `docs/architecture/process-flows.md`, `docs/architecture/c4.md`, `docs/ROADMAP.md`, `docs/superpowers/specs/2026-09-29-academic-catalog-design.md`, root/backend `README.md`, and the `frontend` submodule gitlink.
+- Modify: `docs/architecture/data-model.md`, `docs/architecture/process-flows.md`, `docs/architecture/c4.md`, `docs/ROADMAP.md`, `docs/superpowers/specs/2026-09-29-academic-catalog-design.md`, root/backend/frontend `README.md`, and the `frontend` submodule gitlink.
 
-- [ ] Document that public details return metadata and public entry reads use bounded server pagination/search; show the count/page SQL path, transaction and published-only gate. Keep the administrative draft review flow separate. Note that H2 cannot certify MySQL accent-insensitive collation.
-- [ ] Update roadmap v0 delivery status without marking the official catalogue active or H4/student lifecycle complete.
-- [ ] Run `docker compose config --quiet`; confirm Compose services remain healthy, `/actuator/health` is UP, public program list remains `[]`, frontend returns 200, and an unknown curriculum's metadata and entries both return 404. Run read-only `LOWER(...) LIKE ... ESCAPE '!'` queries against Compose MySQL with case/accent and wildcard examples under the observed local collation; no database rows are added.
-- [ ] Confirm the Compose Watch process remains active and Vite HMR sees the frontend change. Do not seed official or persistent fake public rows.
-- [ ] Re-run `npm audit --json`; report its advisory count as a date-stamped frontend check, not a backend Java SCA result.
+- [x] Document that public details return metadata and public entry reads use bounded server pagination/search; show the count/page SQL path, transaction and published-only gate. Keep the administrative draft review flow separate. Note that H2 cannot certify MySQL accent-insensitive collation.
+- [x] Update roadmap v0 delivery status without marking the official catalogue active or H4/student lifecycle complete.
+- [x] Run `docker compose config --quiet`; confirm Compose services remain healthy, `/actuator/health` is UP, public program list remains `[]`, frontend returns 200, and an unknown curriculum's metadata and entries both return 404. Run read-only `LOWER(...) LIKE ... ESCAPE '!'` queries against Compose MySQL with case/accent and wildcard examples under the observed local collation; no database rows are added.
+- [x] Confirm the Compose Watch process remains active and Vite HMR sees the frontend change. Do not seed official or persistent fake public rows.
+- [x] Re-run `npm audit --json`; report its advisory count as a date-stamped frontend check, not a backend Java SCA result.
 - [ ] Commit backend documentation and the frontend submodule pointer as `docs: describe server-paged curriculum reads`; push both repositories' `develop` branches and verify remote SHAs and clean worktrees.
 
 ## Execution note
