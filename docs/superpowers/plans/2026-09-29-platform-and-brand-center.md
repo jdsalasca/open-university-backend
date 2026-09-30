@@ -123,11 +123,11 @@
 - Consumes: contrato `GET /api/v1/branding` del Task 3.
 - Produces: hook `useBranding()` con configuración validada, loading/error/revision; CSS custom properties `--brand-primary`, `--brand-ink`, `--brand-surface`, `--brand-text`.
 
-- [ ] Escribir `applies_api_palette_as_css_variables` con primario literal `#123456`, `uses_official_defaults_when_api_fails` con `#FFCC29`, y `ignores_malformed_untrusted_color` con entrada `url(javascript:alert(1))`.
-- [ ] Ver RED correcto antes de crear proveedor.
-- [ ] Implementar fetch con esquema runtime, abort/timeouts y fallback literal oficial; nunca insertar estilos/texto sin validación/escape.
-- [ ] Ejecutar Vitest y `npm run build`.
-- [ ] Commit local `feat: load institution branding in the frontend`.
+- [x] Escribir `applies_api_palette_as_css_variables` con primario literal `#123456`, `uses_official_defaults_when_api_fails` con `#FFCC29`, `ignores_malformed_untrusted_color` con entrada `url(javascript:alert(1))`, petición HTTP y timeout abortable.
+- [x] Ver RED correcto antes de crear proveedor y cliente: Vitest no resuelve los módulos todavía ausentes.
+- [x] Implementar fetch con contrato runtime, límites de tiempo y fallback literal oficial; validar antes de escribir CSS y renderizar texto como contenido React.
+- [x] Ejecutar Vitest, `npm run build` y `npm run lint`.
+- [x] Commit local `feat: load institution branding in the frontend`.
 
 ### Task 6: Centro visual y navegación preparada
 
