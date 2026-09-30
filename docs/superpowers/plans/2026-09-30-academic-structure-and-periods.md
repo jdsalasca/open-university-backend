@@ -132,8 +132,10 @@
 - [x] Añadir C4, secuencias de estructura/apertura de periodo y flujo de enmienda de calendario con actores y permisos.
 - [x] Distinguir reglas identificadas en fuentes públicas, diseño implementado y decisiones que requieren validación institucional.
 - [x] Ejecutar Maven test, frontend test/build/lint, docker compose config y smoke HTTP local con bases vacías.
-- [ ] Revisar los diffs con el revisor de código y corregir hallazgos críticos/importantes.
-- [ ] Commit separado en cada repo `develop`, actualizar el submódulo y subir a upstream tras cerrar la revisión.
+- [x] Revisar los diffs con el revisor de código y corregir hallazgos críticos/importantes.
+- [x] Commit separado en cada repo `develop`, actualizar el submódulo y subir a upstream tras cerrar la revisión.
+
+Resultado de revisión: no se encontraron defectos críticos ni funcionales en la implementación de orden. Se cerró la brecha importante de evidencia con pruebas de integración concurrente para apertura de periodos y orden relacional, además de rollback cuando falla la auditoría. La transición de periodo cambia únicamente su estado; no publica oferta ni habilita inscripciones.
 
 ## Verificación final esperada
 

@@ -26,9 +26,9 @@
 - Una actualización de prioridad y su auditoría siempre se confirman o revierten juntas.
 - La transición textual de auditoría no se trunca ni mezcla identificadores proporcionados por el cliente.
 
-## Autorrevisión
+## Revisión final independiente
 
-La suite inicial reveló que las auditorías de relaciones y afiliaciones no identificaban el vínculo exacto. Se cambió primero la expectativa del test, se observó el fallo y luego el resumen pasó a incluir la pareja padre/hijo o el ID de afiliación; la prueba volvió a verde. La comprobación adicional de unidades inactivas también confirma conflicto sin cambio ni auditoría. No hubo revisor independiente en este pase; la revisión fue hecha por el autor.
+El revisor independiente no halló defectos críticos ni funcionales en las cinco rutas de orden. Identificó una brecha importante de verificación: las pruebas existentes no forzaban escrituras simultáneas ni fallo de auditoría. Se añadieron pruebas de integración sin transacción externa para dos cambios concurrentes al mismo orden esperado y para rollback del cambio cuando falla el insert de auditoría. También se añadió la prueba concurrente de abrir el mismo periodo desde la misma versión aprobada. La suite de estas pruebas pasó 3/3 y la suite backend pasó 195 pruebas, con 0 fallas, 0 errores y 6 casos MySQL optativos omitidos.
 
 ---
 
@@ -86,3 +86,8 @@ La suite inicial reveló que las auditorías de relaciones y afiliaciones no ide
 
   Commit backend/docs changes on `develop`, push `origin/develop`, verify a clean tree and confirm the Compose watch runtime has picked up the backend version.
   Result: implementation commit `003cc6b` was pushed to `origin/develop`; the working tree is synchronized and Compose reports backend healthy with Flyway schema v11.
+
+- [x] **Step 8: Address independent review findings**
+
+  Run: `mvn --% -f backend/pom.xml -Duser.timezone=UTC -Dtest=AcademicPeriodConcurrencyTest,AcademicStructureConcurrencyTest test`
+  Result: 3 integration tests pass; audit failure leaves the stored order unchanged, concurrent updates permit one winner, and concurrent opens create one state transition and one audit event. The full backend suite passes with 195 tests, 0 failures, 0 errors and 6 optional MySQL contract tests skipped.
