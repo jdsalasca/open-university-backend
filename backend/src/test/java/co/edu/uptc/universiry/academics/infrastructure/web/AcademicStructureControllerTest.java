@@ -107,17 +107,25 @@ class AcademicStructureControllerTest {
         UUID faculty = createUnit("FAC-REL-ORDER", "FACULTY", "Facultad relaciones", 5);
         UUID firstByNode = createUnit("SCHOOL-NODE-FIRST", "SCHOOL", "Escuela nodo primero", 1);
         UUID secondByNode = createUnit("SCHOOL-REL-FIRST", "SCHOOL", "Escuela relación primero", 2);
+        UUID tieZulu = createUnit("SCHOOL-TIE-Z", "SCHOOL", "Escuela empate Z", 3);
+        UUID tieAlpha = createUnit("SCHOOL-TIE-A", "SCHOOL", "Escuela empate A", 3);
         createOrganizationEdge(faculty, firstByNode, "2026-01-01", null, 8);
         createOrganizationEdge(faculty, secondByNode, "2026-01-01", null, 2);
+        createOrganizationEdge(faculty, tieZulu, "2026-01-01", null, 5);
+        createOrganizationEdge(faculty, tieAlpha, "2026-01-01", null, 5);
 
         // Act + Assert
         mockMvc.perform(get("/api/v1/academic-structure"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.organizationRelations.length()").value(2))
+                .andExpect(jsonPath("$.organizationRelations.length()").value(4))
                 .andExpect(jsonPath("$.organizationRelations[0].childUnitId").value(secondByNode.toString()))
                 .andExpect(jsonPath("$.organizationRelations[0].displayOrder").value(2))
-                .andExpect(jsonPath("$.organizationRelations[1].childUnitId").value(firstByNode.toString()))
-                .andExpect(jsonPath("$.organizationRelations[1].displayOrder").value(8));
+                .andExpect(jsonPath("$.organizationRelations[1].childUnitId").value(tieAlpha.toString()))
+                .andExpect(jsonPath("$.organizationRelations[1].displayOrder").value(5))
+                .andExpect(jsonPath("$.organizationRelations[2].childUnitId").value(tieZulu.toString()))
+                .andExpect(jsonPath("$.organizationRelations[2].displayOrder").value(5))
+                .andExpect(jsonPath("$.organizationRelations[3].childUnitId").value(firstByNode.toString()))
+                .andExpect(jsonPath("$.organizationRelations[3].displayOrder").value(8));
     }
 
     @Test
@@ -126,17 +134,67 @@ class AcademicStructureControllerTest {
         UUID central = createSite("SITE-REL-CENTRAL", "CENTRAL", "Sede Central relaciones", 1);
         UUID firstByNode = createSite("SITE-NODE-FIRST", "REGIONAL", "Sede nodo primero", 1);
         UUID secondByNode = createSite("SITE-REL-FIRST", "REGIONAL", "Sede relación primero", 2);
+        UUID tieZulu = createSite("SITE-TIE-Z", "REGIONAL", "Sede empate Z", 3);
+        UUID tieAlpha = createSite("SITE-TIE-A", "REGIONAL", "Sede empate A", 3);
         createSiteEdge(central, firstByNode, 8);
         createSiteEdge(central, secondByNode, 2);
+        createSiteEdge(central, tieZulu, 5);
+        createSiteEdge(central, tieAlpha, 5);
 
         // Act + Assert
         mockMvc.perform(get("/api/v1/academic-structure"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.siteRelations.length()").value(2))
+                .andExpect(jsonPath("$.siteRelations.length()").value(4))
                 .andExpect(jsonPath("$.siteRelations[0].childSiteId").value(secondByNode.toString()))
                 .andExpect(jsonPath("$.siteRelations[0].displayOrder").value(2))
-                .andExpect(jsonPath("$.siteRelations[1].childSiteId").value(firstByNode.toString()))
-                .andExpect(jsonPath("$.siteRelations[1].displayOrder").value(8));
+                .andExpect(jsonPath("$.siteRelations[1].childSiteId").value(tieAlpha.toString()))
+                .andExpect(jsonPath("$.siteRelations[1].displayOrder").value(5))
+                .andExpect(jsonPath("$.siteRelations[2].childSiteId").value(tieZulu.toString()))
+                .andExpect(jsonPath("$.siteRelations[2].displayOrder").value(5))
+                .andExpect(jsonPath("$.siteRelations[3].childSiteId").value(firstByNode.toString()))
+                .andExpect(jsonPath("$.siteRelations[3].displayOrder").value(8));
+    }
+
+    @Test
+    void public_structure_returns_only_current_relationships_with_their_configured_order() throws Exception {
+        // Arrange
+        UUID currentParent = createUnit("FAC-CURRENT-REL", "FACULTY", "Facultad vigente", 1);
+        UUID currentChild = createUnit("SCHOOL-CURRENT-REL", "SCHOOL", "Escuela vigente", 1);
+        createOrganizationEdge(currentParent, currentChild, "2026-01-01", null, 4);
+        UUID expiredUnitParent = createUnit("FAC-EXPIRED-REL", "FACULTY", "Facultad vencida", 1,
+                "1900-01-01", "1900-12-31");
+        UUID expiredUnitChild = createUnit("SCHOOL-EXPIRED-REL", "SCHOOL", "Escuela vencida", 1,
+                "1900-01-01", "1900-12-31");
+        createOrganizationEdge(expiredUnitParent, expiredUnitChild, "1900-01-01", "1900-12-31", 1);
+        UUID futureUnitParent = createUnit("FAC-FUTURE-REL", "FACULTY", "Facultad futura", 1,
+                "9999-01-01", null);
+        UUID futureUnitChild = createUnit("SCHOOL-FUTURE-REL", "SCHOOL", "Escuela futura", 1,
+                "9999-01-01", null);
+        createOrganizationEdge(futureUnitParent, futureUnitChild, "9999-01-01", null, 2);
+
+        UUID currentSiteParent = createSite("SITE-CURRENT-REL", "CENTRAL", "Sede vigente", 1);
+        UUID currentSiteChild = createSite("SITE-CURRENT-CHILD", "REGIONAL", "Seccional vigente", 1);
+        createSiteEdge(currentSiteParent, currentSiteChild, 4);
+        UUID expiredSiteParent = createSite("SITE-EXPIRED-REL", "CENTRAL", "Sede vencida", 1,
+                "1900-01-01", "1900-12-31");
+        UUID expiredSiteChild = createSite("SITE-EXPIRED-CHILD", "REGIONAL", "Seccional vencida", 1,
+                "1900-01-01", "1900-12-31");
+        createSiteEdge(expiredSiteParent, expiredSiteChild, 1, "1900-01-01", "1900-12-31");
+        UUID futureSiteParent = createSite("SITE-FUTURE-REL", "CENTRAL", "Sede futura", 1,
+                "9999-01-01", null);
+        UUID futureSiteChild = createSite("SITE-FUTURE-CHILD", "REGIONAL", "Seccional futura", 1,
+                "9999-01-01", null);
+        createSiteEdge(futureSiteParent, futureSiteChild, 2, "9999-01-01", null);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/academic-structure"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.organizationRelations.length()").value(1))
+                .andExpect(jsonPath("$.organizationRelations[0].childUnitId").value(currentChild.toString()))
+                .andExpect(jsonPath("$.organizationRelations[0].displayOrder").value(4))
+                .andExpect(jsonPath("$.siteRelations.length()").value(1))
+                .andExpect(jsonPath("$.siteRelations[0].childSiteId").value(currentSiteChild.toString()))
+                .andExpect(jsonPath("$.siteRelations[0].displayOrder").value(4));
     }
 
     @Test
@@ -320,9 +378,16 @@ class AcademicStructureControllerTest {
     }
 
     private UUID createUnit(String code, String type, String name, int order) throws Exception {
+        return createUnit(code, type, name, order, "2026-01-01", null);
+    }
+
+    private UUID createUnit(String code, String type, String name, int order,
+                            String validFrom, String validThrough) throws Exception {
+        String through = validThrough == null ? "null" : "\"" + validThrough + "\"";
         String body = "{\"code\":\"" + code + "\",\"type\":\"" + type + "\",\"displayName\":\""
                 + name + "\",\"displayOrder\":" + order
-                + ",\"validFrom\":\"2026-01-01\",\"validThrough\":null,\"sourceReference\":\"Acuerdo\"}";
+                + ",\"validFrom\":\"" + validFrom + "\",\"validThrough\":" + through
+                + ",\"sourceReference\":\"Acuerdo\"}";
         MvcResult result = mockMvc.perform(post("/api/v1/admin/academic-structure/units")
                         .with(writer()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated()).andReturn();
@@ -330,9 +395,16 @@ class AcademicStructureControllerTest {
     }
 
     private UUID createSite(String code, String type, String name, int order) throws Exception {
+        return createSite(code, type, name, order, "2026-01-01", null);
+    }
+
+    private UUID createSite(String code, String type, String name, int order,
+                            String validFrom, String validThrough) throws Exception {
+        String through = validThrough == null ? "null" : "\"" + validThrough + "\"";
         String body = "{\"code\":\"" + code + "\",\"type\":\"" + type + "\",\"displayName\":\""
                 + name + "\",\"displayOrder\":" + order
-                + ",\"validFrom\":\"2026-01-01\",\"validThrough\":null,\"sourceReference\":\"Acuerdo\"}";
+                + ",\"validFrom\":\"" + validFrom + "\",\"validThrough\":" + through
+                + ",\"sourceReference\":\"Acuerdo\"}";
         MvcResult result = mockMvc.perform(post("/api/v1/admin/academic-structure/sites")
                         .with(writer()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated()).andReturn();
@@ -356,10 +428,16 @@ class AcademicStructureControllerTest {
     }
 
     private void createSiteEdge(UUID parent, UUID child, int displayOrder) throws Exception {
+        createSiteEdge(parent, child, displayOrder, "2026-01-01", null);
+    }
+
+    private void createSiteEdge(UUID parent, UUID child, int displayOrder,
+                                String validFrom, String validThrough) throws Exception {
+        String through = validThrough == null ? "null" : "\"" + validThrough + "\"";
         mockMvc.perform(post("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}", parent, child)
                         .with(writer()).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayOrder\":" + displayOrder
-                                + ",\"validFrom\":\"2026-01-01\",\"validThrough\":null,"
+                                + ",\"validFrom\":\"" + validFrom + "\",\"validThrough\":" + through + ","
                                 + "\"sourceReference\":\"Orden sedes\"}"))
                 .andExpect(status().isCreated());
     }

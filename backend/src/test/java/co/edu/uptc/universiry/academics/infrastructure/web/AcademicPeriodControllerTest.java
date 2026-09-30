@@ -254,9 +254,19 @@ class AcademicPeriodControllerTest {
         mockMvc.perform(post("/api/v1/admin/academic-periods/{id}/open", periodId)
                         .with(jwt().authorities(new SimpleGrantedAuthority(READ))))
                 .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/admin/academic-periods/{id}/open", periodId)
+                        .with(periodWriter(actor)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kind").value("INTERSEMESTRAL"))
+                .andExpect(jsonPath("$.status").value("OPEN"));
         mockMvc.perform(get("/api/v1/admin/academic-periods").with(jwt().authorities(new SimpleGrantedAuthority(READ))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].kind").value("INTERSEMESTRAL"));
+                .andExpect(jsonPath("$[0].kind").value("INTERSEMESTRAL"))
+                .andExpect(jsonPath("$[0].status").value("OPEN"));
+        mockMvc.perform(get("/api/v1/academic-periods"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].kind").value("INTERSEMESTRAL"))
+                .andExpect(jsonPath("$[0].status").value("OPEN"));
     }
 
     @Test
