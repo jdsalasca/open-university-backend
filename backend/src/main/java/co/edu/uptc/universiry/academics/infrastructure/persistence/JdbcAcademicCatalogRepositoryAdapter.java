@@ -329,15 +329,37 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
         String cursorFilter = "";
         if (query.after() != null) {
             LocalDateTime cursorCreatedAt = query.after().createdAt();
-            cursorFilter = " AND (c.created_at < ? OR (c.created_at = ? AND c.curriculum_id < ?)) ";
+            cursorFilter = " AND (draft.created_at < ? OR "
+                    + "(draft.created_at = ? AND draft.curriculum_id < ?)) ";
             parameters.add(cursorCreatedAt);
             parameters.add(cursorCreatedAt);
             parameters.add(query.after().curriculumId().toString());
         }
         parameters.add(query.pageSize() + 1);
+        String draftsPageSql = """
+                SELECT c.curriculum_id, c.program_id, p.program_code, p.academic_level, p.study_modality,
+                       p.campus_code, pr.program_name, pr.faculty, pr.campus_name, c.curriculum_version,
+                       c.cohort_from, c.cohort_through, c.approval_reference, c.status,
+                       (SELECT COUNT(*) FROM academic_curriculum_entry e WHERE e.curriculum_id = c.curriculum_id)
+                           AS entry_count,
+                       c.source_sha256, c.created_at, c.created_by, c.published_by, c.published_at
+                FROM (
+                    SELECT draft.curriculum_id, draft.program_id, draft.program_revision_id,
+                           draft.curriculum_version, draft.cohort_from, draft.cohort_through,
+                           draft.approval_reference, draft.status, draft.source_sha256,
+                           draft.created_by, draft.created_at, draft.published_by, draft.published_at
+                    FROM academic_curriculum draft
+                    WHERE draft.status = 'DRAFT' %s
+                    ORDER BY draft.created_at DESC, draft.curriculum_id DESC
+                    LIMIT ?
+                ) c
+                JOIN academic_program p ON p.program_id = c.program_id
+                JOIN academic_program_revision pr
+                  ON pr.program_revision_id = c.program_revision_id AND pr.program_id = c.program_id
+                ORDER BY c.created_at DESC, c.curriculum_id DESC
+                """.formatted(cursorFilter);
         List<CurriculumSummary> candidates = jdbcTemplate.query(
-                SUMMARY_SELECT + " WHERE c.status = 'DRAFT' " + cursorFilter
-                        + "ORDER BY c.created_at DESC, c.curriculum_id DESC LIMIT ?",
+                draftsPageSql,
                 CURRICULUM_SUMMARY_MAPPER,
                 parameters.toArray());
         boolean hasNext = candidates.size() > query.pageSize();

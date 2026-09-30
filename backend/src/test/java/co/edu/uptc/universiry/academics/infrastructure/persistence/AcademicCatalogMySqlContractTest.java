@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @EnabledIfSystemProperty(named = "universiry.mysql-contract.enabled", matches = "true")
@@ -62,6 +63,7 @@ class AcademicCatalogMySqlContractTest {
 
     private UUID smallCurriculumId;
     private UUID performanceCurriculumId;
+    private UUID performanceDraftProgramId;
 
     @DynamicPropertySource
     static void mysqlDatasource(DynamicPropertyRegistry properties) {
@@ -95,6 +97,9 @@ class AcademicCatalogMySqlContractTest {
         assertEquals(0, countCurricula(smallCurriculumId));
         if (performanceCurriculumId != null) {
             assertEquals(0, countCurricula(performanceCurriculumId));
+        }
+        if (performanceDraftProgramId != null) {
+            assertEquals(0, countPrograms(performanceDraftProgramId));
         }
     }
 
@@ -257,6 +262,59 @@ class AcademicCatalogMySqlContractTest {
                         + String.format(Locale.ROOT, "%.3f ms", averageMillis(filteredNanos)));
     }
 
+    @Test
+    @EnabledIfSystemProperty(named = "universiry.mysql-performance.enabled", matches = "true")
+    void reports_draft_queue_latency_for_ten_thousand_synthetic_drafts() {
+        // Arrange
+        performanceDraftProgramId = seedPerformanceDrafts(PERFORMANCE_ROWS);
+        CurriculumDraftsPageQuery pageQuery = new CurriculumDraftsPageQuery(25, null);
+
+        // Act
+        List<Long> draftQueueNanos = sampleDraftQueue(pageQuery);
+        AcademicCurriculumDraftsPage firstPage = catalogRepository.listDrafts(pageQuery);
+        AcademicCurriculumDraftsPage secondPage = catalogRepository.listDrafts(
+                new CurriculumDraftsPageQuery(pageQuery.pageSize(), firstPage.nextCursor()));
+
+        // Assert
+        assertEquals(PERFORMANCE_ROWS, firstPage.totalItems());
+        assertEquals(pageQuery.pageSize(), firstPage.drafts().size());
+        assertEquals(PERFORMANCE_ROWS, secondPage.totalItems());
+        assertEquals(pageQuery.pageSize(), secondPage.drafts().size());
+        assertNotEquals(firstPage.drafts().getLast().id(), secondPage.drafts().getFirst().id());
+        printDraftQueuePlan();
+        printMetrics("draft-queue-first-page", PERFORMANCE_ROWS, pageQuery.pageSize(), draftQueueNanos);
+        assertTrue(averageMillis(draftQueueNanos) < 50.0,
+                () -> "Expected MySQL draft queue average below 50 ms for 10,000 drafts; observed "
+                        + String.format(Locale.ROOT, "%.3f ms", averageMillis(draftQueueNanos)));
+    }
+
+    private void printDraftQueuePlan() {
+        String pageSql = """
+                SELECT c.curriculum_id, c.program_id, p.program_code, p.academic_level, p.study_modality,
+                       p.campus_code, pr.program_name, pr.faculty, pr.campus_name, c.curriculum_version,
+                       c.cohort_from, c.cohort_through, c.approval_reference, c.status,
+                       (SELECT COUNT(*) FROM academic_curriculum_entry e WHERE e.curriculum_id = c.curriculum_id)
+                           AS entry_count,
+                       c.source_sha256, c.created_at, c.created_by, c.published_by, c.published_at
+                FROM (
+                    SELECT draft.curriculum_id, draft.program_id, draft.program_revision_id,
+                           draft.curriculum_version, draft.cohort_from, draft.cohort_through,
+                           draft.approval_reference, draft.status, draft.source_sha256,
+                           draft.created_by, draft.created_at, draft.published_by, draft.published_at
+                    FROM academic_curriculum draft
+                    WHERE draft.status = 'DRAFT'
+                    ORDER BY draft.created_at DESC, draft.curriculum_id DESC
+                    LIMIT 26
+                ) c
+                JOIN academic_program p ON p.program_id = c.program_id
+                JOIN academic_program_revision pr
+                  ON pr.program_revision_id = c.program_revision_id AND pr.program_id = c.program_id
+                ORDER BY c.created_at DESC, c.curriculum_id DESC
+                """;
+        printPlan("draft-queue-count", "SELECT COUNT(*) FROM academic_curriculum WHERE status = 'DRAFT'");
+        printPlan("draft-queue-first-page", pageSql);
+    }
+
     private void printQueryPlans(UUID curriculumId) {
         String unfilteredCountSql = """
                 SELECT COUNT(e.entry_id) AS total_items
@@ -396,6 +454,49 @@ class AcademicCatalogMySqlContractTest {
         return publicationService.importCsv(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)), ACTOR);
     }
 
+    private UUID seedPerformanceDrafts(int draftCount) {
+        UUID programId = UUID.randomUUID();
+        UUID programRevisionId = UUID.randomUUID();
+        String programCode = "DRAFT-PERF-" + UUID.randomUUID().toString().replace("-", "")
+                .substring(0, 10).toUpperCase(Locale.ROOT);
+        String fingerprint = "c".repeat(64);
+        String sourceHash = "d".repeat(64);
+        LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC).withNano(0);
+
+        jdbcTemplate.update("""
+                INSERT INTO academic_program
+                    (program_id, program_code, academic_level, study_modality, campus_code, created_at)
+                VALUES (?, ?, 'PREGRADO', 'PRESENCIAL', 'PERF', ?)
+                """, programId.toString(), programCode, createdAt);
+        jdbcTemplate.update("""
+                INSERT INTO academic_program_revision
+                    (program_revision_id, program_id, content_fingerprint, snies_code, program_name, faculty,
+                     campus_name, created_at)
+                VALUES (?, ?, ?, NULL, 'Synthetic draft queue program', 'Synthetic faculty', 'Synthetic campus', ?)
+                """, programRevisionId.toString(), programId.toString(), fingerprint, createdAt);
+
+        List<DraftFixture> drafts = new ArrayList<>(draftCount);
+        for (int row = 1; row <= draftCount; row++) {
+            drafts.add(new DraftFixture(UUID.randomUUID(), row));
+        }
+        jdbcTemplate.batchUpdate("""
+                INSERT INTO academic_curriculum
+                    (curriculum_id, program_id, program_revision_id, curriculum_version, cohort_from,
+                     cohort_through, approval_reference, status, source_sha256, created_by, created_at,
+                     published_by, published_at)
+                VALUES (?, ?, ?, ?, '2026-1', NULL, 'Synthetic draft queue performance probe', 'DRAFT',
+                        ?, 'synthetic-mysql-performance-probe', ?, NULL, NULL)
+                """, drafts, 500, (statement, draft) -> {
+            statement.setString(1, draft.curriculumId().toString());
+            statement.setString(2, programId.toString());
+            statement.setString(3, programRevisionId.toString());
+            statement.setString(4, String.format(Locale.ROOT, "DRAFT-%05d", draft.rowOrder()));
+            statement.setString(5, sourceHash);
+            statement.setTimestamp(6, Timestamp.valueOf(createdAt));
+        });
+        return programId;
+    }
+
     private int countCurricula(UUID curriculumId) {
         return jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM academic_curriculum WHERE curriculum_id = ?",
@@ -403,14 +504,40 @@ class AcademicCatalogMySqlContractTest {
                 curriculumId.toString());
     }
 
+    private int countPrograms(UUID programId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program WHERE program_id = ?",
+                Integer.class,
+                programId.toString());
+    }
+
     private static void printMetrics(String scenario, List<Long> nanos) {
+        printMetrics(scenario, PERFORMANCE_ROWS, CurriculumEntriesPageQuery.MAX_PAGE_SIZE, nanos);
+    }
+
+    private static void printMetrics(String scenario, int rows, int pageSize, List<Long> nanos) {
         long[] sorted = nanos.stream().mapToLong(Long::longValue).sorted().toArray();
         System.out.printf(Locale.ROOT,
                 "MYSQL_PERF scenario=%s rows=%d page_size=%d concurrency=1 warmups=%d samples=%d "
                         + "avg_ms=%.3f p50_ms=%.3f p95_ms=%.3f p99_ms=%.3f%n",
-                scenario, PERFORMANCE_ROWS, CurriculumEntriesPageQuery.MAX_PAGE_SIZE,
+                scenario, rows, pageSize,
                 PERFORMANCE_WARMUPS, sorted.length, averageMillis(nanos),
                 percentileMillis(sorted, 0.50), percentileMillis(sorted, 0.95), percentileMillis(sorted, 0.99));
+    }
+
+    private List<Long> sampleDraftQueue(CurriculumDraftsPageQuery query) {
+        for (int warmup = 0; warmup < PERFORMANCE_WARMUPS; warmup++) {
+            catalogRepository.listDrafts(query);
+        }
+
+        List<Long> samples = new ArrayList<>(PERFORMANCE_SAMPLES);
+        for (int sample = 0; sample < PERFORMANCE_SAMPLES; sample++) {
+            long started = System.nanoTime();
+            AcademicCurriculumDraftsPage result = catalogRepository.listDrafts(query);
+            samples.add(System.nanoTime() - started);
+            assertEquals(query.pageSize(), result.drafts().size());
+        }
+        return samples;
     }
 
     private static double averageMillis(List<Long> nanos) {
@@ -444,5 +571,8 @@ class AcademicCatalogMySqlContractTest {
     }
 
     private record SubjectFixture(UUID subjectId, UUID revisionId, int rowOrder) {
+    }
+
+    private record DraftFixture(UUID curriculumId, int rowOrder) {
     }
 }

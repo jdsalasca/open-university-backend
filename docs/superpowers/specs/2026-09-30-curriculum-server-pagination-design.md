@@ -37,7 +37,7 @@ El backend escapa caracteres de comodín para que `%`, `_` y el carácter de esc
 
 - Usar el índice de cobertura `ix_academic_curriculum_entry_search_order_lookup (curriculum_id, semester, row_order, search_subject_code, search_subject_name)`, que soporta orden y búsqueda sobre snapshots derivados; conservar las claves normalizadas como fuente de verdad.
 - Filtrar por `status = 'PUBLISHED'` en la consulta de página y su conteo. No cargar la colección completa para luego aplicar `subList`.
-- Hacer el conteo y el `LIMIT` con parámetros enlazados. La cola administrativa usa paginación por cursor sobre `(created_at, curriculum_id)` y no escanea ni omite filas mediante `OFFSET`. No se añade caché. El perfil local de 10.000 filas pasa el gate de regresión `<50 ms` promedio; el SLO institucional continúa sin caracterizar.
+- Hacer el conteo y el `LIMIT` con parámetros enlazados. La cola administrativa usa paginación por cursor sobre `(created_at, curriculum_id)` y no escanea ni omite filas mediante `OFFSET`. Primero limita candidatos desde el índice de borradores y luego une metadata del programa para evitar ordenar y enriquecer todos los registros. No se añade caché. El perfil local de 10.000 filas pasa el gate de regresión `<50 ms` promedio; el SLO institucional continúa sin caracterizar.
 - El límite de importación continúa en 10.000 filas; el límite de respuesta pública continúa en 100 por página.
 - Flyway V5 amplía `ix_academic_curriculum_drafts` a `(status, created_at, curriculum_id)` para filtrar por estado y cubrir el orden estable por fecha y UUID sin crear un segundo índice con prefijo duplicado.
 
@@ -65,11 +65,11 @@ El backend escapa caracteres de comodín para que `%`, `_` y el carácter de esc
 5. Borradores no son visibles ni en resultados ni en conteos públicos; lector anónimo puede consultar solo versiones publicadas.
 6. La interfaz nunca renderiza más de 100 filas, resetea página al cambiar filtros, cancela solicitudes antiguas y mantiene carga, error, vacío y reintento accesibles.
 7. La cola administrativa pagina únicamente borradores, conserva el permiso de lectura, rechaza parámetros inválidos y no omite borradores pendientes cuando cambia una fila de una página anterior.
-8. `npm test`, `npm run build`, `npm run lint` y `mvnw verify` pasan; Compose sigue operativo. El contrato aislado de MySQL 8.4 mide 10.000 filas sintéticas, publica medias y percentiles y aplica el gate local; su resultado no se presenta como rendimiento institucional.
+8. `npm test`, `npm run build`, `npm run lint` y `mvnw verify` pasan; Compose sigue operativo. El contrato aislado de MySQL 8.4 mide la consulta pública sobre 10.000 entradas y la cola sobre 10.000 borradores sintéticos, publica medias y percentiles y aplica el gate local; su resultado no se presenta como rendimiento institucional.
 
 ## Decisiones y límites
 
 - Se reemplaza la forma completa del detalle público porque el producto sigue en v0/preview y las únicas aplicaciones consumidoras son los dos repositorios coordinados. La pantalla administrativa conserva su detalle de revisión.
 - Esta decisión puede requerir versionar la API si aparece un consumidor externo antes de publicar el preview; no se habilita el módulo institucional con este cambio.
 - La collation `utf8mb4_0900_ai_ci` está observada en el MySQL local de desarrollo. La suite automática de backend usa H2 y no prueba la equivalencia de acentos de MySQL; esa semántica se verifica con una consulta temporal en el MySQL de Compose. La búsqueda de producción exige confirmar collation/engine institucional antes de cargar datos.
-- La última verificación local posterior de 2026-09-30 registró 13,526 ms sin filtro y 21,470 ms con búsqueda (10.000 filas, concurrencia 1); ejecuciones anteriores observaron p99 de búsqueda de 40,694 y 52,894 ms. Ver [la decisión ADR-0002](../../architecture/decisions/ADR-0002-curriculum-search-snapshots.md). El perfil institucional `<50 ms` permanece pendiente.
+- La última verificación local posterior de 2026-09-30 registró medias de 15,830 ms sin filtro, 39,612 ms con búsqueda y 16,923 ms para la cola de borradores (10.000 filas, concurrencia 1). La búsqueda tuvo p95/p99 de 108,218/126,693 ms, aunque otras ejecuciones midieron p99 de 27,199–52,894 ms; los percentiles se conservan como diagnóstico. Ver [la decisión ADR-0002](../../architecture/decisions/ADR-0002-curriculum-search-snapshots.md) y el [perfil MySQL](2026-09-30-curriculum-mysql-search-performance.md). El perfil institucional `<50 ms` permanece pendiente.

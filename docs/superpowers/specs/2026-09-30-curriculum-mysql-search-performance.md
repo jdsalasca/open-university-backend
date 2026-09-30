@@ -27,11 +27,12 @@ Search remains a literal substring query over code or name, case/accent-insensit
 
 ## Final local measurement — 2026-09-30
 
-The repeatable runner `tools/verify-mysql-curriculum.ps1` passed all five MySQL contract tests, including the UTC-session and cursor-publication contract, on the same 10,000-row fixture, with 10 warmups, 50 samples, page size 100 and concurrency 1:
+The repeatable runner `tools/verify-mysql-curriculum.ps1` passed all six MySQL contract tests, including the UTC-session and cursor-publication contracts, on 10,000-row fixtures, with 10 warmups, 50 samples, page size 100 for curriculum entries and 25 for the draft queue, and concurrency 1:
 
 | Query | Average | p50 | p95 | p99 |
 |---|---:|---:|---:|---:|
-| First page, no filter | 13.526 ms | 13.172 ms | 16.077 ms | 17.897 ms |
-| First page, substring filter | 21.470 ms | 21.159 ms | 25.247 ms | 27.199 ms |
+| First page, no filter | 15.830 ms | 15.405 ms | 19.006 ms | 22.649 ms |
+| First page, substring filter | 39.612 ms | 33.528 ms | 108.218 ms | 126.693 ms |
+| Draft review queue | 16.923 ms | 16.144 ms | 22.699 ms | 26.847 ms |
 
-Both averages pass the local `<50 ms` regression gate. Earlier runs observed substring p99 values of 40.694 ms and 52.894 ms; the test gates the requested mean, while percentiles remain diagnostic. `EXPLAIN ANALYZE` on the filtered page showed one matching row in this scenario and only the corresponding subject/revision lookups after the indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA.
+All three averages pass the local `<50 ms` regression gate. Earlier runs observed substring p99 values of 27.199, 40.694 and 52.894 ms; the latest run shows a higher search tail, so percentiles remain diagnostic and visible. `EXPLAIN ANALYZE` for the draft queue shows MySQL reading the first 26 rows directly from `ix_academic_curriculum_drafts` in reverse order before joining program metadata. The filtered catalogue page showed one matching row and only the corresponding subject/revision lookups after the indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA.
