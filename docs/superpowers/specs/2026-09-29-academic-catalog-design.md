@@ -70,6 +70,7 @@ Modelo normalizado: `academic_program` conserva identidad por `(program_code, ac
 - El detalle anónimo presenta las entradas de una versión publicada; un borrador no puede consultarse por la ruta pública y un método diferente de GET permanece denegado.
 - El detalle del plan permite encontrar asignaturas por código/nombre, sin distinguir diacríticos, y acotar los resultados a un semestre sin repetir la consulta de red.
 - La tabla muestra como máximo 100 asignaturas en el DOM a la vez; paginar conserva el detalle ya cargado y no dispara otra consulta.
+- El catálogo filtra programas localmente por código, nombre, facultad y sede; buscar no repite la consulta a la API y el plan seleccionado sigue identificado cuando no coincide con el filtro.
 - Reimportación concurrente del mismo código de plan no duplica datos ni auditoría; publicaciones y auditoría son atómicas.
 - El front muestra estados vacío, cargando, validación por fila, borrador, publicado, errores de red/permisos y no presenta datos sintéticos como oficiales.
 
