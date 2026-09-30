@@ -4,13 +4,50 @@
 **Estado:** insumo preliminar; requiere validación con dueños de proceso UPTC  
 **Datos personales:** ninguno
 
+## Alcance priorizado
+
+La primera ruta a descubrir es **pregrado presencial**, por decisión del patrocinador del proyecto. FESAD/virtual y posgrado quedan fuera de este primer corte. La transferencia hacia programas presenciales se mantiene como un borde por definir con el dueño del proceso; no se le aplicarán automáticamente reglas de admisión ordinaria. Esto prioriza investigación; no constituye aprobación de reglas, datos o reemplazo de SIRA.
+
 ## Hechos observables en fuentes oficiales
 
 | Evidencia | Observación publicada | Límite |
 |---|---|---|
 | [Admisiones y Control de Registro Académico (ACRA)](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/) | La página separa aspirantes de pregrado, posgrado y transferencia; y estudiantes de pregrado y posgrado. La página indica actualización al 22 de septiembre de 2026. | La navegación pública no especifica todas las transiciones internas ni identifica los sistemas que hoy son fuente oficial. |
 | [Aspirante de pregrado y calendario 2027-1](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/) | Publica convocatorias, resoluciones y calendarios distintos para pregrado presencial y FESAD. Advierte que los nombres y el código SNP deben coincidir con los datos de ICFES. La página indica actualización al 15 de septiembre de 2026. | Calendarios y requisitos son vigentes por convocatoria; no deben codificarse como constantes ni generalizarse a posgrado o transferencias. |
-| [Reglamento estudiantil de pregrado](https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/2estu/regest_pre.html) y [documento de reglamento de posgrado](https://www.uptc.edu.co/sitio/portal/sitios/estudiantes/.content/doc/foll_reg_estud_posg.pdf) | UPTC publica referencias reglamentarias separadas para pregrado y posgrado. La página de pregrado indica actualización al 11 de julio de 2024. | Hay que validar con Secretaría General y los dueños académicos qué versiones, acuerdos por cohorte y modificaciones están vigentes para cada proceso. |
+| [Reglamento estudiantil de pregrado](https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/2estu/regest_pre.html) | UPTC publica el Acuerdo 130 de 1998 para pregrado presencial. La página indica actualización al 11 de julio de 2024. | Hay que validar con Secretaría General y los dueños académicos qué versiones, acuerdos por cohorte y modificaciones están vigentes para cada proceso. |
+| [Inscripción de pregrado presencial](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/p2_aspreg_preg.html) | La página de registro indica que se requiere documento y PIN; permite consultar el registro y corregirlo hasta el cierre, salvo el número de documento. | Es el comportamiento publicado para la inscripción en ese canal; la propiedad y el sistema maestro de estos datos no se identifican allí. No implementar captura/corrección de datos personales sin contrato institucional. |
+| [Calendario de aspirantes de pregrado](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/) | La convocatoria 2027-1 distingue presencial de FESAD, publica Resolución 111 de 2026 para presencial y señala que nombres/apellidos y código SNP deben corresponder a ICFES. | Fechas, requisitos y reglas son propios de la convocatoria; deben venir de una fuente administrable/versionada y no quedar como constantes de código. |
+| [ACRA — estudiante de pregrado](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/2estu/est_pre.html) | La página de 2026-2 publica por separado inscripción de asignaturas, pagos/matrícula y cancelaciones; cita Acuerdo 032 de 2020 para cancelación y enumera resoluciones que modifican calendario. | Las fechas y reglas operativas dependen del calendario aprobado y sus modificaciones; no son una máquina de estados universal. |
+| [Catálogo institucional de trámites](https://uptc.edu.co/sitio/portal/sitios/universidad/taip/ntaip/05_tram/) | ACRA/portal institucional publica, entre otros, matrícula de admitidos de pregrado, aplazamiento, cancelación, registro de asignaturas, reingreso, renovación, transferencia y grado. | El catálogo confirma capacidades/trámites publicados, pero no establece su orden total, criterios de elegibilidad, actores, sistemas ni excepciones. |
+| [Normatividad estudiantil UPTC](https://dsp.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/vic_acad/asu_est/normest.html), [Acuerdo 130 de 1998](https://cnormativa.uptc.edu.co/DocCompNormativa/130DE1998.pdf), [índice de acuerdos de 2020](https://www.uptc.edu.co/secretaria_general/consejo_superior/acuerdos_2020/index.html) | La UPTC publica el Acuerdo 130 de 1998 como reglamento de pregrado y el Acuerdo 032 de 2020 como modificación de su artículo 40. | La norma base y una modificación visible no bastan para afirmar que se tiene la compilación jurídica vigente completa. Secretaría General y los dueños deben confirmar versiones, alcance, vigencias, transitorios y reglas por cohorte. |
+
+## Mapa público de pregrado presencial
+
+El calendario vigente de la convocatoria y el catálogo de trámites permiten identificar dos grupos de capacidades. El primer grupo (inscripción, publicación de resultados y matrícula de admitidos) aparece calendarizado para convocatorias específicas. El segundo enumera trámites de estudiantes; la información pública consultada no demuestra que todos apliquen a la misma modalidad/cohorte ni define una secuencia única.
+
+```mermaid
+flowchart LR
+  subgraph Aspirante[Convocatoria de pregrado presencial — fechas por convocatoria]
+    Inscripcion[Inscripción de aspirante]
+    Resultados[Resultados / admisión]
+    MatriculaInicial[Matrícula de admitido]
+    Inscripcion --> Resultados --> MatriculaInicial
+  end
+
+  subgraph Estudiante[Trámites publicados — orden y reglas por validar]
+    Registro[Registro de asignaturas]
+    Renovacion[Renovación de matrícula]
+    Aplazamiento[Aplazamiento / reserva]
+    Cancelacion[Cancelación]
+    Reingreso[Reingreso]
+    Transferencia[Transferencia]
+    Grado[Grado]
+  end
+
+  MatriculaInicial -. vínculo de proceso por confirmar .-> Registro
+```
+
+Las cajas del segundo grupo son un inventario de nombres publicados, no estados de persona/estudiante ni transiciones autorizadas. El vínculo punteado marca una hipótesis de descubrimiento y debe sustituirse por el flujo aprobado por ACRA, Vicerrectoría Académica, Secretaría General y los programas participantes. La ruta de admisión también requiere los documentos vigentes de selección, calendario, cupos, novedades y reclamaciones.
 
 ## Mapa de rutas publicado
 
@@ -29,11 +66,11 @@ flowchart LR
 
 ## Decisiones que bloquean la implementación del ciclo real
 
-1. Priorizar alcance inicial: pregrado presencial, FESAD, posgrado, transferencias o una cohorte acotada.
-2. Nombrar al dueño de proceso y a la autoridad normativa para cada ruta; obtener reglamentos, acuerdos, resoluciones, calendarios y excepciones vigentes, con fecha de vigencia y cohortes afectadas.
-3. Confirmar el registro maestro actual para aspirantes, personas y estudiantes, sus sistemas, propietarios, identificadores estables e interfaces autorizadas.
+1. Nombrar al dueño de proceso y autoridad normativa para pregrado presencial; entregar reglamento compilado, acuerdos, resoluciones y calendarios vigentes, incluyendo transitorios, vigencias y cohortes afectadas.
+2. Definir el primer proceso y su límite: solo matrícula de admitidos, o también inscripción/selección y trámites de estudiantes antiguos; identificar sedes, programas y cohortes piloto.
+3. Confirmar el registro maestro actual para aspirantes, personas y estudiantes, sistemas responsables, identificadores estables, contratos de integración y política de conciliación. Referencias históricas a SIRA son antecedentes, no prueba de estado actual.
 4. Aprobar los datos personales mínimos para cada etapa, su propósito, acceso por rol, trazabilidad, retención y corrección. No importar documentos, datos sensibles ni expedientes reales a desarrollo.
-5. Acordar transiciones válidas, actores responsables, reversas, recursos y efectos en matrícula para la ruta priorizada.
+5. Acordar transiciones válidas, actores responsables, excepciones, reversas, recursos y efectos en matrícula, asignaturas y obligaciones financieras.
 6. Confirmar grupos y claims del proveedor institucional; mapearlos a permisos internos de lectura, actualización y administración.
 7. Definir datasets de ensayo sintéticos/anonimizados, totales de conciliación, aceptación del dueño de datos y rollback antes de cualquier ensayo de migración.
 
@@ -46,4 +83,4 @@ flowchart LR
 
 ## Próximo resultado verificable
 
-Un mapa de contexto por ruta priorizada, catálogo de eventos y reglas aprobado por responsables, contrato de datos minimizado, matriz actor-permiso y criterios de migración/conciliación. Solo después se planifica la primera historia TDD del expediente estudiantil con fixtures sintéticos.
+Un mapa de proceso de pregrado presencial y fuentes normativas confirmado por responsables, catálogo de eventos y reglas aprobado, contrato de datos minimizado, matriz actor-permiso y criterios de migración/conciliación. Solo después se planifica la primera historia TDD de expediente estudiantil con fixtures sintéticos. La fuente pública sirve para orientar el taller; no sustituye el acta de aprobación institucional.

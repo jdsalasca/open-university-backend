@@ -46,22 +46,43 @@ sequenceDiagram
 
 Si una validación o persistencia falla, no se publica una versión parcial. El API público solo expone configuración visual aprobada; los endpoints de administración requieren permiso comprobado en backend. La lista método/ruta vigente es `GET` y `PUT /api/v1/admin/branding`, `POST /api/v1/admin/branding/rollback` y `POST /api/v1/admin/branding/assets`. Las demás rutas o métodos bajo `/api/v1/admin/**` se deniegan hasta que cada capacidad defina y pruebe su autorización.
 
-## Rutas públicas del ciclo del estudiante y gate de descubrimiento
+## Pregrado presencial y gate de descubrimiento
 
-La navegación pública de ACRA distingue aspirantes de pregrado, posgrado y transferencia; para pregrado publica rutas presencial y FESAD, y separa la navegación de estudiantes de pregrado y posgrado. El esquema es solo una guía de descubrimiento: no define reglas ni estados autorizados.
+El alcance de descubrimiento priorizado es pregrado presencial. La fuente pública de ACRA calendariza las etapas de una convocatoria (incluida inscripción, resultados y matrícula de admitidos) y separa el catálogo de trámites del estudiante: registro de asignaturas, renovación, aplazamiento, cancelación, reingreso, transferencia y grado. El catálogo no prueba una secuencia universal ni que cada trámite comparta reglas entre modalidad, sede, programa o cohorte.
 
 ```mermaid
 flowchart LR
-  Sources[Fuentes públicas y sistemas vigentes] --> Owners[Validar dueño y norma por ruta]
-  Owners --> Rules[Confirmar estados, excepciones y cohortes]
-  Rules --> Data[Minimizar datos e identificar fuente maestra]
-  Data --> Access[Aprobar matriz actor-permiso]
-  Access --> Contract[Aprobar contrato y criterios de aceptación]
-  Contract --> TDD[Implementar primera historia con fixtures sintéticos]
-  TDD --> Reconcile[Ensayo y conciliación antes de migrar]
+  subgraph Convocatoria[Convocatoria presencial — calendario versionado]
+    Apply[Inscripción]
+    Results[Resultados/admisión]
+    Enroll[Matrícula de admitidos]
+    Apply --> Results --> Enroll
+  end
+
+  Enroll -. flujo académico pendiente de aprobación .-> Discovery
+
+  subgraph Discovery[Puertas antes de implementar el ciclo real]
+    Owner[Dueño de proceso y autoridad normativa]
+    Source[Registro maestro e interfaces autorizadas]
+    Rules[Reglas, cohortes, actores y excepciones]
+    Contract[Datos mínimos y permisos aprobados]
+    Tests[Historia TDD con datos sintéticos]
+    Reconcile[Ensayo, conciliación y reversa]
+    Owner --> Source --> Rules --> Contract --> Tests --> Reconcile
+  end
+
+  subgraph StudentServices[Trámites publicados — no son estados ni orden]
+    Registration[Registro de asignaturas]
+    Renewal[Renovación]
+    Defer[Aplazamiento]
+    Cancel[Cancelación]
+    Reentry[Reingreso]
+    Transfer[Transferencia]
+    Graduation[Grado]
+  end
 ```
 
-La secuencia evita programar un único estado del estudiante a partir de páginas públicas que muestran rutas distintas. El detalle normativo y la fuente oficial de datos deben aprobarse con sus responsables institucionales.
+La flecha punteada hacia el gate es una dependencia por descubrir, no un estado confirmado del estudiante. La lista de servicios se mantiene desconectada deliberadamente hasta que los responsables aprueben el proceso y su relación. El detalle de las fuentes y decisiones pendientes está en [descubrimiento del ciclo](../discovery/student-lifecycle-baseline.md).
 
 ## Consulta de identidad propia
 

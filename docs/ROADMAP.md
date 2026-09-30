@@ -8,7 +8,7 @@ Duraciones relativas; no son una fecha contractual. Se recalibran cuando UPTC en
 |---|---|---:|---|
 | 0. Descubrimiento y gobierno | Inventariar sistemas, dueños, bases e interfaces; talleres por proceso; clasificación de datos; reglas actuales; identidad institucional; seguridad, continuidad y contratación; mapa de dependencias | 4–6 semanas | Catálogo vigente, dueños por dominio, riesgos, alcance priorizado y cronograma base aprobado |
 | 1. Plataforma y diseño transversal | Repos separados y coordinados; Java 25/SDKMAN; React/Vite/SCSS; monolito modular; API con i18n; Compose Watch; MySQL; migraciones; auditoría; observabilidad; C4; Centro de Identidad Visual | 8–12 semanas | Aplicaciones arrancables, configuración de marca gobernada, permisos de ejemplo no productivos, métricas de latencia instrumentadas |
-| 2. Identidad y ciclo del estudiante | Estructura institucional, identificadores, personas y vínculos, roles, admisiones, expediente, estados del ciclo y trazabilidad | 3–5 meses | Recorridos validados con personal y datos sintéticos; reglas institucionales aprobadas |
+| 2. Identidad y ciclo del estudiante | Descubrir primero pregrado presencial; validar responsables, norma compilada, calendario y convocatoria, sistemas maestros, identificadores, datos mínimos, permisos y excepciones. Después implementar por cortes aprobados: admisión/matrícula, trámites de estudiante y expediente | 3–5 meses (referencial, tras acceso a dueños y sistemas) | Primer recorrido presencial aprobado y probado con datos sintéticos; conciliación y rollback definidos. Sin modelar FESAD/virtual o posgrado por analogía |
 | 3. Oferta académica y currículo | Programas, sedes/modalidades, versiones de malla, currículo, asignaturas, prerrequisitos, créditos y equivalencias | 3–5 meses | Catálogo versionado y migración de ensayo conciliada |
 | 4. Operación académica | Periodos, grupos, matrícula, carga de cursos, programación, horarios, calificaciones, certificados y grados | 5–9 meses | Flujo académico completo por cohortes piloto y criterios de corte |
 | 5. Servicios universitarios | Bienestar, salud, restaurante, residencias, biblioteca y otros servicios confirmados; pagos e integraciones donde aplique | 4–9 meses por corrientes paralelas | Flujos de servicio integrados y responsables operativos formados |
@@ -36,6 +36,21 @@ gantt
 
 Las fechas del diagrama son una ilustración relativa iniciada el 1 de octubre de 2026, no una fecha autorizada de inicio. El programa completo podría abarcar aproximadamente 18–36+ meses con equipos de dominio y trabajo paralelo; un único equipo, integraciones complejas o datos de baja calidad pueden ampliarlo. Cada hito depende de pruebas de aceptación y ventanas de corte aprobadas, no solo del calendario.
 
+## Desglose del siguiente hito: pregrado presencial
+
+Estimación de trabajo posterior a que UPTC designe responsables y facilite documentación no productiva. No incluye espera de aprobaciones ni contratación y no constituye fecha comprometida.
+
+| Orden | Actividad | Duración estimada | Dependencia / salida de control |
+|---|---|---:|---|
+| 1 | Consolidar Acuerdo 130, modificaciones, reglas por cohorte y resoluciones/calendarios aplicables con autoridad normativa | 1–2 semanas | Inventario de fuentes aprobado por Secretaría General y dueño del proceso |
+| 2 | Recorrer procesos con ACRA, programas/facultades y las áreas que UPTC designe: admisión/matrícula inicial, renovación, registro de asignaturas, cancelación/aplazamiento y reingreso | 2–3 semanas | BPMN/procesos, actores, excepciones, plazos, evidencias y alcance de primera entrega aceptados |
+| 3 | Confirmar sistemas fuente, identificadores y contratos para persona, aspirante y estudiante; perfilar calidad y volumen sin copiar datos personales a desarrollo | 2–3 semanas | Mapa de sistemas e interfaces, catálogo minimizado y plan de ensayo/conciliación |
+| 4 | Aprobar autenticación, matriz actor-permiso, retención, trazabilidad, criterios de aceptación y escenarios sintéticos AAA | 1–2 semanas | Contratos de API y pruebas de aceptación firmados por responsables |
+| 5 | Implementar una primera ruta vertical, aún por seleccionar con los responsables, con TDD, migración Flyway, observabilidad y diagramas actualizados | 4–6 semanas | Flujo funcional en entorno no productivo; casos felices, errores, permisos y concurrencia cubiertos |
+| 6 | Ensayar integración/migración, reversa y carga representativa; medir API y SQL por separado (promedio, p50/p95/p99) | 2–3 semanas | Informe de conciliación/performance y decisión de avanzar, corregir o no cortar |
+
+Las actividades 2 y 3 pueden solaparse parcialmente. La duración nominal resultante es de unas 12–19 semanas, pero el acceso a documentación/ambientes, las aprobaciones y los hallazgos pueden ampliarla. No se ejecuta corte ni se usa una fuente productiva antes de aceptación explícita del dueño de dominio.
+
 ## Cadencia y gates por dominio
 
 1. Descubrimiento y propietario: proceso, estados, reglas, fuente oficial, datos y usuarios.
@@ -52,6 +67,6 @@ Las fechas del diagrama son una ilustración relativa iniciada el 1 de octubre d
 - H1: frontend y backend reproducibles desde repos separados con SDKMAN Java 25 y Compose local.
 - H2: Centro de Identidad Visual con administración autorizada, vista previa, publicación y auditoría.
 - H3: autenticación federada y roles UPTC confirmados.
-- H4: identidad, expediente estudiantil y ciclo básico probados en un entorno UPTC no productivo, empezando por rutas priorizadas y reglas, datos y permisos aprobados por sus responsables. Ver [descubrimiento inicial del ciclo](discovery/student-lifecycle-baseline.md).
+- H4: identidad, expediente estudiantil y ciclo básico de **pregrado presencial** probados en un entorno UPTC no productivo, solo después de que sus responsables aprueben procesos, normas vigentes, datos, permisos y reglas por cohorte. La decisión de ruta está tomada; el subproceso/cohorte y contrato institucional siguen pendientes. Ver [descubrimiento del ciclo](discovery/student-lifecycle-baseline.md).
 - H5: catálogo de programas, mallas, versiones curriculares y asignaturas aprobado.
 - H6: primer corte de dominio ejecutado con conciliación y reversa ensayada.
