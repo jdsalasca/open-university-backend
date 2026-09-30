@@ -144,7 +144,7 @@
 - [x] Desarrollar shell adaptable con identidad UPTC, editor, previsualización y mensajes claros.
 - [x] Añadir logo/banner a la vista previa sin permitir publicación cuando no hay token institucional configurado.
 - [x] Ejecutar suite frontend, build SCSS y lint; no usar datos académicos reales.
-- [ ] Integrar el hito en `develop` de ambos repos una vez el split esté publicado.
+- [x] Integrar el hito en `develop` de ambos repos: los dos remotos privados están publicados y el checkout backend fija el commit del submódulo frontend.
 
 ### Task 7: Documentación y verificación de extremo a extremo
 
@@ -157,10 +157,11 @@
 - Produces: pasos reproducibles, matriz de configuración, límites de entorno y checklist de corte.
 
 - [x] Ejecutar suite frontend, `npm run build`, `npm run lint`, `./mvnw verify` y `docker compose config --quiet`.
-- [x] Iniciar MySQL 8.4 real por Compose, comprobar Flyway v1, salud, `GET /api/v1/branding`, frontend 200 y rechazo 401; solo datos sintéticos.
+- [x] Iniciar MySQL 8.4 real por Compose, comprobar Flyway v1, salud, `GET /api/v1/branding`, frontend 200, rechazo 401 en HTTP y 401/403 en MockMvc; solo datos sintéticos.
+- [ ] Publicación administrativa autenticada contra OIDC institucional: pendiente de issuer, audience y claims autorizados; no inventar credenciales.
 - [x] Ejecutar smoke de UI en navegador local y observar el Centro de Identidad Visual; nunca conectar a producción.
 - [x] Actualizar cronograma, README, AGENTS, C4, proceso de desarrollo y runbook para dos repos y Compose.
-- [ ] Inspeccionar diff, estado Git, secretos, duplicaciones y diagramas; confirmar cambios frontend/backend en `develop` con upstream privado.
+- [x] Inspeccionar diff, estado Git, archivos de configuración, duplicaciones y diagramas; confirmar cambios frontend/backend en `develop` con upstream privado.
 
 ### Task 8: i18n, entorno Compose Watch y repos separados
 
@@ -179,8 +180,8 @@
 - [x] Definir Dockerfiles y Compose Watch: HMR del frontend, restart backend al guardar Java y rebuild ante dependencias.
 - [x] `docker compose config --quiet` pasa.
 - [x] `docker compose up --build -d --wait`; comprobar MySQL 8.4, Flyway, endpoint público y ambos puertos.
-- [ ] Confirmar recarga frontend/backend observando cambios de runtime.
-- [ ] Crear/poblar repos privados, publicar commits `develop`, configurar upstream y validar submódulo recursivo.
+- [x] Confirmar recarga del frontend por sync/HMR y reinicio del backend al guardar recursos Java/Spring mediante Compose Watch.
+- [x] Crear los repos privados, publicar `develop`, configurar upstream y validar el submódulo recursivo.
 
 ## Pasos de ejecución
 
