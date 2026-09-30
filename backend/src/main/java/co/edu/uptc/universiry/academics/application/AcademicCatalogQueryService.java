@@ -16,7 +16,7 @@ public interface AcademicCatalogQueryService {
             CurriculumEntriesPageQuery query
     );
 
-    List<CurriculumSummary> drafts();
+    AcademicCurriculumDraftsPage drafts(CurriculumDraftsPageQuery query);
 
     AcademicCurriculumDetails curriculum(UUID curriculumId);
 }

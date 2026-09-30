@@ -3,10 +3,13 @@ package co.edu.uptc.universiry.academics.infrastructure.persistence;
 import co.edu.uptc.universiry.academics.application.AcademicCatalogRepository;
 import co.edu.uptc.universiry.academics.application.AcademicCatalogActorSub;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDetails;
+import co.edu.uptc.universiry.academics.application.AcademicCurriculumDraftsPage;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumEntriesPage;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumEntrySummary;
 import co.edu.uptc.universiry.academics.application.AcademicProgramSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
+import co.edu.uptc.universiry.academics.application.CurriculumDraftCursor;
+import co.edu.uptc.universiry.academics.application.CurriculumDraftsPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumPublishResult;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumVersionConflictException;
@@ -319,10 +322,33 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
 
     @Override
     @Transactional(readOnly = true)
-    public List<CurriculumSummary> listDrafts() {
-        return jdbcTemplate.query(
-                SUMMARY_SELECT + " WHERE c.status = 'DRAFT' ORDER BY c.created_at, c.curriculum_id",
-                CURRICULUM_SUMMARY_MAPPER);
+    public AcademicCurriculumDraftsPage listDrafts(CurriculumDraftsPageQuery query) {
+        long totalItems = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_curriculum WHERE status = 'DRAFT'", Long.class);
+        List<Object> parameters = new ArrayList<>();
+        String cursorFilter = "";
+        if (query.after() != null) {
+            LocalDateTime cursorCreatedAt = query.after().createdAt();
+            cursorFilter = " AND (c.created_at < ? OR (c.created_at = ? AND c.curriculum_id < ?)) ";
+            parameters.add(cursorCreatedAt);
+            parameters.add(cursorCreatedAt);
+            parameters.add(query.after().curriculumId().toString());
+        }
+        parameters.add(query.pageSize() + 1);
+        List<CurriculumSummary> candidates = jdbcTemplate.query(
+                SUMMARY_SELECT + " WHERE c.status = 'DRAFT' " + cursorFilter
+                        + "ORDER BY c.created_at DESC, c.curriculum_id DESC LIMIT ?",
+                CURRICULUM_SUMMARY_MAPPER,
+                parameters.toArray());
+        boolean hasNext = candidates.size() > query.pageSize();
+        List<CurriculumSummary> drafts = List.copyOf(candidates.subList(
+                0, Math.min(candidates.size(), query.pageSize())));
+        CurriculumDraftCursor nextCursor = hasNext
+                ? new CurriculumDraftCursor(
+                        LocalDateTime.ofInstant(drafts.getLast().createdAt(), ZoneOffset.UTC), drafts.getLast().id())
+                : null;
+        return new AcademicCurriculumDraftsPage(
+                query.pageSize(), totalItems, drafts, nextCursor);
     }
 
     @Override

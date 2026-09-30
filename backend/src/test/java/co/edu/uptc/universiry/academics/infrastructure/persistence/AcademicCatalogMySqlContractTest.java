@@ -1,8 +1,12 @@
 package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogQueryService;
+import co.edu.uptc.universiry.academics.application.AcademicCatalogRepository;
+import co.edu.uptc.universiry.academics.application.AcademicCurriculumDraftsPage;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumEntriesPage;
 import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
+import co.edu.uptc.universiry.academics.application.CurriculumDraftsPageQuery;
+import co.edu.uptc.universiry.academics.application.CurriculumPublishResult;
 import co.edu.uptc.universiry.academics.application.CurriculumPublicationService;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumCsvSchema;
@@ -49,6 +53,9 @@ class AcademicCatalogMySqlContractTest {
 
     @Autowired
     private CurriculumPublicationService publicationService;
+
+    @Autowired
+    private AcademicCatalogRepository catalogRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -186,6 +193,37 @@ class AcademicCatalogMySqlContractTest {
         finally {
             jdbcTemplate.execute("DROP TEMPORARY TABLE IF EXISTS " + legacyEntries);
         }
+    }
+
+    @Test
+    void mysql_uses_utc_session_and_cursor_keeps_unseen_drafts_after_publication() {
+        // Arrange
+        String sessionTimeZone = jdbcTemplate.queryForObject("SELECT @@SESSION.time_zone", String.class);
+        assertEquals("+00:00", sessionTimeZone);
+
+        String programCode = "CUR-" + UUID.randomUUID().toString().replace("-", "")
+                .substring(0, 12).toUpperCase(Locale.ROOT);
+        CurriculumSummary firstDraft = importDraft(programCode, "V1", "CUR001");
+        CurriculumSummary secondDraft = importDraft(programCode, "V2", "CUR002");
+        LocalDateTime tiedCreatedAt = LocalDateTime.of(2037, 1, 1, 10, 0);
+        jdbcTemplate.update("UPDATE academic_curriculum SET created_at = ? WHERE curriculum_id = ?",
+                tiedCreatedAt, firstDraft.id().toString());
+        jdbcTemplate.update("UPDATE academic_curriculum SET created_at = ? WHERE curriculum_id = ?",
+                tiedCreatedAt, secondDraft.id().toString());
+
+        // Act
+        AcademicCurriculumDraftsPage firstPage = catalogRepository.listDrafts(
+                new CurriculumDraftsPageQuery(1, null));
+        var firstPageDraftId = firstPage.drafts().getFirst().id();
+        var remainingDraftId = firstPageDraftId.equals(firstDraft.id()) ? secondDraft.id() : firstDraft.id();
+        assertEquals(CurriculumPublishResult.PUBLISHED,
+                catalogRepository.publishDraft(firstPageDraftId, ACTOR));
+        AcademicCurriculumDraftsPage secondPage = catalogRepository.listDrafts(
+                new CurriculumDraftsPageQuery(1, firstPage.nextCursor()));
+
+        // Assert
+        assertEquals(remainingDraftId, secondPage.drafts().getFirst().id());
+        assertEquals(firstPage.totalItems() - 1, secondPage.totalItems());
     }
 
     @Test
@@ -348,6 +386,14 @@ class AcademicCatalogMySqlContractTest {
             statement.setString(7, String.format(Locale.ROOT, "Materia sintética %05d", subject.rowOrder()));
         });
         return curriculumId;
+    }
+
+    private CurriculumSummary importDraft(String programCode, String version, String subjectCode) {
+        String csv = String.join("\r\n",
+                CSV_HEADER,
+                row(programCode, version, "2026-1", subjectCode, "Synthetic cursor subject", "1"),
+                "");
+        return publicationService.importCsv(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)), ACTOR);
     }
 
     private int countCurricula(UUID curriculumId) {

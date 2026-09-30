@@ -39,13 +39,15 @@ La vista previa del catálogo está en `http://localhost:5173/#programas`. El AP
 
 El panel administrativo muestra el enlace «Descargar plantilla CSV» incluso sin sesión. Descarga el contrato vigente desde `GET /api/v1/academic-catalog/curriculum-template`, que devuelve un archivo UTF-8 generado desde los encabezados Java y no accede a MySQL.
 
-Con el permiso `academic:catalog:write` en un entorno autorizado, selecciona el CSV y pulsa **Validar CSV** para revisar metadata y una muestra de hasta 10 asignaturas. La ruta `POST /api/v1/admin/academic-catalog/import-previews` vuelve a validar todo el archivo, pero no crea borradores ni eventos. Revisa el resumen y pulsa **Crear borrador**; el servidor recibe y valida nuevamente el archivo antes de guardarlo en una transacción. Cambiar el archivo limpia la muestra anterior. La previsualización local continúa sujeta a autenticación y no habilita la carga institucional desde Compose.
+Con el permiso `academic:catalog:write` en un entorno autorizado, selecciona el CSV y pulsa **Validar CSV** para revisar metadata y una muestra de hasta 10 asignaturas. La ruta `POST /api/v1/admin/academic-catalog/import-previews` vuelve a validar todo el archivo, pero no crea borradores ni eventos. Revisa el resumen y pulsa **Crear borrador**; el servidor recibe y valida nuevamente el archivo antes de guardarlo en una transacción. Cambiar el archivo limpia la muestra anterior. La cola de revisión requiere `academic:catalog:read`, carga 25 borradores por respuesta y acepta un máximo de 100 mediante un cursor de continuación. Crear un borrador reinicia la cola desde el más reciente; publicar vuelve a consultar la posición vigente y reinicia desde el inicio si quedó vacía. La previsualización local continúa sujeta a autenticación y no habilita la carga institucional desde Compose.
 
 ## Variables locales
 
 Compose ofrece credenciales sencillas solo para desarrollo. Para cambiarlas, copia `.env.example` a `.env`, actualiza claves y reinicia el proyecto. `.env` queda fuera de Git. Las variables `UPTC_OIDC_ISSUER_URI` y `UPTC_OIDC_AUDIENCE` se dejan vacías por defecto; mientras sigan vacías, `GET /api/v1/me` requiere un token que no está disponible en Compose y responderá 401, y no se puede publicar identidad visual mediante el API. No se incluye una cuenta ni token de prueba.
 
 MySQL escucha solo en `127.0.0.1:3307` y conserva datos en `mysql-data`. `docker compose down` conserva volúmenes; `docker compose down -v` elimina la base y activos locales.
+
+Las conexiones MySQL del backend fuerzan `connectionTimeZone=UTC` y `forceConnectionTimeZoneToSession=true`. Si se define `DB_URL` fuera de Compose, conserva ambos parámetros: las columnas `TIMESTAMP(6)` y los cursores usan una línea temporal UTC sin ambigüedades de horario de verano.
 
 ## Validación
 
@@ -67,7 +69,7 @@ Invoke-WebRequest http://localhost:8080/api/v1/academic-catalog/curriculum-templ
 docker compose exec -T mysql sh -lc 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -Nse "SELECT version FROM flyway_schema_history WHERE success = 1 ORDER BY installed_rank"'
 ```
 
-La última consulta debe mostrar las migraciones aplicadas, incluida `4`. Para comprobar que la importación administrativa rechaza anónimos sin guardar nada, ejecuta el siguiente smoke test PowerShell con el archivo de encabezados vacío de filas; la respuesta esperada es `401 Unauthorized`:
+La última consulta debe mostrar las migraciones aplicadas, incluida `5`. Para comprobar que la importación administrativa rechaza anónimos sin guardar nada, ejecuta el siguiente smoke test PowerShell con el archivo de encabezados vacío de filas; la respuesta esperada es `401 Unauthorized`:
 
 ```powershell
 $http = [System.Net.Http.HttpClient]::new()
@@ -92,6 +94,6 @@ Desde la raíz del repositorio backend puedes repetir el perfil local:
 .\tools\verify-mysql-curriculum.ps1
 ```
 
-El script crea un contenedor MySQL 8.4 único, temporal, sin volumen persistente y ligado a un puerto efímero de `127.0.0.1`. Ejecuta pruebas de collation/escape y un perfil de 10.000 entradas sintéticas con 10 calentamientos y 50 muestras, seleccionando Java 25 desde SDKMAN y usando Maven Wrapper. Al terminar elimina solo el contenedor de esa ejecución. No usa ni modifica el contenedor o volumen de MySQL de Compose.
+El script crea un contenedor MySQL 8.4 único, temporal, sin volumen persistente y ligado a un puerto efímero de `127.0.0.1`. Ejecuta pruebas de collation/escape, valida que la sesión use UTC y recorre dos borradores con el cursor compuesto `(created_at, curriculum_id)` mientras publica el primero. También mide 10.000 entradas sintéticas con 10 calentamientos y 50 muestras, seleccionando Java 25 desde SDKMAN y usando Maven Wrapper. Al terminar elimina solo el contenedor de esa ejecución. No usa ni modifica el contenedor o volumen de MySQL de Compose.
 
-La última ejecución del perfil del 30 de septiembre de 2026 obtuvo medias de 22,062 ms (sin filtro) y 33,807 ms (búsqueda por subcadena); ambas quedan bajo el gate local `<50 ms`. En búsqueda, p50/p95/p99 fueron 33,544/37,983/40,694 ms. Una ejecución repetida anterior midió p99 de búsqueda de 52,894 ms, lo que muestra variación en la cola aunque la media se mantuvo cerca de 33 ms. El resultado acredita esa máquina y ese perfil de concurrencia 1 únicamente. La carga y latencia representativas de UPTC, el hardware destino y el SLO institucional siguen pendientes de acuerdo con los responsables.
+La última ejecución del perfil del 30 de septiembre de 2026 obtuvo medias de 13,526 ms (sin filtro) y 21,470 ms (búsqueda por subcadena); ambas quedan bajo el gate local `<50 ms`. En búsqueda, p50/p95/p99 fueron 21,159/25,247/27,199 ms. Dos ejecuciones anteriores midieron p99 de búsqueda de 40,694 y 52,894 ms, lo que mantiene visible la variación de cola. El resultado acredita esa máquina y ese perfil de concurrencia 1 únicamente. La carga y latencia representativas de UPTC, el hardware destino y el SLO institucional siguen pendientes de acuerdo con los responsables.

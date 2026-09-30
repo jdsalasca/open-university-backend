@@ -40,8 +40,8 @@ public class DefaultAcademicCatalogQueryService implements AcademicCatalogQueryS
     }
 
     @Override
-    public List<CurriculumSummary> drafts() {
-        return repository.listDrafts();
+    public AcademicCurriculumDraftsPage drafts(CurriculumDraftsPageQuery query) {
+        return repository.listDrafts(query);
     }
 
     @Override

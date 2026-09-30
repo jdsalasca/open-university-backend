@@ -2,9 +2,12 @@ package co.edu.uptc.universiry.academics.infrastructure.web;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogQueryService;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDetails;
+import co.edu.uptc.universiry.academics.application.CurriculumDraftCursor;
+import co.edu.uptc.universiry.academics.application.CurriculumDraftsPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumCsvSchema;
 import co.edu.uptc.universiry.academics.application.InvalidCurriculumEntriesPageQueryException;
+import co.edu.uptc.universiry.academics.application.InvalidCurriculumDraftsPageQueryException;
 import co.edu.uptc.universiry.academics.application.CurriculumImportSourceException;
 import co.edu.uptc.universiry.academics.application.CurriculumPublicationService;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
@@ -87,8 +90,13 @@ public class AcademicCatalogController {
     }
 
     @GetMapping("/api/v1/admin/academic-catalog/drafts")
-    public List<AcademicCurriculumResponse> drafts() {
-        return queryService.drafts().stream().map(AcademicCurriculumResponse::from).toList();
+    public AcademicCurriculumDraftsPageResponse drafts(
+            @RequestParam(defaultValue = CurriculumDraftsPageQuery.DEFAULT_PAGE_SIZE) String pageSize,
+            @RequestParam(required = false) String after
+    ) {
+        CurriculumDraftsPageQuery query = new CurriculumDraftsPageQuery(
+                parseDraftQueryInteger(pageSize), after == null ? null : CurriculumDraftCursor.decode(after));
+        return AcademicCurriculumDraftsPageResponse.from(queryService.drafts(query));
     }
 
     @GetMapping("/api/v1/admin/academic-catalog/curricula/{curriculumId}")
@@ -140,6 +148,14 @@ public class AcademicCatalogController {
             return Integer.parseInt(value);
         } catch (NumberFormatException invalidInteger) {
             throw new InvalidCurriculumEntriesPageQueryException();
+        }
+    }
+
+    private static int parseDraftQueryInteger(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException invalidInteger) {
+            throw new InvalidCurriculumDraftsPageQueryException();
         }
     }
 }

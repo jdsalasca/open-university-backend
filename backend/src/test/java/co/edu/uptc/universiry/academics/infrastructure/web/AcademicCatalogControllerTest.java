@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -97,13 +99,73 @@ class AcademicCatalogControllerTest {
         // Act + Assert
         mockMvc.perform(get("/api/v1/admin/academic-catalog/drafts"))
                 .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
+                .andExpect(jsonPath("$.pageSize").value(25))
+                .andExpect(jsonPath("$.totalItems").value(0))
+                .andExpect(jsonPath("$.nextCursor").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.drafts.length()").value(0));
         mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports").file(csv))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("forbidden"));
         mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews").file(csv))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("forbidden"));
+    }
+
+    @Test
+    @WithMockUser(username = "catalog-reader-test", authorities = READ)
+    void draft_list_rejects_invalid_page_sizes_and_cursors() throws Exception {
+        // Arrange + Act + Assert
+        mockMvc.perform(get("/api/v1/admin/academic-catalog/drafts").param("pageSize", "0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_curriculum_drafts_page_query"));
+        mockMvc.perform(get("/api/v1/admin/academic-catalog/drafts").param("pageSize", "not-a-number"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_curriculum_drafts_page_query"));
+        mockMvc.perform(get("/api/v1/admin/academic-catalog/drafts").param("pageSize", "101"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_curriculum_drafts_page_query"));
+        mockMvc.perform(get("/api/v1/admin/academic-catalog/drafts").param("after", "!!!"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_curriculum_drafts_page_query"));
+    }
+
+    @Test
+    @WithAcademicCatalogPermissions
+    void draft_list_returns_only_the_requested_bounded_page() throws Exception {
+        // Arrange
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports")
+                        .file(upload(validCsv(programCode(), "V1", "3")))
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isCreated());
+        String publishedProgramCode = programCode();
+        importAndPublish(publishedProgramCode, validCsv(publishedProgramCode, "V1", "3"));
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports")
+                        .file(upload(validCsv(programCode(), "V1", "3")))
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isCreated());
+
+        // Act + Assert
+        var firstPage = mockMvc.perform(get("/api/v1/admin/academic-catalog/drafts")
+                        .param("pageSize", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pageSize").value(1))
+                .andExpect(jsonPath("$.totalItems").value(2))
+                .andExpect(jsonPath("$.drafts.length()").value(1))
+                .andExpect(jsonPath("$.nextCursor").isNotEmpty())
+                .andReturn();
+        Matcher nextCursorMatcher = Pattern.compile("\"nextCursor\":\"([A-Za-z0-9_-]+)\"")
+                .matcher(firstPage.getResponse().getContentAsString());
+        org.junit.jupiter.api.Assertions.assertTrue(nextCursorMatcher.find());
+        String nextCursor = nextCursorMatcher.group(1);
+
+        mockMvc.perform(get("/api/v1/admin/academic-catalog/drafts")
+                        .param("pageSize", "1")
+                        .param("after", nextCursor))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pageSize").value(1))
+                .andExpect(jsonPath("$.totalItems").value(2))
+                .andExpect(jsonPath("$.drafts.length()").value(1))
+                .andExpect(jsonPath("$.nextCursor").value(org.hamcrest.Matchers.nullValue()));
     }
 
     @Test

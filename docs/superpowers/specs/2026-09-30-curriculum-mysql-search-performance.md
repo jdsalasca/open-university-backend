@@ -27,11 +27,11 @@ Search remains a literal substring query over code or name, case/accent-insensit
 
 ## Final local measurement — 2026-09-30
 
-The repeatable runner `tools/verify-mysql-curriculum.ps1` passed all three MySQL contract tests on the same 10,000-row fixture, with 10 warmups, 50 samples, page size 100 and concurrency 1:
+The repeatable runner `tools/verify-mysql-curriculum.ps1` passed all five MySQL contract tests, including the UTC-session and cursor-publication contract, on the same 10,000-row fixture, with 10 warmups, 50 samples, page size 100 and concurrency 1:
 
 | Query | Average | p50 | p95 | p99 |
 |---|---:|---:|---:|---:|
-| First page, no filter | 22.062 ms | 22.010 ms | 24.060 ms | 25.420 ms |
-| First page, substring filter | 33.807 ms | 33.544 ms | 37.983 ms | 40.694 ms |
+| First page, no filter | 13.526 ms | 13.172 ms | 16.077 ms | 17.897 ms |
+| First page, substring filter | 21.470 ms | 21.159 ms | 25.247 ms | 27.199 ms |
 
-Both averages pass the local `<50 ms` regression gate. One earlier repeated run observed a substring p99 of 52.894 ms; the test gates the requested mean, while percentiles remain diagnostic. `EXPLAIN ANALYZE` on the filtered page showed one matching row in this scenario and only the corresponding subject/revision lookups after the indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA.
+Both averages pass the local `<50 ms` regression gate. Earlier runs observed substring p99 values of 40.694 ms and 52.894 ms; the test gates the requested mean, while percentiles remain diagnostic. `EXPLAIN ANALYZE` on the filtered page showed one matching row in this scenario and only the corresponding subject/revision lookups after the indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA.

@@ -21,7 +21,7 @@ public interface AcademicCatalogRepository {
 
     List<CurriculumSummary> listPublishedCurricula(UUID programId);
 
-    List<CurriculumSummary> listDrafts();
+    AcademicCurriculumDraftsPage listDrafts(CurriculumDraftsPageQuery query);
 
     CurriculumPublishResult publishDraft(UUID curriculumId, String actorSub);
 }

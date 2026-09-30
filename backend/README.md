@@ -32,7 +32,7 @@ El catálogo conserva programa, asignatura, revisiones inmutables, plan y entrad
 | `GET` | `/api/v1/academic-catalog/programs/{programId}/curricula` | Público; solo versiones publicadas |
 | `GET` | `/api/v1/academic-catalog/curricula/{curriculumId}` | Público; metadata raíz sin asignaturas para una versión publicada; borrador/inexistente responde 404 |
 | `GET` | `/api/v1/academic-catalog/curricula/{curriculumId}/entries?page=1&pageSize=100&search=&semester=` | Público; página filtrada de hasta 100 asignaturas publicadas; borrador/inexistente responde 404 |
-| `GET` | `/api/v1/admin/academic-catalog/drafts` | `academic:catalog:read` |
+| `GET` | `/api/v1/admin/academic-catalog/drafts?pageSize=25&after={cursor}` | `academic:catalog:read`; máximo 100 por respuesta, solo borradores, navegación por cursor |
 | `GET` | `/api/v1/admin/academic-catalog/curricula/{curriculumId}` | `academic:catalog:read` |
 | `POST` | `/api/v1/admin/academic-catalog/imports` | `academic:catalog:write`; multipart field `file` |
 | `POST` | `/api/v1/admin/academic-catalog/curricula/{curriculumId}/publish` | `academic:catalog:write` |

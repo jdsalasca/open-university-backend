@@ -133,7 +133,7 @@ class AcademicCatalogSchemaTest {
 
         // Assert
         assertTrue(curriculumIndexes.contains(Set.of("status", "program_id", "cohort_from", "cohort_through")));
-        assertTrue(curriculumIndexes.contains(Set.of("status", "created_at")));
+        assertTrue(curriculumIndexes.contains(Set.of("status", "created_at", "curriculum_id")));
         assertTrue(entryIndexes.contains(Set.of(
                 "curriculum_id", "semester", "row_order", "search_subject_code", "search_subject_name")));
         assertFalse(entryIndexes.contains(Set.of("curriculum_id", "semester", "row_order")),

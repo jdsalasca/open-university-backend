@@ -2,8 +2,10 @@ package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogRepository;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDetails;
+import co.edu.uptc.universiry.academics.application.AcademicCurriculumDraftsPage;
 import co.edu.uptc.universiry.academics.application.AcademicProgramSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumImportService;
+import co.edu.uptc.universiry.academics.application.CurriculumDraftsPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumPublishResult;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumVersionConflictException;
@@ -18,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -180,7 +183,7 @@ class AcademicCatalogRepositoryIntegrationTest {
         // Act
         List<CurriculumSummary> publicBeforePublish = repository.listPublishedCurricula(draft.programId());
         List<AcademicProgramSummary> programsBeforePublish = repository.listPublishedPrograms();
-        List<CurriculumSummary> drafts = repository.listDrafts();
+        List<CurriculumSummary> drafts = repository.listDrafts(new CurriculumDraftsPageQuery(25, null)).drafts();
         CurriculumPublishResult firstPublish = repository.publishDraft(draft.id(), actorSub());
         CurriculumPublishResult secondPublish = repository.publishDraft(draft.id(), actorSub());
 
@@ -198,6 +201,37 @@ class AcademicCatalogRepositoryIntegrationTest {
         assertEquals(1, jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM academic_catalog_audit_event WHERE curriculum_id = ? AND action_key = 'CURRICULUM_PUBLISHED'",
                 Integer.class, draft.id().toString()));
+    }
+
+    @Test
+    void draft_cursor_preserves_uuid_ties_and_unseen_drafts_when_a_page_item_is_published() {
+        // Arrange
+        long existingDrafts = repository.listDrafts(new CurriculumDraftsPageQuery(100, null)).totalItems();
+        String programCode = programCode();
+        CurriculumSummary older = repository.createDraft(curriculum(
+                programCode, "V1", "Programa sintético", "Facultad de prueba", "Tunja",
+                subjectCode(), "Asignatura antigua", "3", sourceHash()), actorSub());
+        CurriculumSummary newer = repository.createDraft(curriculum(
+                programCode, "V2", "Programa sintético", "Facultad de prueba", "Tunja",
+                subjectCode(), "Asignatura reciente", "3", sourceHash()), actorSub());
+        LocalDateTime tiedCreatedAt = LocalDateTime.of(2037, 1, 1, 10, 0);
+        jdbcTemplate.update("UPDATE academic_curriculum SET created_at = ? WHERE curriculum_id = ?",
+                tiedCreatedAt, older.id().toString());
+        jdbcTemplate.update("UPDATE academic_curriculum SET created_at = ? WHERE curriculum_id = ?",
+                tiedCreatedAt, newer.id().toString());
+        // Act
+        AcademicCurriculumDraftsPage firstPage = repository.listDrafts(new CurriculumDraftsPageQuery(1, null));
+        UUID firstDraftId = firstPage.drafts().getFirst().id();
+        CurriculumSummary remaining = firstDraftId.equals(older.id()) ? newer : older;
+        assertEquals(CurriculumPublishResult.PUBLISHED, repository.publishDraft(firstDraftId, actorSub()));
+        AcademicCurriculumDraftsPage secondPage = repository.listDrafts(
+                new CurriculumDraftsPageQuery(1, firstPage.nextCursor()));
+
+        // Assert
+        assertEquals(existingDrafts + 2, firstPage.totalItems());
+        assertEquals(firstDraftId, firstPage.drafts().getFirst().id());
+        assertEquals(existingDrafts + 1, secondPage.totalItems());
+        assertEquals(remaining.id(), secondPage.drafts().getFirst().id());
     }
 
     @Test

@@ -66,7 +66,7 @@ try {
         throw "No se pudo resolver el puerto local efímero: $publishedPort"
     }
 
-    $env:UNIVERSIRY_MYSQL_TEST_URL = "jdbc:mysql://127.0.0.1:$($Matches[1])/${databaseName}?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=UTC"
+    $env:UNIVERSIRY_MYSQL_TEST_URL = "jdbc:mysql://127.0.0.1:$($Matches[1])/${databaseName}?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
     $env:UNIVERSIRY_MYSQL_TEST_USERNAME = $databaseUser
     $env:UNIVERSIRY_MYSQL_TEST_PASSWORD = $databasePassword
 

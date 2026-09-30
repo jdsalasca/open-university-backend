@@ -24,7 +24,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     environment:
-      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-universiry_dev}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-universiry_dev}?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
       DB_USERNAME: ${DB_USERNAME:-universiry_dev}
       DB_PASSWORD: ${DB_PASSWORD:-universiry_dev_local_only}
       BRANDING_ASSETS_DIRECTORY: /var/branding-assets
