@@ -91,7 +91,7 @@ Expected: behavior assertions fail because metadata still wraps all rows, and an
 - [x] Run `docker compose config --quiet`; confirm Compose services remain healthy, `/actuator/health` is UP, public program list remains `[]`, frontend returns 200, and an unknown curriculum's metadata and entries both return 404. Run read-only `LOWER(...) LIKE ... ESCAPE '!'` queries against Compose MySQL with case/accent and wildcard examples under the observed local collation; no database rows are added.
 - [x] Confirm the Compose Watch process remains active and Vite HMR sees the frontend change. Do not seed official or persistent fake public rows.
 - [x] Re-run `npm audit --json`; report its advisory count as a date-stamped frontend check, not a backend Java SCA result.
-- [ ] Commit backend documentation and the frontend submodule pointer as `docs: describe server-paged curriculum reads`; push both repositories' `develop` branches and verify remote SHAs and clean worktrees.
+- [x] Commit backend documentation and the frontend submodule pointer as `docs: describe server-paged curriculum reads` (`29a903a`); push both repositories' `develop` branches and verify remote SHAs and clean worktrees. The backend remote was `29a903af68d473c20b34f2e154d2a69e8eb466e1`; frontend submodule and remote were `4ecfda385efd98123fdcfeaed73fec21587f54b8`.
 
 ## Execution note
 
