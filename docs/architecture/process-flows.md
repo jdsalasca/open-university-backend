@@ -46,6 +46,23 @@ sequenceDiagram
 
 Si una validación o persistencia falla, no se publica una versión parcial. El API público solo expone configuración visual aprobada; los endpoints de administración requieren permiso comprobado en backend. La lista método/ruta vigente es `GET` y `PUT /api/v1/admin/branding`, `POST /api/v1/admin/branding/rollback` y `POST /api/v1/admin/branding/assets`. Las demás rutas o métodos bajo `/api/v1/admin/**` se deniegan hasta que cada capacidad defina y pruebe su autorización.
 
+## Rutas públicas del ciclo del estudiante y gate de descubrimiento
+
+La navegación pública de ACRA distingue aspirantes de pregrado, posgrado y transferencia; para pregrado publica rutas presencial y FESAD, y separa la navegación de estudiantes de pregrado y posgrado. El esquema es solo una guía de descubrimiento: no define reglas ni estados autorizados.
+
+```mermaid
+flowchart LR
+  Sources[Fuentes públicas y sistemas vigentes] --> Owners[Validar dueño y norma por ruta]
+  Owners --> Rules[Confirmar estados, excepciones y cohortes]
+  Rules --> Data[Minimizar datos e identificar fuente maestra]
+  Data --> Access[Aprobar matriz actor-permiso]
+  Access --> Contract[Aprobar contrato y criterios de aceptación]
+  Contract --> TDD[Implementar primera historia con fixtures sintéticos]
+  TDD --> Reconcile[Ensayo y conciliación antes de migrar]
+```
+
+La secuencia evita programar un único estado del estudiante a partir de páginas públicas que muestran rutas distintas. El detalle normativo y la fuente oficial de datos deben aprobarse con sus responsables institucionales.
+
 ## Desarrollo local y selección de idioma
 
 ```mermaid

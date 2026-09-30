@@ -52,6 +52,6 @@ Las fechas del diagrama son una ilustración relativa iniciada el 1 de octubre d
 - H1: frontend y backend reproducibles desde repos separados con SDKMAN Java 25 y Compose local.
 - H2: Centro de Identidad Visual con administración autorizada, vista previa, publicación y auditoría.
 - H3: autenticación federada y roles UPTC confirmados.
-- H4: identidad, expediente estudiantil y ciclo básico probados en un entorno UPTC no productivo.
+- H4: identidad, expediente estudiantil y ciclo básico probados en un entorno UPTC no productivo, empezando por rutas priorizadas y reglas, datos y permisos aprobados por sus responsables. Ver [descubrimiento inicial del ciclo](discovery/student-lifecycle-baseline.md).
 - H5: catálogo de programas, mallas, versiones curriculares y asignaturas aprobado.
 - H6: primer corte de dominio ejecutado con conciliación y reversa ensayada.
