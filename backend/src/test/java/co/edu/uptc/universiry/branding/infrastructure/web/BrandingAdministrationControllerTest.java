@@ -51,6 +51,24 @@ class BrandingAdministrationControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "brand.viewer", authorities = "branding:read")
+    void branding_reader_can_view_administrative_configuration() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/branding"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.revision").value(1));
+    }
+
+    @Test
+    @WithMockUser(username = "brand.viewer", authorities = "branding:read")
+    void branding_reader_cannot_publish_a_revision() throws Exception {
+        mockMvc.perform(put("/api/v1/admin/branding")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(validChange(1)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("forbidden"));
+    }
+
+    @Test
     @WithMockUser(username = "staff", authorities = "USER")
     void rejects_authenticated_user_without_brand_admin_authority() throws Exception {
         mockMvc.perform(put("/api/v1/admin/branding")

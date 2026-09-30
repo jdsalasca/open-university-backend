@@ -194,9 +194,9 @@
 - Roles provisionales del token se traducen a `branding:read` y `branding:write`; el contrato UPTC del IdP permanece pendiente.
 - Solo rutas administrativas y verbos registrados quedan autorizados; las demás solicitudes se deniegan.
 
-- [x] Escribir primero pruebas de conversión rol→permiso, denegación de rutas/métodos desconocidos y consulta de identidad autenticada; observar RED antes del cambio.
+- [x] Escribir primero pruebas de conversión rol→permiso, lectura/escritura separadas, denegación de rutas/métodos desconocidos y consulta de identidad autenticada; observar RED antes del cambio.
 - [x] Implementar permisos de aplicación separados de nombres de roles y `GET /api/v1/me`; excluir claims de perfil y evitar caché.
-- [x] Ejecutar `./mvnw verify`: 51 pruebas pasan; validar `/api/v1/me` anónimo con 401 y Compose Watch con MySQL saludable.
+- [x] Ejecutar `./mvnw verify`: 53 pruebas pasan; validar `/api/v1/me` anónimo con 401 y Compose Watch con MySQL saludable.
 - [x] Registrar límites públicos del ciclo del estudiante; no codificar estados ni reglas institucionales sin dueños y normativa aprobados.
 - [x] Publicar el cambio en `develop` del backend. El endpoint federado permanece inoperante hasta configurar issuer, audience, claim y grupos UPTC autorizados.
 
