@@ -82,6 +82,7 @@ La suite inicial reveló que las auditorías de relaciones y afiliaciones no ide
   Run: `mvn -f backend/pom.xml test`
   Result: `BUILD SUCCESS`, 192 tests, 0 failures, 0 errors and 6 skipped. Architecture, roadmap and `AGENTS.md` describe protected audited commands; interface controls, closures and reassignments remain pending.
 
-- [ ] **Step 7: Commit and publish to `develop`**
+- [x] **Step 7: Commit and publish to `develop`**
 
   Commit backend/docs changes on `develop`, push `origin/develop`, verify a clean tree and confirm the Compose watch runtime has picked up the backend version.
+  Result: implementation commit `003cc6b` was pushed to `origin/develop`; the working tree is synchronized and Compose reports backend healthy with Flyway schema v11.
