@@ -63,6 +63,24 @@ flowchart LR
 
 La secuencia evita programar un único estado del estudiante a partir de páginas públicas que muestran rutas distintas. El detalle normativo y la fuente oficial de datos deben aprobarse con sus responsables institucionales.
 
+## Consulta de identidad propia
+
+```mermaid
+sequenceDiagram
+  actor User as Usuario autenticado
+  participant UI as React
+  participant API as Spring Boot: GET /api/v1/me
+  participant Auth as Spring Security
+
+  User->>UI: abre una función protegida
+  UI->>API: solicita identidad propia con Bearer token
+  API->>Auth: valida firma, issuer, audience y grupos reconocidos
+  Auth-->>API: subject y permisos internos de aplicación
+  API-->>UI: subject + permisos conocidos, Cache-Control no-store
+```
+
+La respuesta no reproduce claims de perfil ni datos de otras personas. Sin un token OIDC institucional válido, la API responde 401; Compose no incluye una cuenta ni proveedor de demostración.
+
 ## Desarrollo local y selección de idioma
 
 ```mermaid

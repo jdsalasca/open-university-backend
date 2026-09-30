@@ -183,6 +183,23 @@
 - [x] Confirmar recarga del frontend por sync/HMR y reinicio del backend al guardar recursos Java/Spring mediante Compose Watch.
 - [x] Crear los repos privados, publicar `develop`, configurar upstream y validar el submódulo recursivo.
 
+### Task 9: identidad propia y permisos internos
+
+**Files:**
+- Create: `ApplicationPermission`, endpoint `GET /api/v1/me`, contrato de respuesta, pruebas de controlador y guía de descubrimiento del ciclo del estudiante.
+- Modify: conversión de grupos a permisos, allowlist método/ruta, C4, flujos, ADR de acceso, especificación API y cronograma.
+
+**Interfaces:**
+- `GET /api/v1/me` entrega solo el subject y permisos internos reconocidos del principal actual, con `Cache-Control: no-store`.
+- Roles provisionales del token se traducen a `branding:read` y `branding:write`; el contrato UPTC del IdP permanece pendiente.
+- Solo rutas administrativas y verbos registrados quedan autorizados; las demás solicitudes se deniegan.
+
+- [x] Escribir primero pruebas de conversión rol→permiso, denegación de rutas/métodos desconocidos y consulta de identidad autenticada; observar RED antes del cambio.
+- [x] Implementar permisos de aplicación separados de nombres de roles y `GET /api/v1/me`; excluir claims de perfil y evitar caché.
+- [x] Ejecutar `./mvnw verify`: 51 pruebas pasan; validar `/api/v1/me` anónimo con 401 y Compose Watch con MySQL saludable.
+- [x] Registrar límites públicos del ciclo del estudiante; no codificar estados ni reglas institucionales sin dueños y normativa aprobados.
+- [x] Publicar el cambio en `develop` del backend. El endpoint federado permanece inoperante hasta configurar issuer, audience, claim y grupos UPTC autorizados.
+
 ## Pasos de ejecución
 
 Cada subpaso nuevo seguirá RED → GREEN → REFACTOR y ejecutará el runner correspondiente antes de pasar al siguiente. Cada hito confirmado se integra en `develop` y se publica en los dos repos privados autorizados; esto no despliega ni conecta la plataforma a infraestructura UPTC.

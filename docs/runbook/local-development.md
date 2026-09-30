@@ -37,7 +37,7 @@ Endpoints locales: UI `http://localhost:5173`, API `http://localhost:8080`, salu
 
 ## Variables locales
 
-Compose ofrece credenciales sencillas solo para desarrollo. Para cambiarlas, copia `.env.example` a `.env`, actualiza claves y reinicia el proyecto. `.env` queda fuera de Git. Las variables `UPTC_OIDC_ISSUER_URI` y `UPTC_OIDC_AUDIENCE` se dejan vacías por defecto; sin una configuración institucional válida no se puede publicar la identidad visual mediante el API.
+Compose ofrece credenciales sencillas solo para desarrollo. Para cambiarlas, copia `.env.example` a `.env`, actualiza claves y reinicia el proyecto. `.env` queda fuera de Git. Las variables `UPTC_OIDC_ISSUER_URI` y `UPTC_OIDC_AUDIENCE` se dejan vacías por defecto; mientras sigan vacías, `GET /api/v1/me` requiere un token que no está disponible en Compose y responderá 401, y no se puede publicar identidad visual mediante el API. No se incluye una cuenta ni token de prueba.
 
 MySQL escucha solo en `127.0.0.1:3307` y conserva datos en `mysql-data`. `docker compose down` conserva volúmenes; `docker compose down -v` elimina la base y activos locales.
 

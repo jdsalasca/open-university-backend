@@ -59,12 +59,15 @@ El API no devuelve actor, ruta física, MIME no validado ni historial de auditor
 
 | Método y ruta | Acceso | Contrato |
 |---|---|---|
+| `GET /api/v1/me` | Token Bearer autenticado | Subject y permisos internos conocidos del usuario actual; no devuelve claims de perfil; `Cache-Control: no-store` |
 | `GET /api/v1/branding` | Público | Configuración visual vigente y revisión/ETag; solo campos necesarios para renderizar |
-| `GET /api/v1/admin/branding` | `BRAND_ADMIN` | Configuración de administración, incluida metainformación de publicación |
-| `PUT /api/v1/admin/branding` | `BRAND_ADMIN` | Reemplaza configuración validada con control optimista de revisión |
-| `POST /api/v1/admin/branding/rollback` | `BRAND_ADMIN` | Copia un snapshot anterior en una revisión nueva usando `expectedRevision` |
-| `POST /api/v1/admin/branding/assets` | `BRAND_ADMIN` | Sube imagen permitida, devuelve id y metadatos seguros |
+| `GET /api/v1/admin/branding` | `branding:read` | Configuración de administración, incluida metainformación de publicación |
+| `PUT /api/v1/admin/branding` | `branding:write` | Reemplaza configuración validada con control optimista de revisión |
+| `POST /api/v1/admin/branding/rollback` | `branding:write` | Copia un snapshot anterior en una revisión nueva usando `expectedRevision` |
+| `POST /api/v1/admin/branding/assets` | `branding:write` | Sube imagen permitida, devuelve id y metadatos seguros |
 | `GET /assets/{assetId}` | Público según publicación | Sirve activo publicado con MIME/headers seguros y caché versionada |
+
+Los valores `BRAND_ADMIN` e `INSTITUTIONAL_ADMIN` usados en pruebas son roles técnicos provisionales que el backend traduce a permisos internos. No son un contrato UPTC ni se habilitan en producción hasta confirmar el claim y el mapeo con el proveedor institucional.
 
 Errores estándar: 400 por entrada inválida, 401 sin autenticación, 403 sin permiso, 404 por activo inexistente y 409 por revisión concurrente. Ningún error devuelve rutas de almacenamiento o stack traces. El endpoint público utiliza ETag derivado de la revisión y caché corta; al publicar una revisión nueva, la respuesta cambia.
 

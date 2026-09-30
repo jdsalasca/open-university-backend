@@ -14,6 +14,7 @@ La plataforma crecerá por capacidades. Una regla amplia sobre `/api/v1/admin/**
 - Leer el claim de roles con nombre configurable, ignorar valores desconocidos y traducir solo los roles reconocidos a permisos internos de la aplicación.
 - Autorizar pares de método/ruta por capacidad; las solicitudes bajo `/api/v1/admin/**` que no estén registradas se deniegan.
 - Actualmente, los roles de demostración `BRAND_ADMIN` e `INSTITUTIONAL_ADMIN` reciben `branding:read` y `branding:write`. La primera autorización solo permite `GET /api/v1/admin/branding`; la segunda permite `PUT` sobre esa ruta y `POST /api/v1/admin/branding/rollback` y `/api/v1/admin/branding/assets`.
+- `GET /api/v1/me` requiere autenticación y devuelve solo el subject y permisos internos conocidos del principal actual, con `Cache-Control: no-store`.
 - Probar acceso permitido y denegado en el servidor. La visibilidad de controles del frontend es solo una ayuda de experiencia.
 - No fijar el nombre real del claim ni afirmar que los dos nombres de autoridad coinciden con grupos productivos UPTC hasta recibir el contrato del proveedor institucional.
 
