@@ -251,7 +251,7 @@ sequenceDiagram
   DB-->>API: raíces por orden de nodo; hijos por orden de relación; programas por orden de afiliación
 ```
 
-Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` consulta datos vigentes, pero el Compose no contiene filas institucionales ni proveedor OIDC; los comandos anteriores son APIs protegidas, no botones de escritura disponibles en esta vista.
+Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` refleja estos órdenes, pero no contiene controles de reordenamiento; la corrección continúa disponible en los `PATCH` protegidos hasta que se agregue su interfaz.
 
 ### Corrección de prioridad organizacional
 
@@ -280,11 +280,12 @@ sequenceDiagram
   end
 ```
 
-La ruta no edita afiliaciones si el programa/unidad/sede no coincide y solo cambia metadatos de prioridad; un reordenamiento no reasigna unidades o lugares. La referencia se conserva junto con el actor y los valores anterior/nuevo. El resumen identifica también la pareja padre/hijo de una relación o el ID de la afiliación de programa, evitando eventos ambiguos cuando existen vínculos históricos. Las rutas están en la allowlist de `PATCH` y requieren permiso de escritura. La página React no expone estos comandos hasta que DTIC valide OIDC y grupos institucionales.
+La ruta no edita afiliaciones si el programa/unidad/sede no coincide y solo cambia metadatos de prioridad; un reordenamiento no reasigna unidades o lugares. La referencia se conserva junto con el actor y los valores anterior/nuevo. El resumen identifica también la pareja padre/hijo de una relación o el ID de la afiliación de programa, evitando eventos ambiguos cuando existen vínculos históricos. Las rutas están en la allowlist de `PATCH` y requieren permiso de escritura. La interfaz React todavía no expone estas cinco operaciones hasta completar controles de orden con confirmación y referencia.
 
 ```mermaid
 sequenceDiagram
   actor Operator as Operador de calendario autorizado
+  participant UI as React: estructura y periodos
   participant API as Spring Boot: Academic Period API
   participant Auth as Spring Security
   participant Period as Servicio de periodo
@@ -302,9 +303,20 @@ sequenceDiagram
   Period->>DB: APPROVED → OPEN + auditoría atómica
   API-->>Operator: periodo abierto
   API->>DB: GET público consulta solo OPEN con calendario publicado
+  Operator->>UI: abre el control de periodos con permiso de lectura
+  UI->>API: GET /api/v1/admin/academic-periods con Bearer
+  API->>Auth: exige academic:period:read
+  API-->>UI: REGULAR e INTERSEMESTRAL con estados actuales
+  Operator->>UI: solicita abrir/cerrar y confirma explícitamente
+  UI->>API: POST /{periodId}/open o /close con Bearer
+  API->>Auth: exige academic:period:write
+  API->>Period: valida el estado actual y la transición solicitada
+  Period->>DB: actualiza estado + actor + instante + auditoría
+  API-->>UI: periodo con estado nuevo
+  Note over UI,DB: La transición solo cambia estado; no publica oferta ni abre matrícula
 ```
 
-El permiso administrativo se valida en Spring Security por ruta. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo, por lo que solicitudes concurrentes no crean dos transiciones válidas. El historial con todas las revisiones, actividades y eventos se consulta mediante una ruta administrativa de solo lectura.
+El permiso administrativo se valida en Spring Security por ruta. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo, por lo que solicitudes concurrentes no crean dos transiciones válidas. El historial con todas las revisiones, actividades y eventos se consulta mediante una ruta administrativa de solo lectura. React solo ofrece abrir para estados `APPROVED` y cerrar para `OPEN`, pide confirmación y conserva denegadas ambas acciones si falta el permiso de escritura. Sin permiso de lectura, solo muestra periodos públicamente abiertos; el backend sigue siendo la autoridad final.
 
 ```mermaid
 flowchart LR
@@ -327,19 +339,27 @@ Las fechas de las actividades no se limitan al inicio/final de instrucción. En 
 
 ```mermaid
 sequenceDiagram
-  actor User as Usuario autenticado
+  actor User as Persona usuaria
   participant UI as React
+  participant IdP as Proveedor OIDC institucional
   participant API as Spring Boot: GET /api/v1/me
   participant Auth as Spring Security
 
-  User->>UI: abre una función protegida
-  UI->>API: solicita identidad propia con Bearer token
-  API->>Auth: valida firma, issuer, audience y grupos reconocidos
-  Auth-->>API: subject y permisos internos de aplicación
-  API-->>UI: subject + permisos conocidos, Cache-Control no-store
+  User->>UI: selecciona iniciar sesión
+  UI->>UI: genera state, nonce y PKCE verifier en sessionStorage
+  UI->>IdP: redirección Authorization Code + PKCE
+  IdP-->>UI: callback local con code y state
+  UI->>IdP: canjea code con PKCE verifier
+  IdP-->>UI: access token
+  UI->>UI: elimina code/state de la URL y conserva sesión en la pestaña
+  UI->>API: GET /api/v1/me con Authorization Bearer
+  API->>Auth: valida firma, issuer y audience; resuelve mapa exacto de permisos
+  Auth-->>API: subject + permisos internos (vacío si no hay mapeo)
+  API-->>UI: subject + permisos, Cache-Control no-store
+  UI->>UI: presenta controles según permisos del backend
 ```
 
-La respuesta no reproduce claims de perfil ni datos de otras personas. Sin un token OIDC institucional válido, la API responde 401; Compose no incluye una cuenta ni proveedor de demostración.
+La respuesta no reproduce claims de perfil ni datos de otras personas. Sin issuer/audience configurados, el backend responde 401; con autenticación válida y sin rol mapeado, `/api/v1/me` devuelve permisos vacíos y las mutaciones responden 403. React no interpreta grupos ni claims. El callback acepta solo hashes locales conocidos, limpia `code`/`state` de la URL y elimina refresh tokens y claims de perfil no usados antes de persistir la sesión por pestaña. Compose y `.env.example` no incluyen una cuenta, grupo, token o proveedor de demostración.
 
 ## Desarrollo local y selección de idioma
 

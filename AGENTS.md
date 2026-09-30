@@ -31,6 +31,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 
 - No usar datos personales de estudiantes reales en desarrollo, pruebas, capturas ni fixtures; emplear datos sintéticos.
 - Endpoints administrativos requieren autorización del lado del servidor. Nunca confiar en que ocultar una ruta o botón en React protege el recurso.
+- El acceso federado comienza cerrado: no inventar grupos, issuer, audience, scopes ni callbacks institucionales. React no decodifica claims para asignar permisos; consulta `/api/v1/me`. No guardar tokens en `localStorage`, habilitar refresh token ni imprimir token/claims.
 - Registrar actor, fecha y cambio para modificaciones administrativas sensibles; proteger el historial de auditoría contra edición ordinaria.
 - Validar tipo real, tamaño, dimensiones y contenido de imágenes subidas; generar nombres de almacenamiento propios y prevenir traversal, SVG ejecutable y archivos huérfanos.
 - Guardar secretos fuera del repositorio. Configurar producción con TLS, cuentas de mínimo privilegio, respaldo y restauración probados.

@@ -136,10 +136,12 @@ public class SecurityConfiguration {
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter(
-            @Value("${UPTC_OIDC_AUTHORITIES_CLAIM:authorities}") String authoritiesClaim
+            @Value("${UPTC_OIDC_AUTHORITIES_CLAIM:authorities}") String authoritiesClaim,
+            @Value("${UPTC_OIDC_ROLE_PERMISSION_MAPPING:}") String rolePermissionMapping
     ) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(new ApplicationAuthoritiesConverter(authoritiesClaim));
+        converter.setJwtGrantedAuthoritiesConverter(
+                new ApplicationAuthoritiesConverter(authoritiesClaim, rolePermissionMapping));
         return converter;
     }
 

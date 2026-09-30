@@ -13,10 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AcademicCatalogAuthoritiesTest {
 
     @Test
-    void maps_a_catalog_viewer_to_read_permission_only() {
+    void maps_an_explicit_synthetic_reader_claim_to_read_permission_only() {
         // Arrange
-        Jwt jwt = token(List.of("ACADEMIC_CATALOG_VIEWER"));
-        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter("institutional_roles");
+        Jwt jwt = token(List.of("synthetic.catalog.reader"));
+        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter(
+                "institutional_roles", """
+                {"synthetic.catalog.reader":["academic:catalog:read"]}
+                """);
 
         // Act
         var authorities = converter.convert(jwt);
@@ -26,10 +29,13 @@ class AcademicCatalogAuthoritiesTest {
     }
 
     @Test
-    void maps_a_catalog_admin_to_separate_read_and_write_permissions() {
+    void maps_an_explicit_synthetic_operator_claim_to_read_and_write_permissions() {
         // Arrange
-        Jwt jwt = token(List.of("ACADEMIC_CATALOG_ADMIN"));
-        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter("institutional_roles");
+        Jwt jwt = token(List.of("synthetic.catalog.operator"));
+        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter(
+                "institutional_roles", """
+                {"synthetic.catalog.operator":["academic:catalog:read","academic:catalog:write"]}
+                """);
 
         // Act
         var authorities = converter.convert(jwt);
@@ -44,9 +50,12 @@ class AcademicCatalogAuthoritiesTest {
     @Test
     void unknown_roles_and_malformed_claims_grant_no_catalog_permissions() {
         // Arrange
-        Jwt unknownRole = token(List.of("UNAPPROVED_UPTC_ROLE"));
-        Jwt malformedClaim = token("ACADEMIC_CATALOG_ADMIN");
-        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter("institutional_roles");
+        Jwt unknownRole = token(List.of("synthetic.unmapped.role"));
+        Jwt malformedClaim = token("synthetic.catalog.operator");
+        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter(
+                "institutional_roles", """
+                {"synthetic.catalog.operator":["academic:catalog:read","academic:catalog:write"]}
+                """);
 
         // Act
         var unknownAuthorities = converter.convert(unknownRole);

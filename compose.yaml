@@ -32,6 +32,8 @@ services:
       ACADEMIC_CATALOG_IMPORT_MAX_ROWS: ${ACADEMIC_CATALOG_IMPORT_MAX_ROWS:-10000}
       UPTC_OIDC_ISSUER_URI: ${UPTC_OIDC_ISSUER_URI:-}
       UPTC_OIDC_AUDIENCE: ${UPTC_OIDC_AUDIENCE:-}
+      UPTC_OIDC_AUTHORITIES_CLAIM: ${UPTC_OIDC_AUTHORITIES_CLAIM:-authorities}
+      UPTC_OIDC_ROLE_PERMISSION_MAPPING: ${UPTC_OIDC_ROLE_PERMISSION_MAPPING:-}
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,6 +58,11 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       VITE_API_TARGET: http://backend:8080
+      VITE_OIDC_AUTHORITY: ${VITE_OIDC_AUTHORITY:-}
+      VITE_OIDC_CLIENT_ID: ${VITE_OIDC_CLIENT_ID:-}
+      VITE_OIDC_REDIRECT_URI: ${VITE_OIDC_REDIRECT_URI:-}
+      VITE_OIDC_POST_LOGOUT_REDIRECT_URI: ${VITE_OIDC_POST_LOGOUT_REDIRECT_URI:-}
+      VITE_OIDC_SCOPE: ${VITE_OIDC_SCOPE:-openid}
     depends_on:
       - backend
     ports:

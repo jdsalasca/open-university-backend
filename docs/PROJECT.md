@@ -24,21 +24,21 @@ Un inventario público de DTIC de 2024 relaciona sistemas como SIRA, SIRD, SEDI,
 
 ## Usuarios y permisos preliminares
 
-Los grupos exactos y su mapeo al proveedor institucional se confirman con UPTC. El diseño inicial distingue comunidad universitaria, operadores académicos, personal administrativo, docentes, soporte técnico, administradores de identidad visual y administradores institucionales. El backend traduce los grupos reconocidos a permisos internos de la capacidad; ocultar elementos en React no es un control de acceso. Permite solamente pares método/ruta que estén registrados y probados, y deniega el resto de `/api/v1/admin/**` para que un futuro módulo no herede permisos por compartir un prefijo.
+Los grupos exactos y su mapeo al proveedor institucional se confirman con UPTC. El backend ya admite un mapa JSON explícito grupo/claim → permisos internos, pero arranca con el mapa vacío: ningún nombre de rol de ejemplo concede acceso. React usa Authorization Code + PKCE y consulta `/api/v1/me`; no interpreta grupos. El servidor permite solo pares método/ruta registrados y probados, y deniega el resto de `/api/v1/admin/**` para que un módulo no herede permisos por compartir un prefijo.
 
 ## Alcance del primer incremento
 
 1. Dos repositorios reproducibles, herramientas de contexto IA, Compose Watch con MySQL local, traducciones del backend, base versionada y documentación viva.
 2. Centro de Identidad Visual que publica una configuración de marca validada: colores, logos, banners y nombres de módulos.
 3. Estructura de navegación y contratos preparados para identidad, estudiante y catálogo académico, sin inventar datos reales ni marcar módulos futuros como funcionales.
-4. Inventario de integraciones y requisitos institucionales como condición previa a la autenticación federada, migraciones de datos productivos y cortes oficiales.
+4. El mecanismo OIDC se implementa con configuración vacía por defecto; DTIC debe confirmar issuer, audience, claim, scopes, callback registrado y matriz grupo-permiso antes de habilitarlo. Inventario vigente sigue siendo requisito para migraciones productivas y cortes oficiales.
 
 ## Límites de seguridad y publicación
 
 - El desarrollo usa solamente datos sintéticos.
 - Las imágenes se validan por contenido real, dimensiones y tamaño; se excluyen SVG activos.
 - El almacenamiento local de activos se limita al entorno de desarrollo. El almacenamiento productivo compartido se define con DTIC antes de desplegar más de una instancia.
-- La identidad institucional y la lista oficial de roles son dependencias externas por descubrir. No se publicará un centro administrativo sin un proveedor y un mapeo de permisos aprobados.
+- La identidad institucional y la lista oficial de roles son dependencias externas por descubrir. El inicio de sesión y el mapa de permisos permanecen cerrados hasta recibir configuración aprobada; no se publicará un centro administrativo operativo antes de esa validación.
 - Una migración de dominio requiere perfilado, conciliación, aceptación del dueño de datos, ensayo de reversa y aprobación de corte. No habrá doble escritura sin reconciliación.
 
 ## Identidad visual inicial
