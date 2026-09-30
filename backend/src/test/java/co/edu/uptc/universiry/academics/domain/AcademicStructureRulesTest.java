@@ -45,11 +45,11 @@ class AcademicStructureRulesTest {
         assertFalse(AcademicStructureRules.createsCycle(later, existing));
         assertThrows(IllegalArgumentException.class,
                 () -> new AcademicOrganizationRelation(faculty, school,
-                        LocalDate.of(2026, 1, 1), LocalDate.of(2025, 12, 31)));
+                        0, LocalDate.of(2026, 1, 1), LocalDate.of(2025, 12, 31)));
     }
 
     private static AcademicOrganizationRelation edge(UUID parent, UUID child, String from, String through) {
-        return new AcademicOrganizationRelation(parent, child, LocalDate.parse(from),
+        return new AcademicOrganizationRelation(parent, child, 0, LocalDate.parse(from),
                 through == null ? null : LocalDate.parse(through));
     }
 }

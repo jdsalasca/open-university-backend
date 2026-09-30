@@ -56,13 +56,14 @@ class AcademicStructureControllerTest {
         mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}",
                         facultyId, schoolId)
                         .with(writer()).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"validFrom\":\"2026-01-01\",\"validThrough\":null,"
+                        .content("{\"displayOrder\":4,\"validFrom\":\"2026-01-01\",\"validThrough\":null,"
                                 + "\"sourceReference\":\"Acuerdo de estructura vigente\"}"))
                 .andExpect(status().isCreated());
         MvcResult result = mockMvc.perform(get("/api/v1/academic-structure"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.units.length()").value(2))
                 .andExpect(jsonPath("$.organizationRelations.length()").value(1))
+                .andExpect(jsonPath("$.organizationRelations[0].displayOrder").value(4))
                 .andExpect(jsonPath("$.sites.length()").value(1))
                 .andExpect(jsonPath("$.programAffiliations.length()").value(0))
                 .andReturn();
@@ -78,6 +79,84 @@ class AcademicStructureControllerTest {
         org.junit.jupiter.api.Assertions.assertEquals(3, jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
                 Integer.class, "Acuerdo"));
+    }
+
+    @Test
+    void missing_relationship_order_defaults_to_zero_for_existing_clients() throws Exception {
+        // Arrange
+        UUID parent = createUnit("FAC-DEFAULT-ORDER", "FACULTY", "Facultad orden base", 1);
+        UUID child = createUnit("SCHOOL-DEFAULT-ORDER", "SCHOOL", "Escuela orden base", 2);
+
+        // Act
+        mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}", parent, child)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"validFrom\":\"2026-01-01\",\"validThrough\":null,"
+                                + "\"sourceReference\":\"Acuerdo vigente\"}"))
+                .andExpect(status().isCreated());
+
+        // Assert
+        mockMvc.perform(get("/api/v1/academic-structure"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.organizationRelations.length()").value(1))
+                .andExpect(jsonPath("$.organizationRelations[0].displayOrder").value(0));
+    }
+
+    @Test
+    void organization_siblings_follow_relationship_order_before_child_node_order() throws Exception {
+        // Arrange
+        UUID faculty = createUnit("FAC-REL-ORDER", "FACULTY", "Facultad relaciones", 5);
+        UUID firstByNode = createUnit("SCHOOL-NODE-FIRST", "SCHOOL", "Escuela nodo primero", 1);
+        UUID secondByNode = createUnit("SCHOOL-REL-FIRST", "SCHOOL", "Escuela relación primero", 2);
+        createOrganizationEdge(faculty, firstByNode, "2026-01-01", null, 8);
+        createOrganizationEdge(faculty, secondByNode, "2026-01-01", null, 2);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/academic-structure"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.organizationRelations.length()").value(2))
+                .andExpect(jsonPath("$.organizationRelations[0].childUnitId").value(secondByNode.toString()))
+                .andExpect(jsonPath("$.organizationRelations[0].displayOrder").value(2))
+                .andExpect(jsonPath("$.organizationRelations[1].childUnitId").value(firstByNode.toString()))
+                .andExpect(jsonPath("$.organizationRelations[1].displayOrder").value(8));
+    }
+
+    @Test
+    void site_siblings_follow_relationship_order_before_child_node_order() throws Exception {
+        // Arrange
+        UUID central = createSite("SITE-REL-CENTRAL", "CENTRAL", "Sede Central relaciones", 1);
+        UUID firstByNode = createSite("SITE-NODE-FIRST", "REGIONAL", "Sede nodo primero", 1);
+        UUID secondByNode = createSite("SITE-REL-FIRST", "REGIONAL", "Sede relación primero", 2);
+        createSiteEdge(central, firstByNode, 8);
+        createSiteEdge(central, secondByNode, 2);
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/academic-structure"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.siteRelations.length()").value(2))
+                .andExpect(jsonPath("$.siteRelations[0].childSiteId").value(secondByNode.toString()))
+                .andExpect(jsonPath("$.siteRelations[0].displayOrder").value(2))
+                .andExpect(jsonPath("$.siteRelations[1].childSiteId").value(firstByNode.toString()))
+                .andExpect(jsonPath("$.siteRelations[1].displayOrder").value(8));
+    }
+
+    @Test
+    void negative_relationship_order_returns_400_without_persisting_or_auditing() throws Exception {
+        // Arrange
+        UUID parent = createUnit("FAC-NEGATIVE-ORDER", "FACULTY", "Facultad sin vínculo", 1);
+        UUID child = createUnit("SCHOOL-NEGATIVE-ORDER", "SCHOOL", "Escuela sin vínculo", 2);
+
+        // Act + Assert
+        mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}", parent, child)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayOrder\":-1,\"validFrom\":\"2026-01-01\","
+                                + "\"validThrough\":null,\"sourceReference\":\"Orden negativa\"}"))
+                .andExpect(status().isBadRequest());
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_organization_relation WHERE parent_unit_id = ? AND child_unit_id = ?",
+                Integer.class, parent.toString(), child.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
+                Integer.class, "Orden negativa"));
     }
 
     @Test
@@ -262,11 +341,26 @@ class AcademicStructureControllerTest {
 
     private void createOrganizationEdge(UUID parent, UUID child, String validFrom, String validThrough)
             throws Exception {
+        createOrganizationEdge(parent, child, validFrom, validThrough, 0);
+    }
+
+    private void createOrganizationEdge(UUID parent, UUID child, String validFrom, String validThrough,
+                                        int displayOrder) throws Exception {
         String through = validThrough == null ? "null" : "\"" + validThrough + "\"";
         mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}", parent, child)
                         .with(writer()).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"validFrom\":\"" + validFrom + "\",\"validThrough\":" + through
+                        .content("{\"displayOrder\":" + displayOrder + ",\"validFrom\":\"" + validFrom
+                                + "\",\"validThrough\":" + through
                                 + ",\"sourceReference\":\"Referencia normativa\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    private void createSiteEdge(UUID parent, UUID child, int displayOrder) throws Exception {
+        mockMvc.perform(post("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}", parent, child)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayOrder\":" + displayOrder
+                                + ",\"validFrom\":\"2026-01-01\",\"validThrough\":null,"
+                                + "\"sourceReference\":\"Orden sedes\"}"))
                 .andExpect(status().isCreated());
     }
 

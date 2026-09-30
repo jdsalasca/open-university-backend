@@ -42,11 +42,11 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
             localDate(rs, "valid_from"), nullableDate(rs, "valid_through"));
     private static final RowMapper<AcademicOrganizationRelation> ORGANIZATION_RELATION_MAPPER = (rs, row) ->
             new AcademicOrganizationRelation(uuid(rs.getString("parent_unit_id")),
-                    uuid(rs.getString("child_unit_id")), localDate(rs, "valid_from"),
+                    uuid(rs.getString("child_unit_id")), rs.getInt("display_order"), localDate(rs, "valid_from"),
                     nullableDate(rs, "valid_through"));
     private static final RowMapper<AcademicSiteRelation> SITE_RELATION_MAPPER = (rs, row) ->
             new AcademicSiteRelation(uuid(rs.getString("parent_site_id")), uuid(rs.getString("child_site_id")),
-                    localDate(rs, "valid_from"), nullableDate(rs, "valid_through"));
+                    rs.getInt("display_order"), localDate(rs, "valid_from"), nullableDate(rs, "valid_through"));
     private static final RowMapper<AcademicProgramAffiliation> AFFILIATION_MAPPER = (rs, row) ->
             new AcademicProgramAffiliation(uuid(rs.getString("affiliation_id")),
                     uuid(rs.getString("program_id")), uuid(rs.getString("organization_unit_id")),
@@ -72,7 +72,7 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 ORDER BY display_order, unit_type, unit_code
                 """, UNIT_MAPPER, asOf, asOf);
         List<AcademicOrganizationRelation> organizationRelations = jdbcTemplate.query("""
-                SELECT r.parent_unit_id, r.child_unit_id, r.valid_from, r.valid_through
+                SELECT r.parent_unit_id, r.child_unit_id, r.display_order, r.valid_from, r.valid_through
                 FROM academic_organization_relation r
                 JOIN academic_organization_unit p ON p.organization_unit_id = r.parent_unit_id
                 JOIN academic_organization_unit c ON c.organization_unit_id = r.child_unit_id
@@ -80,7 +80,7 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                   AND p.valid_from <= ? AND (p.valid_through IS NULL OR p.valid_through >= ?)
                   AND c.valid_from <= ? AND (c.valid_through IS NULL OR c.valid_through >= ?)
                   AND r.valid_from <= ? AND (r.valid_through IS NULL OR r.valid_through >= ?)
-                ORDER BY p.display_order, c.display_order, p.unit_code, c.unit_code
+                ORDER BY p.display_order, p.unit_code, r.display_order, c.display_order, c.unit_code
                 """, ORGANIZATION_RELATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
         List<AcademicSite> sites = jdbcTemplate.query("""
                 SELECT site_id, site_code, site_type, display_name, display_order, status, valid_from, valid_through
@@ -89,7 +89,7 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 ORDER BY display_order, site_type, site_code
                 """, SITE_MAPPER, asOf, asOf);
         List<AcademicSiteRelation> siteRelations = jdbcTemplate.query("""
-                SELECT r.parent_site_id, r.child_site_id, r.valid_from, r.valid_through
+                SELECT r.parent_site_id, r.child_site_id, r.display_order, r.valid_from, r.valid_through
                 FROM academic_site_relation r
                 JOIN academic_site p ON p.site_id = r.parent_site_id
                 JOIN academic_site c ON c.site_id = r.child_site_id
@@ -97,7 +97,7 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                   AND p.valid_from <= ? AND (p.valid_through IS NULL OR p.valid_through >= ?)
                   AND c.valid_from <= ? AND (c.valid_through IS NULL OR c.valid_through >= ?)
                   AND r.valid_from <= ? AND (r.valid_through IS NULL OR r.valid_through >= ?)
-                ORDER BY p.display_order, c.display_order, p.site_code, c.site_code
+                ORDER BY p.display_order, p.site_code, r.display_order, c.display_order, c.site_code
                 """, SITE_RELATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
         List<AcademicProgramAffiliation> affiliations = jdbcTemplate.query("""
                 SELECT a.affiliation_id, a.program_id, a.organization_unit_id, a.site_id,
@@ -125,9 +125,9 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 ORDER BY display_order, unit_type, unit_code
                 """, UNIT_MAPPER);
         List<AcademicOrganizationRelation> organizationRelations = jdbcTemplate.query("""
-                SELECT parent_unit_id, child_unit_id, valid_from, valid_through
+                SELECT parent_unit_id, child_unit_id, display_order, valid_from, valid_through
                 FROM academic_organization_relation
-                ORDER BY parent_unit_id, child_unit_id, valid_from
+                ORDER BY parent_unit_id, child_unit_id, valid_from, display_order
                 """, ORGANIZATION_RELATION_MAPPER);
         List<AcademicSite> sites = jdbcTemplate.query("""
                 SELECT site_id, site_code, site_type, display_name, display_order, status, valid_from, valid_through
@@ -135,9 +135,9 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 ORDER BY display_order, site_type, site_code
                 """, SITE_MAPPER);
         List<AcademicSiteRelation> siteRelations = jdbcTemplate.query("""
-                SELECT parent_site_id, child_site_id, valid_from, valid_through
+                SELECT parent_site_id, child_site_id, display_order, valid_from, valid_through
                 FROM academic_site_relation
-                ORDER BY parent_site_id, child_site_id, valid_from
+                ORDER BY parent_site_id, child_site_id, valid_from, display_order
                 """, SITE_RELATION_MAPPER);
         List<AcademicProgramAffiliation> affiliations = jdbcTemplate.query("""
                 SELECT a.affiliation_id, a.program_id, a.organization_unit_id, a.site_id,
@@ -190,10 +190,11 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 existing.stream().map(edge -> new ExistingRelation(edge.childUnitId(), edge.validFrom(), edge.validThrough())).toList());
         if (AcademicStructureRules.createsCycle(relation, existing)) throw new AcademicStructureConflictException();
         jdbcTemplate.update("""
-                INSERT INTO academic_organization_relation (parent_unit_id, child_unit_id, valid_from, valid_through)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO academic_organization_relation
+                    (parent_unit_id, child_unit_id, display_order, valid_from, valid_through)
+                VALUES (?, ?, ?, ?, ?)
                 """, relation.parentUnitId().toString(), relation.childUnitId().toString(),
-                relation.validFrom(), relation.validThrough());
+                relation.displayOrder(), relation.validFrom(), relation.validThrough());
         audit(relation.childUnitId(), "UNIT_RELATED", actorSub, sourceReference,
                 "Organization unit " + relation.childUnitId() + " added under " + relation.parentUnitId());
     }
@@ -211,10 +212,11 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 existing.stream().map(edge -> new ExistingRelation(edge.childSiteId(), edge.validFrom(), edge.validThrough())).toList());
         if (AcademicStructureRules.createsCycle(relation, existing)) throw new AcademicStructureConflictException();
         jdbcTemplate.update("""
-                INSERT INTO academic_site_relation (parent_site_id, child_site_id, valid_from, valid_through)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO academic_site_relation
+                    (parent_site_id, child_site_id, display_order, valid_from, valid_through)
+                VALUES (?, ?, ?, ?, ?)
                 """, relation.parentSiteId().toString(), relation.childSiteId().toString(),
-                relation.validFrom(), relation.validThrough());
+                relation.displayOrder(), relation.validFrom(), relation.validThrough());
         audit(relation.childSiteId(), "SITE_RELATED", actorSub, sourceReference,
                 "Academic site " + relation.childSiteId() + " added under " + relation.parentSiteId());
     }
@@ -286,15 +288,15 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
 
     private List<AcademicOrganizationRelation> allOrganizationRelations() {
         return jdbcTemplate.query("""
-                SELECT parent_unit_id, child_unit_id, valid_from, valid_through
-                FROM academic_organization_relation ORDER BY parent_unit_id, child_unit_id, valid_from
+                SELECT parent_unit_id, child_unit_id, display_order, valid_from, valid_through
+                FROM academic_organization_relation ORDER BY parent_unit_id, child_unit_id, valid_from, display_order
                 """, ORGANIZATION_RELATION_MAPPER);
     }
 
     private List<AcademicSiteRelation> allSiteRelations() {
         return jdbcTemplate.query("""
-                SELECT parent_site_id, child_site_id, valid_from, valid_through
-                FROM academic_site_relation ORDER BY parent_site_id, child_site_id, valid_from
+                SELECT parent_site_id, child_site_id, display_order, valid_from, valid_through
+                FROM academic_site_relation ORDER BY parent_site_id, child_site_id, valid_from, display_order
                 """, SITE_RELATION_MAPPER);
     }
 

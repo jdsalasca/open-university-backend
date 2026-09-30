@@ -56,7 +56,7 @@ public class DefaultAcademicStructureService implements AcademicStructureService
     public void relateUnits(UUID parentId, UUID childId, AcademicStructureRelationCommand command, String actorSub) {
         String actor = AcademicCatalogActorSub.require(actorSub);
         AcademicOrganizationRelation relation = new AcademicOrganizationRelation(
-                parentId, childId, command.validFrom(), command.validThrough());
+                parentId, childId, command.displayOrder(), command.validFrom(), command.validThrough());
         repository.relateOrganizationUnits(relation, actor, requiredReference(command.sourceReference()));
     }
 
@@ -64,7 +64,7 @@ public class DefaultAcademicStructureService implements AcademicStructureService
     public void relateSites(UUID parentId, UUID childId, AcademicStructureRelationCommand command, String actorSub) {
         String actor = AcademicCatalogActorSub.require(actorSub);
         AcademicSiteRelation relation = new AcademicSiteRelation(
-                parentId, childId, command.validFrom(), command.validThrough());
+                parentId, childId, command.displayOrder(), command.validFrom(), command.validThrough());
         repository.relateSites(relation, actor, requiredReference(command.sourceReference()));
     }
 
