@@ -64,4 +64,4 @@
 
 - [x] Add a PowerShell runner that creates a uniquely named, loopback-only MySQL 8.4 container without a volume, waits for readiness, runs Task 1 using the SDKMAN-selected Java 25 and Maven Wrapper, and removes only that container in `finally`.
 - [x] Document the verification command, local synthetic metrics and their limits in the runbook, roadmap, data model, ADR and pagination design.
-- [ ] Run the backend suite with `mvnw verify`, recheck Compose health and repository status, commit to `develop`, push the backend repository, and verify the remote SHA.
+- [x] Run the backend suite with `mvnw verify`, recheck Compose health and repository status, commit to `develop`, push the backend repository, and verify the remote SHA (`10e3fd7a7fb8eb25bdabde55b69adfe0c1bea46a`).
