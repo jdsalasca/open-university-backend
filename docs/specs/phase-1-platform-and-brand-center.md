@@ -67,7 +67,7 @@ El API no devuelve actor, ruta física, MIME no validado ni historial de auditor
 | `POST /api/v1/admin/branding/assets` | `branding:write` | Sube imagen permitida, devuelve id y metadatos seguros |
 | `GET /assets/{assetId}` | Público según publicación | Sirve activo publicado con MIME/headers seguros y caché versionada |
 
-Los valores `BRAND_ADMIN` e `INSTITUTIONAL_ADMIN` usados en pruebas son roles técnicos provisionales que el backend traduce a permisos internos. No son un contrato UPTC ni se habilitan en producción hasta confirmar el claim y el mapeo con el proveedor institucional.
+En la implementación inicial, `BRAND_ADMIN` e `INSTITUTIONAL_ADMIN` fueron valores técnicos provisionales de pruebas, nunca un contrato UPTC. La conversión incorporada se eliminó: hoy cualquier valor, incluidos esos ejemplos históricos, concede acceso solo si figura explícitamente en `UPTC_OIDC_ROLE_PERMISSION_MAPPING`, que permanece vacío hasta aprobación institucional.
 
 Errores estándar: 400 por entrada inválida, 401 sin autenticación, 403 sin permiso, 404 por activo inexistente y 409 por revisión concurrente. Ningún error devuelve rutas de almacenamiento o stack traces. El endpoint público utiliza ETag derivado de la revisión y caché corta; al publicar una revisión nueva, la respuesta cambia.
 

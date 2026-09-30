@@ -2,7 +2,7 @@
 
 ## Contrato actual
 
-- Solo un administrador autenticado con `BRAND_ADMIN` o `INSTITUTIONAL_ADMIN` puede cargar imágenes en `POST /api/v1/admin/branding/assets`.
+- Solo una identidad autenticada con el permiso interno `branding:write` puede cargar imágenes en `POST /api/v1/admin/branding/assets`. Ese permiso se concede exclusivamente mediante el mapa explícito `UPTC_OIDC_ROLE_PERMISSION_MAPPING`; vacío por defecto, ningún nombre de rol lo habilita por sí solo. La API valida el permiso en cada solicitud.
 - Se aceptan PNG, JPEG y WebP raster. El servidor detecta el formato por la firma y exige que un decodificador lea la imagen completa; WebP debe declarar una longitud RIFF que coincida con todos sus bytes. El `Content-Type` y el nombre del navegador no determinan el formato. SVG y archivos animados/multiframe se rechazan.
 - El límite inicial es 5 MiB por archivo, 8192 px por lado y 16 777 216 píxeles por imagen. El límite del request multipart es 6 MiB. Se pueden ajustar con `BRANDING_ASSETS_MAX_BYTES`, `BRANDING_ASSETS_MAX_WIDTH`, `BRANDING_ASSETS_MAX_HEIGHT`, `BRANDING_ASSETS_MAX_PIXELS` y `BRANDING_ASSETS_MAX_REQUEST_BYTES`; deben conservar límites coordinados y probados.
 - El almacenamiento genera UUID independientes para el identificador público y la clave física. El nombre recibido del usuario nunca se concatena a rutas ni se conserva como clave.
@@ -20,7 +20,7 @@ El disco y MySQL no comparten una transacción distribuida. El rollback normal l
 
 1. Mantener fuera de `frontend/public/` y del repositorio todo el contenido cargado por usuarios.
 2. Confirmar que el almacenamiento no es ejecutable como aplicación y que TLS termina en un balanceador institucional confiable.
-3. Confirmar con DTIC el proveedor OIDC, issuer, audience, expiración y claim de roles; la configuración actual falla cerrada mientras esos valores no estén definidos.
+3. Confirmar con DTIC el proveedor OIDC, issuer, audience, expiración, claim de roles y mapa aprobado hacia `branding:write`; la configuración actual falla cerrada mientras esos valores no estén definidos.
 4. Antes de publicar un banner, exigir texto alternativo significativo, fechas válidas y previsualización en desktop/móvil.
 5. Medir el tamaño real de cada activo y vigilar fallos de decodificación/lectura sin registrar bytes, ruta física ni nombre original.
 

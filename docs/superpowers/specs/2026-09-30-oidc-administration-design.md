@@ -1,12 +1,12 @@
 # Acceso administrativo federado — diseño
 
-**Estado:** siguiente incremento del proyecto autónomo, sujeto a la configuración posterior del proveedor institucional.
+**Estado:** mecanismo genérico implementado en `develop`; issuer, audiencia, grupos y permisos UPTC siguen pendientes de confirmación institucional.
 **Fecha:** 30 de septiembre de 2026.
 **Datos personales:** no se incorporan datos de estudiantes ni atributos personales de identidad a la aplicación.
 
 ## Contexto y objetivo
 
-El backend valida tokens OIDC como resource server y falla cerrado mientras emisor y audiencia estén vacíos. La API `/api/v1/me` devuelve el identificador del principal y los permisos calculados en el servidor. React todavía pasa `null` como autorización a las pantallas administrativas, por lo que no existe un inicio de sesión navegable. Esta etapa conecta el flujo federado y la consulta de permisos para que una institución pueda habilitarlo cuando DTIC confirme sus valores.
+Como línea base, el backend validaba tokens OIDC como resource server y fallaba cerrado mientras emisor y audiencia estuvieran vacíos. La API `/api/v1/me` devuelve el identificador del principal y los permisos calculados en el servidor. Esta implementación conecta el flujo federado y la consulta de permisos para que la institución pueda habilitarlo cuando DTIC confirme sus valores.
 
 El objetivo es permitir que una persona se autentique con OIDC y que el servidor conceda únicamente permisos internos explícitamente configurados. Sin issuer, audience, claim y asignaciones aprobadas, el acceso administrativo sigue desactivado.
 
@@ -49,8 +49,10 @@ El objetivo es permitir que una persona se autentique con OIDC y que el servidor
 
 - Proveer un contrato de sesión inyectable para que las pruebas no dependan de un IdP real.
 - La navegación muestra iniciar sesión solo si el cliente OIDC está configurado; sin config explica que el acceso institucional está pendiente.
-- Pasar el access token y los permisos resueltos por `/api/v1/me` al Centro de Identidad Visual y al catálogo curricular, que mantienen sus permisos por capacidad.
-- La página `/#academia` continúa de consulta en este hito; los botones de apertura/cierre de periodo requieren su propio incremento funcional después de confirmar el mapa OIDC institucional.
+- Pasar el access token y los permisos resueltos por `/api/v1/me` al Centro de Identidad Visual, al catálogo curricular y a la vista académica, manteniendo cada capacidad separada.
+- En `/#academia`, `academic:period:read` habilita la consulta administrativa de todos los estados. `academic:period:write` habilita confirmar apertura de periodos `APPROVED` y cierre de periodos `OPEN`; la API conserva la autorización final.
+- Cada transición solo cambia el estado del periodo académico. No publica oferta de asignaturas ni habilita inscripción o matrícula; el periodo académico real es distinto al semestre de una malla.
+- Si la autorización de lectura se pierde mientras hay una respuesta administrativa cargada, la interfaz debe ocultar esos datos en el mismo render, mientras solicita de nuevo la vista pública.
 
 ## Aceptación
 
@@ -61,6 +63,7 @@ El objetivo es permitir que una persona se autentique con OIDC y que el servidor
 5. `/api/v1/me` determina los controles de React; una respuesta inválida, un timeout o 403 no presenta permisos administrativos.
 6. Sign-out elimina el usuario/token de la pestaña y redirige al destino local validado.
 7. `npm test`, build, lint, suite Maven, Compose config y smoke local pasan. La ausencia de IdP real se reporta como no verificable, sin afirmar integración UPTC operativa.
+8. Sin `academic:period:read`, la interfaz no conserva datos administrativos previamente cargados; sin `academic:period:write`, no ofrece transiciones. Con escritura, solicita confirmación y muestra la respuesta del servidor.
 
 ## Gates institucionales restantes
 

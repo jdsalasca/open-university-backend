@@ -42,7 +42,7 @@
 - [x] **Step 2: Ejecutar las pruebas focalizadas y verificar RED por el contrato/mapeo faltante.**
 - [x] **Step 3: Implementar parseo validado de `UPTC_OIDC_ROLE_PERMISSION_MAPPING`, con default `{}` y sin wildcard.**
 - [x] **Step 4: Ejecutar pruebas focalizadas en GREEN y confirmar que `/api/v1/me` no expone permisos nuevos sin configuración.**
-- [ ] **Step 5: Commit backend con el mapa deny-by-default.**
+- [x] **Step 5: Commit backend con el mapa deny-by-default** (`ef4400b`).
 
 ### Task 2: Cliente `/api/v1/me` e interfaz de identidad
 
@@ -79,6 +79,7 @@
 
 **Archivos:**
 - Modificar `frontend/src/App.tsx`, `App.test.tsx`, `App.scss`.
+- Crear/modificar `frontend/src/features/academics/AcademicOperationsPage.tsx` y sus pruebas para controlar la visibilidad administrativa y el ciclo de periodos.
 - Adaptar `frontend/src/features/branding/VisualIdentityCenter.tsx` y tests.
 - Adaptar `frontend/src/features/academics/AcademicCatalogPage.tsx` y tests.
 
@@ -87,6 +88,7 @@
 - [x] **Step 3: Mostrar sign-in/out y pasar solo permisos `/api/v1/me` a las vistas existentes.**
 - [x] **Step 4: Verificar que permiso de marca no desbloquee catálogo y que el acceso sin sesión siga en lectura.**
 - [x] **Step 5: Ejecutar tests/build/lint en GREEN y commit frontend** (`10472a9`).
+- [x] **Step 6: Mostrar periodos administrativos por permiso y permitir apertura/cierre confirmados con escritura; ocultar la respuesta administrativa si se pierde lectura** (`10472a9`, ampliación implementada en el mismo commit).
 
 ### Task 5: Configuración y diagramas
 
@@ -99,6 +101,6 @@
 
 ### Task 6: Verificación e integración de milestone
 
-- [x] Ejecutar suite Maven (199 tests, 0 fallos, 6 omitidos), suite frontend (113 tests), build/lint, `docker compose config --quiet` y smoke de salud frontend/backend.
+- [x] Ejecutar suite Maven (199 tests, 0 fallos, 6 omitidos), suite frontend (124 tests, 13 archivos), build/lint, `docker compose config --quiet` y smoke de salud frontend/backend.
 - [x] Confirmar configuración vacía como denegación segura con pruebas; no probar contra UPTC ni emitir tokens.
-- [ ] Completar revisión independiente, actualizar submódulo después de frontend commit y publicar commits separados a `origin/develop`.
+- [ ] Completar revisión independiente, actualizar submódulo al commit frontend y publicar commits separados a `origin/develop`.
