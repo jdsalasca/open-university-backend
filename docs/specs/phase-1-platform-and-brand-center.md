@@ -4,7 +4,7 @@
 
 ## Resultado esperado
 
-Un repositorio ejecutable localmente en Windows con frontend React/Vite y backend Java 25/Spring Boot separados, persistencia relacional MySQL versionada, reglas de ingeniería AGENTS-first y un Centro de Identidad Visual que solo edita personal autorizado.
+Dos repositorios privados ejecutables localmente en Windows: frontend React/Vite/SCSS y backend Java 25/Spring Boot, persistencia relacional MySQL versionada, instrucciones AGENTS-first y un Centro de Identidad Visual que solo edita personal autorizado. Compose coordina los servicios de desarrollo sin fusionar los repositorios ni sus despliegues.
 
 ## Requisitos funcionales
 
@@ -45,7 +45,9 @@ El API no devuelve actor, ruta física, MIME no validado ni historial de auditor
 ## Requisitos de calidad
 
 - Java 25, SDKMAN, Spring Boot estable compatible con Java 25; la versión se fija junto con Maven Wrapper.
-- Dos monolitos desplegables independientemente dentro de un mismo repositorio.
+- Dos monolitos desplegables independientemente en repositorios privados `Universiry-frontend` y `Universiry-backend`, ramas `develop`.
+- Compose local levanta frontend, backend y MySQL; no se usa como manifiesto productivo.
+- El backend sirve bundles es-CO por defecto e inglés al negociar `Accept-Language`.
 - TDD/AAA obligatorio en reglas, API, persistencia, seguridad, validación de activos y UI.
 - Autorización administrativa en servidor; el proveedor de identidad y claims UPTC siguen pendientes de confirmación institucional.
 - El API usa JWT de acceso en `Authorization: Bearer`; no mantiene autenticación en cookie ni sesión. CSRF solo se desactiva mientras esa condición se mantenga; si se adopta una cookie, se debe habilitar protección CSRF antes del despliegue.

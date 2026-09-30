@@ -46,6 +46,30 @@ sequenceDiagram
 
 Si una validación o persistencia falla, no se publica una versión parcial. El API público solo expone configuración visual aprobada; los endpoints de administración requieren permiso comprobado en backend.
 
+## Desarrollo local y selección de idioma
+
+```mermaid
+sequenceDiagram
+  actor Dev as Desarrollador
+  participant Compose as Docker Compose
+  participant Front as Vite + React
+  participant Back as Spring Boot
+  participant DB as MySQL local
+  Dev->>Compose: compose up --build
+  Compose->>DB: inicia y espera healthcheck
+  Compose->>Back: inicia API con conexión de desarrollo
+  Compose->>Front: inicia Vite con proxy API interno
+  Dev->>Compose: compose watch
+  Dev->>Front: guarda componente o SCSS
+  Front-->>Dev: Vite HMR actualiza el navegador
+  Dev->>Back: guarda fuente Java
+  Back->>Back: Compose Watch sincroniza y reinicia Maven/Spring
+  Front->>Back: request REST con Accept-Language
+  Back-->>Front: mensaje del catálogo en el idioma negociado
+```
+
+El encabezado `Accept-Language` elige el bundle del backend; sin preferencia, se usa `es-CO`. Compose Watch y la base persistente son exclusivamente locales de desarrollo.
+
 ## Reemplazo y corte de un dominio
 
 ```mermaid

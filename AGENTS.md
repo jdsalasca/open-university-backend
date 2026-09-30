@@ -6,11 +6,13 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 
 ## Arquitectura acordada
 
-- Un repositorio con dos monolitos desplegables de forma independiente: `frontend/` usa Vite, React y TypeScript; `backend/` usa Java 25 y Spring Boot.
+- Dos repositorios Git privados y coordinados: `Universiry-frontend` contiene el monolito Vite/React/TypeScript y `Universiry-backend` contiene el monolito Java/Spring Boot, Compose, SDKMAN y la documentación de integración. Ambos usan `develop` como rama de integración.
+- El checkout de backend incorpora `Universiry-frontend` como submódulo en `frontend/` para que `compose.yaml` levante las dos aplicaciones y MySQL desde una carpeta. Actualizar el submódulo después de integrar cambios del frontend.
 - Backend monolítico modular organizado por capacidades del negocio. No introducir microservicios, brokers ni duplicación de bases de datos sin una decisión arquitectónica aprobada y evidencia de necesidad.
 - MySQL es la base relacional objetivo. Flyway versiona el esquema; la aplicación nunca crea ni actualiza el esquema en producción.
 - Los módulos se comunican mediante contratos internos explícitos. Las reglas de negocio viven en el backend; el frontend solo ofrece validación temprana de experiencia.
 - SDKMAN es el gestor de Java del proyecto en el equipo principal. El `.sdkmanrc` debe fijar la distribución y versión exactas; no cambiar variables globales de Windows sin verificar que Git Bash, PowerShell, Maven e IDE seleccionan el mismo JDK.
+- El desarrollo local coordinado usa Docker Compose con MySQL aislado, proxy API y Compose Watch; las aplicaciones siguen siendo monolitos independientes.
 
 ## Método obligatorio
 
@@ -38,6 +40,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 ## Documentación y continuidad
 
 - Leer esta guía y `docs/PROJECT.md` antes de cambiar el diseño.
+- En cambios del frontend, leer también `frontend/AGENTS.md` y ejecutar validaciones desde el submódulo frontend.
 - Mantener `docs/architecture/` (C4, datos y procesos), `docs/ROADMAP.md`, decisiones ADR y planes de `docs/superpowers/plans/` sincronizados con el código.
 - Actualizar los diagramas cuando cambie una frontera, integración, fuente oficial de datos o flujo de corte.
 - No declarar migrado un dominio sin reconciliación, aceptación del responsable institucional, corte verificable, rollback probado y retiro acordado del legado.

@@ -4,7 +4,7 @@
 
 **Goal:** Entregar el primer incremento verificable de la plataforma institucional con Vite/React, Java 25/Spring Boot, MySQL y un centro seguro para administrar identidad visual UPTC.
 
-**Architecture:** Un monorepo contiene dos monolitos desplegables de forma independiente. La SPA consume un contrato REST versionado; el monolito Spring Boot separa dominio, casos de uso y adaptadores; MySQL conserva versiones y auditoría; un puerto almacena imágenes fuera de la base.
+**Architecture:** Dos repositorios privados alojan monolitos independientes: `Universiry-frontend` (Vite/React/TypeScript/SCSS) y `Universiry-backend` (Java/Spring Boot/MySQL). El checkout backend incluye el frontend como submódulo para orquestar localmente las dos aplicaciones y MySQL con Compose Watch. La SPA consume un contrato REST versionado; el backend separa dominio, casos de uso y adaptadores; MySQL conserva versiones y auditoría; un puerto almacena imágenes fuera de la base.
 
 **Tech Stack:** Java 25 Temurin por SDKMAN; Spring Boot 4.1.1; Maven Wrapper; MySQL; Flyway; React; Vite; TypeScript; Vitest; JUnit.
 
@@ -12,7 +12,8 @@
 
 ## Global Constraints
 
-- Frontend Vite/React/TypeScript en `frontend/`; backend Java 25/Spring Boot en `backend/`; no mezclar reglas de negocio en React.
+- Repos frontend y backend independientes, integrados en `develop`; el checkout de backend monta el frontend en `frontend/` como submódulo para Compose local.
+- Frontend Vite/React/TypeScript/SCSS; backend Java 25/Spring Boot en `backend/`; no mezclar reglas de negocio en React.
 - Un solo backend monolítico modular y una base MySQL; no introducir microservicios, colas ni bases separadas.
 - SDKMAN fija la versión `25.0.4-tem` en `.sdkmanrc`; Maven Wrapper fija su runtime de build.
 - Migraciones Flyway explícitas; producción nunca usa `ddl-auto=create` ni `ddl-auto=update`.
@@ -139,28 +140,48 @@
 - Consumes: `useBranding`, cliente admin del Task 3, port `POST /api/v1/admin/branding/assets`.
 - Produces: UI con campos accesibles, vista previa aislada, estado sucio, control de revisión y feedback de guardado.
 
-- [ ] Escribir primero `edits_only_preview_until_save`, `edits_known_module_label`, `blank_module_label_blocks_publish`, `banner_requires_alt_text_and_validity`, `conflict_409_preserves_draft`, `rollback_creates_new_revision`; comprobar vista previa `#123456`, sin envío antes de guardar, módulo conocido renombrado, banner con alt y fechas válidas, y draft preservado tras 409.
-- [ ] Escribir tests keyboard/semantic queries para navegación, nombre de módulo, banner vigente/vencido y error de carga.
-- [ ] Ver RED esperado y desarrollar shell adaptable con identidad UPTC, editor, previsualización y mensajes claros.
-- [ ] Ejecutar tests frontend y build de producción; revisar que no haya controles ficticios con datos académicos de producción.
-- [ ] Commit local `feat: add visual identity control center`.
+- [x] Escribir primero pruebas de edición local, catálogo de módulos, validación de banner, conflicto 409, rollback, navegación por teclado, carga/error y preview; observar RED antes de implementar cada comportamiento.
+- [x] Desarrollar shell adaptable con identidad UPTC, editor, previsualización y mensajes claros.
+- [x] Añadir logo/banner a la vista previa sin permitir publicación cuando no hay token institucional configurado.
+- [x] Ejecutar suite frontend, build SCSS y lint; no usar datos académicos reales.
+- [ ] Integrar el hito en `develop` de ambos repos una vez el split esté publicado.
 
 ### Task 7: Documentación y verificación de extremo a extremo
 
 **Files:**
-- Modify: `docs/architecture/c4.md`, `docs/architecture/process-flows.md`, `docs/architecture/data-model.md`, `docs/ROADMAP.md`, README y `.env.example`.
-- Create: `docs/runbook/local-development.md` y `docs/security/brand-assets.md`.
+- Modify: `AGENTS.md`, `docs/PROJECT.md`, `docs/architecture/c4.md`, `docs/architecture/process-flows.md`, `docs/architecture/data-model.md`, `docs/ROADMAP.md`, README y `.env.example`.
+- Create: `frontend/AGENTS.md` y `docs/runbook/local-development.md`.
 
 **Interfaces:**
 - Consumes: contratos/API, configuración de build, resultados reales de pruebas y servicios locales.
 - Produces: pasos reproducibles, matriz de configuración, límites de entorno y checklist de corte.
 
-- [ ] Ejecutar suite completa frontend, `npm run build` desde `frontend/`, `./mvnw verify` desde `backend/`, chequeo de migraciones y smoke test local con MySQL real si hay credenciales de desarrollo disponibles.
-- [ ] Verificar `GET /api/v1/branding`, rechazo 401/403 de escritura no autorizada y publicación autorizada en integración.
-- [ ] Ejecutar un smoke de UI en navegador solo si la aplicación puede arrancar localmente sin acceso a datos institucionales; nunca conectar a producción.
-- [ ] Inspeccionar diff, estado Git, secretos, duplicaciones y diagramas; solo entonces reportar evidencia y límites.
-- [ ] Commit local `docs: document platform foundation and branding operations`.
+- [x] Ejecutar suite frontend, `npm run build`, `npm run lint`, `./mvnw verify` y `docker compose config --quiet`.
+- [x] Iniciar MySQL 8.4 real por Compose, comprobar Flyway v1, salud, `GET /api/v1/branding`, frontend 200 y rechazo 401; solo datos sintéticos.
+- [x] Ejecutar smoke de UI en navegador local y observar el Centro de Identidad Visual; nunca conectar a producción.
+- [x] Actualizar cronograma, README, AGENTS, C4, proceso de desarrollo y runbook para dos repos y Compose.
+- [ ] Inspeccionar diff, estado Git, secretos, duplicaciones y diagramas; confirmar cambios frontend/backend en `develop` con upstream privado.
+
+### Task 8: i18n, entorno Compose Watch y repos separados
+
+**Files:**
+- Create: puerto/adaptador de catálogo de mensajes y bundles es-CO/en; `compose.yaml`; Dockerfiles de desarrollo; `.dockerignore`; `.env.example`.
+- Modify: seguridad de API, configuración Vite, pruebas de idioma y documentación operativa.
+- Git: crear `Universiry-frontend` y `Universiry-backend` privados bajo `jdsalasca`; extraer frontend y montarlo como submódulo.
+
+**Interfaces:**
+- `MessageCatalog.message(key, locale)`; el API usa `Accept-Language` y `es-CO` cuando no se envía idioma.
+- Compose provee `mysql`, `backend` y `frontend`, con proxy `/api`/`assets`, puertos localhost y watch de fuentes.
+- Ambos remotos integran en `develop`; el checkout backend lleva `.gitmodules` y pointer coordinado al frontend.
+
+- [x] Añadir aserciones AAA de error default es-CO y English por Accept-Language; observar RED contra las respuestas hardcoded.
+- [x] Implementar puerto, adaptador Spring, locale resolver y bundles base en español e inglés; 6 pruebas de API del controlador pasan.
+- [x] Definir Dockerfiles y Compose Watch: HMR del frontend, restart backend al guardar Java y rebuild ante dependencias.
+- [x] `docker compose config --quiet` pasa.
+- [x] `docker compose up --build -d --wait`; comprobar MySQL 8.4, Flyway, endpoint público y ambos puertos.
+- [ ] Confirmar recarga frontend/backend observando cambios de runtime.
+- [ ] Crear/poblar repos privados, publicar commits `develop`, configurar upstream y validar submódulo recursivo.
 
 ## Pasos de ejecución
 
-Cada subpaso nuevo seguirá RED → GREEN → REFACTOR y ejecutará el runner correspondiente antes de pasar al siguiente. Cada tarea tendrá una revisión independiente y un commit local; no se publicará ni se integrará a infraestructura UPTC.
+Cada subpaso nuevo seguirá RED → GREEN → REFACTOR y ejecutará el runner correspondiente antes de pasar al siguiente. Cada hito confirmado se integra en `develop` y se publica en los dos repos privados autorizados; esto no despliega ni conecta la plataforma a infraestructura UPTC.

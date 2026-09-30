@@ -7,7 +7,7 @@ Duraciones relativas; no son una fecha contractual. Se recalibran cuando UPTC en
 | Etapa | Actividades principales | Duración indicativa | Resultado verificable |
 |---|---|---:|---|
 | 0. Descubrimiento y gobierno | Inventariar sistemas, dueños, bases e interfaces; talleres por proceso; clasificación de datos; reglas actuales; identidad institucional; seguridad, continuidad y contratación; mapa de dependencias | 4–6 semanas | Catálogo vigente, dueños por dominio, riesgos, alcance priorizado y cronograma base aprobado |
-| 1. Plataforma y diseño transversal | Monorepo y build reproducible; Java 25/SDKMAN; React/Vite; monolito modular; contratos API; CI; MySQL; migraciones; auditoría; observabilidad; C4; Centro de Identidad Visual | 8–12 semanas | Aplicaciones arrancables, configuración de marca gobernada, permisos de ejemplo no productivos, métricas de latencia instrumentadas |
+| 1. Plataforma y diseño transversal | Repos separados y coordinados; Java 25/SDKMAN; React/Vite/SCSS; monolito modular; API con i18n; Compose Watch; MySQL; migraciones; auditoría; observabilidad; C4; Centro de Identidad Visual | 8–12 semanas | Aplicaciones arrancables, configuración de marca gobernada, permisos de ejemplo no productivos, métricas de latencia instrumentadas |
 | 2. Identidad y ciclo del estudiante | Estructura institucional, identificadores, personas y vínculos, roles, admisiones, expediente, estados del ciclo y trazabilidad | 3–5 meses | Recorridos validados con personal y datos sintéticos; reglas institucionales aprobadas |
 | 3. Oferta académica y currículo | Programas, sedes/modalidades, versiones de malla, currículo, asignaturas, prerrequisitos, créditos y equivalencias | 3–5 meses | Catálogo versionado y migración de ensayo conciliada |
 | 4. Operación académica | Periodos, grupos, matrícula, carga de cursos, programación, horarios, calificaciones, certificados y grados | 5–9 meses | Flujo académico completo por cohortes piloto y criterios de corte |
@@ -49,7 +49,7 @@ Las fechas del diagrama son una ilustración relativa iniciada el 1 de octubre d
 ## Hitos próximos
 
 - H0: inventario institucional vigente y propietarios de dominios identificados.
-- H1: build frontend/backend reproducible con SDKMAN Java 25.
+- H1: frontend y backend reproducibles desde repos separados con SDKMAN Java 25 y Compose local.
 - H2: Centro de Identidad Visual con administración autorizada, vista previa, publicación y auditoría.
 - H3: autenticación federada y roles UPTC confirmados.
 - H4: identidad, expediente estudiantil y ciclo básico probados en un entorno UPTC no productivo.

@@ -8,7 +8,8 @@ Un inventario público de DTIC de 2024 relaciona sistemas como SIRA, SIRD, SEDI,
 
 ## Decisiones confirmadas
 
-- Un repositorio en `Universiry` con dos aplicaciones monolíticas y desplegables por separado.
+- Dos repositorios privados coordinados: `Universiry-frontend` (monolito Vite/React/TypeScript) y `Universiry-backend` (monolito Java/Spring Boot). Ambos integran en `develop`.
+- El checkout backend incluye el frontend como submódulo para alojar el Compose local que levanta frontend, backend y MySQL. Esta relación de checkout no comparte código fuente ni despliegues entre las aplicaciones.
 - Frontend: Vite, React y TypeScript.
 - Backend: Java 25 administrado por SDKMAN y Spring Boot; el build y el `.sdkmanrc` fijan versión exacta.
 - Backend como monolito modular, separado por capacidades de negocio. Los microservicios quedan aplazados hasta que haya evidencia de una frontera y una ganancia concreta.
@@ -16,6 +17,8 @@ Un inventario público de DTIC de 2024 relaciona sistemas como SIRA, SIRD, SEDI,
 - TDD en ciclos RED-GREEN-REFACTOR; pruebas con estructura AAA, casos felices, límites, permisos y regresiones.
 - Diseño por contratos e interfaces, cohesión alta, acoplamiento bajo, principios SOLID y revisión de duplicaciones.
 - Centro de Identidad Visual administrable: paleta, logos, imágenes institucionales, banners y nombres visibles de módulos, con autorización, vista previa y auditoría.
+- Mensajes del backend resueltos por `Accept-Language`, con español de Colombia como idioma predeterminado.
+- Compose local con MySQL y recarga de frontend/backend al cambiar código.
 - Actualizar diagramas C4 y procesos al modificar componentes, límites, integraciones o cortes de migración.
 - Objetivo de consultas críticas MySQL: promedio <50 ms bajo carga y volumen acordados; p95/p99 acompañan el promedio.
 
@@ -25,7 +28,7 @@ Los grupos exactos y su mapeo al proveedor institucional se confirman con UPTC. 
 
 ## Alcance del primer incremento
 
-1. Cimientos reproducibles del frontend y backend, herramientas de contexto IA, base de datos versionada y documentación viva.
+1. Dos repositorios reproducibles, herramientas de contexto IA, Compose Watch con MySQL local, traducciones del backend, base versionada y documentación viva.
 2. Centro de Identidad Visual que publica una configuración de marca validada: colores, logos, banners y nombres de módulos.
 3. Estructura de navegación y contratos preparados para identidad, estudiante y catálogo académico, sin inventar datos reales ni marcar módulos futuros como funcionales.
 4. Inventario de integraciones y requisitos institucionales como condición previa a la autenticación federada, migraciones de datos productivos y cortes oficiales.

@@ -23,6 +23,10 @@
 
 La carga guarda metadatos y un evento de auditoría en la misma transacción que los asocia a la revisión vigente; una reversión elimina el archivo creado si la transacción falla. El archivo se almacena fuera de MySQL con una clave aleatoria y nunca con su nombre entregado por el navegador. No se guardan bytes, rutas locales ni nombres originales en la configuración pública. La configuración pública lleva un número de revisión y ETag para caché e invalidación. Volver a una revisión previa crea un nuevo snapshot, no mueve el puntero hacia atrás.
 
+## Mensajes del backend
+
+Los textos de respuesta se mantienen en `messages.properties` (español predeterminado) y `messages_en.properties`. El API negocia `Accept-Language`; los catálogos son recursos de aplicación, no filas de configuración institucional ni datos de negocio.
+
 ## Presupuesto de latencia
 
 - Definir un conjunto versionado de consultas críticas, tamaño de dataset y carga de referencia por dominio.
