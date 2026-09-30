@@ -80,6 +80,6 @@ Las actividades 2 y 3 pueden solaparse parcialmente. La duración nominal result
 - H1: frontend y backend reproducibles desde repos separados con SDKMAN Java 25 y Compose local.
 - H2: Centro de Identidad Visual con administración autorizada, vista previa, publicación y auditoría.
 - H3: autenticación federada y roles UPTC confirmados.
-- H4: identidad, expediente estudiantil y ciclo básico de **pregrado presencial** probados en un entorno UPTC no productivo, solo después de que sus responsables aprueben procesos, normas vigentes, datos, permisos y reglas por cohorte. La decisión de ruta está tomada; el subproceso/cohorte y contrato institucional siguen pendientes. Ver [descubrimiento del ciclo](discovery/student-lifecycle-baseline.md).
+- H4: identidad, expediente estudiantil y ciclo básico de **pregrado presencial** probados en un entorno UPTC no productivo, solo después de que sus responsables aprueben procesos, normas vigentes, datos, permisos y reglas por cohorte. La decisión de ruta está tomada; el subproceso/cohorte y contrato institucional siguen pendientes. Ver [descubrimiento del ciclo](discovery/student-lifecycle-baseline.md) y su [plantilla de validación institucional](discovery/pregrado-presencial-validacion-institucional.md).
 - H5: catálogo de programas, mallas, versiones curriculares y asignaturas aprobado.
 - H6: primer corte de dominio ejecutado con conciliación y reversa ensayada.
