@@ -227,6 +227,73 @@ sequenceDiagram
 
 La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. El detalle público obtiene metadata separada de entradas y consulta páginas filtradas por código/nombre o semestre; solo `PUBLISHED` puede producir conteos o filas, y borradores y UUID inexistentes comparten 404 en ambos endpoints. La consulta de página fija el tamaño máximo en 100, enlaza parámetros, escapa los comodines SQL y mantiene orden `(semester, row_order)`. La interfaz pide la metadata y su primera página en paralelo; espera 250 ms para búsqueda de texto, vuelve a página 1 al cambiar filtros y cancela solicitudes anteriores con `AbortSignal`. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la cola de revisión usa cursores anclados en fecha y UUID para que publicar una fila anterior no desplace borradores pendientes. La prevalidación, importación y publicación requieren `academic:catalog:write`. `POST /import-previews` valida el mismo contrato, devuelve metadata, semestres y como máximo 10 filas sin persistir datos ni eventos; `POST /imports` vuelve a validar antes de la transacción de escritura. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
 
+## Orden organizacional y periodos académicos
+
+La estructura mantiene dos ejes independientes: las unidades responsables y los lugares donde se ofrece el programa. Las relaciones se fechan y ordenan; la afiliación apunta al programa existente del catálogo. No se usan los nombres libres históricos de facultad/sede como relaciones canónicas.
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Structure as Servicio de estructura
+  participant DB as MySQL
+  Operator->>API: crea unidades y lugares con código, vigencia y orden
+  API->>Auth: exige academic:structure:write
+  Auth-->>API: principal autorizado
+  API->>Structure: agrega relaciones fechadas y afilia programId existente
+  Structure->>Structure: valida referencias, solapamientos y ciclos
+  Structure->>DB: guarda cambio + actor + referencia en una transacción
+  DB-->>Structure: commit
+  Operator->>API: consulta árbol administrativo
+  API->>Auth: exige academic:structure:read
+  API->>DB: consulta maestros y afiliaciones por vigencia/orden
+  DB-->>API: unidades, programas y lugares ordenados
+```
+
+El orden organizacional se presenta por `displayOrder` y código estable; cada afiliación conserva su propio `displayOrder` de programa, con código/nombre como desempate. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` consulta datos vigentes, pero el Compose no contiene filas institucionales ni proveedor OIDC; los comandos anteriores son APIs protegidas, no botones de escritura disponibles en esta vista.
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador de calendario autorizado
+  participant API as Spring Boot: Academic Period API
+  participant Auth as Spring Security
+  participant Period as Servicio de periodo
+  participant DB as MySQL
+  Operator->>API: crea periodo REGULAR o INTERSEMESTRAL
+  API->>Auth: exige academic:period:write
+  API->>Period: crea borrador con fechas y actor
+  Period->>DB: periodo DRAFT + PERIOD_CREATED
+  Operator->>API: crea y publica revisión del calendario con referencia
+  API->>Period: valida fechas propias de las actividades; ventanas independientes del rango lectivo
+  Period->>DB: revisión publicada inmutable + auditoría
+  Operator->>API: POST /{periodId}/approve con revisión y acto aprobatorio
+  Period->>DB: DRAFT → APPROVED + actor/instante/referencia
+  Operator->>API: POST /{periodId}/open
+  Period->>DB: APPROVED → OPEN + auditoría atómica
+  API-->>Operator: periodo abierto
+  API->>DB: GET público consulta solo OPEN con calendario publicado
+```
+
+El permiso administrativo se valida en Spring Security por ruta. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo, por lo que solicitudes concurrentes no crean dos transiciones válidas. El historial con todas las revisiones, actividades y eventos se consulta mediante una ruta administrativa de solo lectura.
+
+```mermaid
+flowchart LR
+  Current[Revisión publicada activa]
+  Draft[Crear nueva revisión con referencia del cambio]
+  Validate[Validar cada actividad y su intervalo propio]
+  Publish[Publicar revisión nueva e inmutable]
+  Activate[Activar revisión con permiso y auditoría]
+  Keep[Conservar revisión anterior publicada]
+  Status[Conservar estado actual del periodo]
+  Current --> Draft --> Validate --> Publish --> Activate --> Keep
+  Activate --> Status
+```
+
+La modificación de calendario cambia la revisión activa, no reescribe el historial ni reabre/cierra automáticamente el periodo. `INTERSEMESTRAL` identifica un tipo operativo de periodo en el sistema; las fechas, oferta de grupos, cupos y reglas concretas se cargan únicamente después de validación institucional. Los acuerdos públicos sobre cursos intersemestrales se documentan como insumo de descubrimiento en [fuentes y límites](../discovery/academic-structure-and-periods-sources.md), no se automatizan en este incremento.
+
+Las fechas de las actividades no se limitan al inicio/final de instrucción. En el calendario de estudiantes de pregrado 2026-2, ACRA publicó inscripción web del 22 de junio al 10 de julio y clases presenciales desde el 10 de agosto; la implementación conserva esa separación entre ventana de proceso y rango lectivo ([ACRA](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/2estu/est_pre.html)).
+
 ## Consulta de identidad propia
 
 ```mermaid

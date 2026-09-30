@@ -59,6 +59,8 @@ public class SecurityConfiguration {
                                 GET,
                                 "/api/v1/branding",
                                 "/api/v1/academic-catalog/programs",
+                                "/api/v1/academic-structure",
+                                "/api/v1/academic-periods",
                                 "/api/v1/academic-catalog/curriculum-template",
                                 "/api/v1/academic-catalog/programs/*/curricula",
                                 "/api/v1/academic-catalog/curricula/*",
@@ -85,6 +87,29 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/academic-catalog/import-previews",
                                 "/api/v1/admin/academic-catalog/curricula/*/publish")
                         .hasAuthority(ApplicationPermission.ACADEMIC_CATALOG_WRITE.authority())
+                        .requestMatchers(GET, "/api/v1/admin/academic-periods")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_READ.authority())
+                        .requestMatchers(GET, "/api/v1/admin/academic-periods/*/history")
+                                .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_READ.authority())
+                        .requestMatchers(GET, "/api/v1/admin/academic-structure")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_READ.authority())
+                        .requestMatchers(POST,
+                                "/api/v1/admin/academic-periods",
+                                "/api/v1/admin/academic-periods/*/calendars",
+                                "/api/v1/admin/academic-periods/*/calendars/*/publish",
+                                "/api/v1/admin/academic-periods/*/calendars/*/activate",
+                                "/api/v1/admin/academic-periods/*/approve",
+                                "/api/v1/admin/academic-periods/*/open",
+                                "/api/v1/admin/academic-periods/*/close",
+                                "/api/v1/admin/academic-periods/*/cancel")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_WRITE.authority())
+                        .requestMatchers(POST,
+                                "/api/v1/admin/academic-structure/units",
+                                "/api/v1/admin/academic-structure/sites",
+                                "/api/v1/admin/academic-structure/units/*/children/*",
+                                "/api/v1/admin/academic-structure/sites/*/children/*",
+                                "/api/v1/admin/academic-structure/programs/*/affiliations")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()
                         .anyRequest().denyAll()
                 )

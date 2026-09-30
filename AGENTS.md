@@ -11,6 +11,11 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - Backend monolítico modular organizado por capacidades del negocio. No introducir microservicios, brokers ni duplicación de bases de datos sin una decisión arquitectónica aprobada y evidencia de necesidad.
 - MySQL es la base relacional objetivo. Flyway versiona el esquema; la aplicación nunca crea ni actualiza el esquema en producción.
 - Los módulos se comunican mediante contratos internos explícitos. Las reglas de negocio viven en el backend; el frontend solo ofrece validación temprana de experiencia.
+- En el dominio académico, facultades/escuelas/unidades y lugares de desarrollo son dimensiones distintas. Afiliar un programa reutiliza su identidad existente; las relaciones y su vigencia no se duplican en campos de texto.
+- Una fila curricular usa el número de semestre para ubicar una asignatura dentro del plan. Un periodo regular o intersemestral es otra entidad fechada y auditable; nunca inferir calendario, cupos ni apertura desde el año o el plan curricular.
+- La estructura organizacional, lugares y programas tiene prioridad explícita de visualización; una afiliación vigente, no los textos legados, define facultad/escuela/sede de un programa. Las actividades del calendario pueden abrir antes de las fechas lectivas y se validan por su propio intervalo.
+- La API de estructura actual permite altas iniciales solamente. Antes de cargar o mantener el maestro institucional, implementar cierres/reasignaciones y correcciones de prioridad auditables; no usar SQL manual para saltarse el dominio.
+- No crear datos seed de estructura ni periodos oficiales sin un maestro y una referencia validados por el dueño institucional. Intersemestral es un tipo operativo del modelo actual; confirmar reglas específicas antes de publicar cursos o automatizar límites de matrícula.
 - SDKMAN es el gestor de Java del proyecto en el equipo principal. El `.sdkmanrc` debe fijar la distribución y versión exactas; no cambiar variables globales de Windows sin verificar que Git Bash, PowerShell, Maven e IDE seleccionan el mismo JDK.
 - El desarrollo local coordinado usa Docker Compose con MySQL aislado, proxy API y Compose Watch; las aplicaciones siguen siendo monolitos independientes.
 
@@ -43,4 +48,5 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - En cambios del frontend, leer también `frontend/AGENTS.md` y ejecutar validaciones desde el submódulo frontend.
 - Mantener `docs/architecture/` (C4, datos y procesos), `docs/ROADMAP.md`, decisiones ADR y planes de `docs/superpowers/plans/` sincronizados con el código.
 - Actualizar los diagramas cuando cambie una frontera, integración, fuente oficial de datos o flujo de corte.
+- Para cambios académicos, sincronizar explícitamente los diagramas C4, el modelo de datos, el proceso y `docs/ROADMAP.md`; mantener los gates institucionales visibles hasta que haya evidencia de aceptación.
 - No declarar migrado un dominio sin reconciliación, aceptación del responsable institucional, corte verificable, rollback probado y retiro acordado del legado.
