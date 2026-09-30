@@ -68,6 +68,8 @@ Modelo normalizado: `academic_program` conserva identidad por `(program_code, ac
 - Publicación sólo ocurre con permiso write y estado `DRAFT`; anónimo recibe 401, lector 403 en comandos, usuario sin permiso 403 y cualquier ruta administrativa no registrada se deniega.
 - La plantilla descargada sin autenticación coincide exactamente con `CurriculumCsvSchema.HEADERS`; otros métodos HTTP sobre esa ruta pública siguen denegados.
 - El detalle anónimo presenta las entradas de una versión publicada; un borrador no puede consultarse por la ruta pública y un método diferente de GET permanece denegado.
+- El detalle del plan permite encontrar asignaturas por código/nombre, sin distinguir diacríticos, y acotar los resultados a un semestre sin repetir la consulta de red.
+- La tabla muestra como máximo 100 asignaturas en el DOM a la vez; paginar conserva el detalle ya cargado y no dispara otra consulta.
 - Reimportación concurrente del mismo código de plan no duplica datos ni auditoría; publicaciones y auditoría son atómicas.
 - El front muestra estados vacío, cargando, validación por fila, borrador, publicado, errores de red/permisos y no presenta datos sintéticos como oficiales.
 
