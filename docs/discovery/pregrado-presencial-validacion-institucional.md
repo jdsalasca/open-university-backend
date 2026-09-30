@@ -1,7 +1,7 @@
 # Mesa de validación institucional — pregrado presencial
 
-**Estado:** plantilla vacía para revisión con responsables UPTC; no es una especificación funcional aprobada.  
-**Propósito:** recopilar decisiones, normas, fuentes de datos, permisos y criterios de aceptación antes de implementar admisión, matrícula o expediente estudiantil.  
+**Estado:** plantilla vacía para revisión con responsables UPTC; no es una especificación funcional aprobada.<br>
+**Propósito:** recopilar decisiones, normas, fuentes de datos, permisos y criterios de aceptación antes de implementar admisión, matrícula o expediente estudiantil.<br>
 **Datos:** no copiar documentos, nombres, identificadores ni expedientes reales a este archivo o al entorno de desarrollo.
 
 La ruta priorizada es pregrado presencial. Las páginas públicas de ACRA ayudan a preparar la mesa, pero no prueban la secuencia interna de procesos ni sustituyen una decisión de la autoridad normativa. Ver [descubrimiento y fuentes públicas](student-lifecycle-baseline.md).
