@@ -118,16 +118,16 @@
 - Modify: `frontend/src/App.tsx`, `frontend/src/App.scss`, `frontend/src/features/branding/contracts.ts`, and `frontend/src/features/branding/BrandingProvider` only as needed to route the implemented Programs module.
 
 **Interfaces:**
-- `AcademicCatalogClient`: `listPrograms`, `listCurricula(programId)`, `listDrafts(accessToken)`, `importCsv(file, accessToken)`, `publishCurriculum(id, accessToken)`.
+- `AcademicCatalogClient`: `listPrograms`, `listCurricula(programId)`, `listDrafts(accessToken)`, `getCurriculum(id, accessToken)`, `importCsv(file, accessToken)`, `publishCurriculum(id, accessToken)`.
 - The page renders only public published catalog data without a token; admin upload/publish controls are unavailable when no institutional access token/permission is supplied. Do not add login, demo credentials, localStorage token storage or fabricated catalog rows.
 - Show the catalog as a development preview route in the local dev shell while the authoritative branding/module `available` flag remains false until institutional approval; never imply the module is production-ready because the page exists.
 - Accessible states include loading, empty, populated versions/cohorts, selected file, draft review, row errors, publishing, conflict, forbidden, unauthenticated and network failure.
 
-- [ ] **Step 1: Write failing Vitest/Testing Library tests** for public empty/populated catalog, version-by-cohort rendering, safe text escaping, admin token absent, rejected MIME/size, upload success/error, row validation details, publish success/conflict/403, and keyboard-accessible navigation.
-- [ ] **Step 2: Run `npm test -- src/features/academics/AcademicCatalogPage.test.tsx`; verify the expected missing-page/client failures.**
-- [ ] **Step 3: Implement the typed client, validated response parsing, accessible page and route; expose Programs as the implemented module without enabling curricula/subjects registration prematurely.**
-- [ ] **Step 4: Run frontend tests, `npm run build`, and `npm run lint`; resolve regressions before proceeding.**
-- [ ] **Step 5: Commit frontend `feat: add academic catalog and curriculum import ui`.**
+- [x] **Step 1: Write failing Vitest/Testing Library tests** for public empty/populated catalog, version-by-cohort rendering, safe text escaping, admin token absent, rejected MIME/size, upload success/error, row validation details, publish success/conflict/403, and keyboard-accessible navigation.
+- [x] **Step 2: Run `npm test -- src/features/academics/AcademicCatalogPage.test.tsx`; verify the expected missing-page/client failures.**
+- [x] **Step 3: Implement the typed client, validated response parsing, accessible page and route; expose Programs as the implemented module without enabling curricula/subjects registration prematurely.**
+- [x] **Step 4: Run frontend tests, `npm run build`, and `npm run lint`; resolve regressions before proceeding.**
+- [x] **Step 5: Commit frontend `feat: add academic catalog and curriculum import ui`.**
 
 ### Task 6: Architecture, operations and integrated verification
 
