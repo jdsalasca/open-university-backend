@@ -89,7 +89,7 @@
 - [x] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=AcademicCatalogSchemaTest test` from `backend/`; observe missing-schema failure.**
 - [x] **Step 3: Add the additive V2 migration and implement atomic draft creation, identical-revision reuse, new subject/program revisions, safe summaries and public published-only reads.**
 - [x] **Step 4: Write and run repository tests for successful draft creation, duplicate-version rollback, identical revision reuse, historical immutability, draft/published visibility, audit actor/hash, missing records and concurrent publication; the composed bad-file/no-write guarantee belongs to Task 4 API tests.**
-- [ ] **Step 5: Commit `feat: persist versioned academic curricula`.**
+- [x] **Step 5: Commit `feat: persist versioned academic curricula`.**
 
 ### Task 4: Application use cases, secured API and internal permissions
 
@@ -105,11 +105,11 @@
 - `academic:catalog:read` and `academic:catalog:write` are separate. Provisional technical `ACADEMIC_CATALOG_VIEWER`/`ACADEMIC_CATALOG_ADMIN` claim values are not represented as UPTC roles; production mapping stays pending issuer/claim/role approval.
 - Unknown admin routes/methods remain deny-by-default. Import creates a draft with 201; publish is conditional and returns conflict if the state is no longer `DRAFT`.
 
-- [ ] **Step 1: Write RED MockMvc tests** for anonymous read 200 and empty list, anonymous admin 401, reader draft list 200/import 403, admin import 201, bad CSV 400 with no database writes, missing draft 404, duplicate version 409, publish 200/audit, repeated publish 409, and unknown route/method 403.
-- [ ] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=AcademicCatalogControllerTest,AcademicCatalogAuthoritiesTest test` from `backend/`; verify expected status mismatches before handlers/policies exist.**
-- [ ] **Step 3: Implement application services, DTOs, exception localization, explicit route matchers and separated permission mapping.**
-- [ ] **Step 4: Rerun targeted tests; verify errors do not leak CSV values and all administrative mutations are audited transactionally.**
-- [ ] **Step 5: Commit `feat: secure academic catalog api`.**
+- [x] **Step 1: Write RED MockMvc tests** for anonymous read 200 and empty list, anonymous admin 401, reader draft list 200/import 403, admin import 201, bad CSV 400 with no database writes, missing draft 404, duplicate version 409, publish 200/audit, repeated publish 409, and unknown route/method 403.
+- [x] **Step 2: Run `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd -Dtest=AcademicCatalogControllerTest,AcademicCatalogAuthoritiesTest test` from `backend/`; verify expected status mismatches before handlers/policies exist.**
+- [x] **Step 3: Implement application services, DTOs, exception localization, explicit route matchers and separated permission mapping.**
+- [x] **Step 4: Rerun targeted tests; verify errors do not leak CSV values and all administrative mutations are audited transactionally.**
+- [x] **Step 5: Commit `feat: secure academic catalog api`.**
 
 ### Task 5: React catalog and import experience
 

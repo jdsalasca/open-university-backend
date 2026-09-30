@@ -58,6 +58,8 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 GET,
                                 "/api/v1/branding",
+                                "/api/v1/academic-catalog/programs",
+                                "/api/v1/academic-catalog/programs/*/curricula",
                                 "/assets/**",
                                 "/actuator/health",
                                 "/actuator/health/**"
@@ -71,6 +73,14 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/branding/rollback",
                                 "/api/v1/admin/branding/assets")
                         .hasAuthority(ApplicationPermission.BRANDING_WRITE.authority())
+                        .requestMatchers(GET,
+                                "/api/v1/admin/academic-catalog/drafts",
+                                "/api/v1/admin/academic-catalog/curricula/*")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_CATALOG_READ.authority())
+                        .requestMatchers(POST,
+                                "/api/v1/admin/academic-catalog/imports",
+                                "/api/v1/admin/academic-catalog/curricula/*/publish")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_CATALOG_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()
                         .anyRequest().denyAll()
                 )
@@ -92,7 +102,7 @@ public class SecurityConfiguration {
             @Value("${UPTC_OIDC_AUTHORITIES_CLAIM:authorities}") String authoritiesClaim
     ) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(new BrandingAuthoritiesConverter(authoritiesClaim));
+        converter.setJwtGrantedAuthoritiesConverter(new ApplicationAuthoritiesConverter(authoritiesClaim));
         return converter;
     }
 

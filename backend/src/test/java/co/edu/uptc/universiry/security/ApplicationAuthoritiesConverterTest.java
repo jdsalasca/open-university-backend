@@ -9,7 +9,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class BrandingAuthoritiesConverterTest {
+class ApplicationAuthoritiesConverterTest {
 
     @Test
     void maps_recognized_roles_to_application_permissions() {
@@ -18,7 +18,7 @@ class BrandingAuthoritiesConverterTest {
                 .header("alg", "none")
                 .claim("institutional_roles", List.of("BRAND_ADMIN", "UNRECOGNIZED", "INSTITUTIONAL_ADMIN"))
                 .build();
-        BrandingAuthoritiesConverter converter = new BrandingAuthoritiesConverter("institutional_roles");
+        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter("institutional_roles");
 
         // Act
         var authorities = converter.convert(jwt);
@@ -41,7 +41,7 @@ class BrandingAuthoritiesConverterTest {
                 .header("alg", "none")
                 .claim("institutional_roles", "BRAND_ADMIN")
                 .build();
-        BrandingAuthoritiesConverter converter = new BrandingAuthoritiesConverter("institutional_roles");
+        ApplicationAuthoritiesConverter converter = new ApplicationAuthoritiesConverter("institutional_roles");
 
         // Act
         var missingAuthorities = converter.convert(missingClaim);

@@ -1,6 +1,7 @@
 package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogRepository;
+import co.edu.uptc.universiry.academics.application.AcademicCatalogActorSub;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDetails;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumEntrySummary;
 import co.edu.uptc.universiry.academics.application.AcademicProgramSummary;
@@ -10,7 +11,6 @@ import co.edu.uptc.universiry.academics.application.CurriculumVersionConflictExc
 import co.edu.uptc.universiry.academics.application.ValidatedCurriculum;
 import co.edu.uptc.universiry.academics.application.ValidatedCurriculumEntry;
 import co.edu.uptc.universiry.academics.application.ValidatedProgram;
-import co.edu.uptc.universiry.academics.domain.AcademicCatalogLimits;
 import co.edu.uptc.universiry.academics.domain.AcademicCurriculumStatus;
 import co.edu.uptc.universiry.academics.domain.AcademicLevel;
 import co.edu.uptc.universiry.academics.domain.StudyModality;
@@ -88,7 +88,7 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
     @Transactional
     public CurriculumSummary createDraft(ValidatedCurriculum curriculum, String actorSub) {
         Objects.requireNonNull(curriculum, "curriculum");
-        String actor = requireActorSub(actorSub);
+        String actor = AcademicCatalogActorSub.require(actorSub);
         String sourceHash = curriculum.sourceSha256();
         if (sourceHash == null || !SOURCE_HASH.matcher(sourceHash).matches()) {
             throw new IllegalArgumentException("The source hash is invalid.");
@@ -228,7 +228,7 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
         if (curriculumId == null) {
             return CurriculumPublishResult.NOT_FOUND;
         }
-        String actor = requireActorSub(actorSub);
+        String actor = AcademicCatalogActorSub.require(actorSub);
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         int changed = jdbcTemplate.update("""
                 UPDATE academic_curriculum
@@ -429,14 +429,6 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
                 (resultSet, rowNumber) -> resultSet.getString("status"),
                 curriculumId.toString());
         return statuses.stream().findFirst();
-    }
-
-    private static String requireActorSub(String actorSub) {
-        if (actorSub == null || actorSub.isBlank()
-                || actorSub.codePointCount(0, actorSub.length()) > AcademicCatalogLimits.MAX_ACTOR_SUB_LENGTH) {
-            throw new IllegalArgumentException("The actor subject is invalid.");
-        }
-        return actorSub;
     }
 
     private static String fingerprint(String... fields) {

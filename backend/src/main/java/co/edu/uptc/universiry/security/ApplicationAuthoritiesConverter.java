@@ -10,21 +10,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class BrandingAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+public final class ApplicationAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
     private static final Set<ApplicationPermission> BRANDING_PERMISSIONS = Set.of(
             ApplicationPermission.BRANDING_READ,
             ApplicationPermission.BRANDING_WRITE
     );
+    private static final Set<ApplicationPermission> CATALOG_READ_PERMISSION = Set.of(
+            ApplicationPermission.ACADEMIC_CATALOG_READ
+    );
+    private static final Set<ApplicationPermission> CATALOG_WRITE_PERMISSIONS = Set.of(
+            ApplicationPermission.ACADEMIC_CATALOG_READ,
+            ApplicationPermission.ACADEMIC_CATALOG_WRITE
+    );
 
     private static final Map<String, Set<ApplicationPermission>> ROLE_PERMISSIONS = Map.of(
             "BRAND_ADMIN", BRANDING_PERMISSIONS,
-            "INSTITUTIONAL_ADMIN", BRANDING_PERMISSIONS
+            "INSTITUTIONAL_ADMIN", BRANDING_PERMISSIONS,
+            "ACADEMIC_CATALOG_VIEWER", CATALOG_READ_PERMISSION,
+            "ACADEMIC_CATALOG_ADMIN", CATALOG_WRITE_PERMISSIONS
     );
 
     private final String authoritiesClaim;
 
-    public BrandingAuthoritiesConverter(String authoritiesClaim) {
+    public ApplicationAuthoritiesConverter(String authoritiesClaim) {
         if (authoritiesClaim == null || authoritiesClaim.isBlank()) {
             throw new IllegalArgumentException("The configured institutional authorities claim cannot be blank.");
         }
