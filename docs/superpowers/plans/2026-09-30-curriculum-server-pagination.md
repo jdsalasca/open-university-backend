@@ -47,8 +47,8 @@
 - `GET /api/v1/academic-catalog/curricula/{id}` returns the published `AcademicCurriculumResponse` as the root JSON object, without `entries`; `GET /api/v1/academic-catalog/curricula/{id}/entries?page=1&pageSize=100&search=&semester=` returns the page response. Missing and draft records return the existing safe 404 contract.
 - SQL filters published status before both count and page reads, orders by `(semester, row_order)`, uses bound parameters, and escapes `%`, `_`, and `!` for literal `LIKE` search. Count and rows share a read-only transaction; calculate offset as `long`.
 
-- [ ] **Step 1: Write controller integration RED tests** named `published_curriculum_metadata_excludes_entry_rows`, `published_curriculum_entries_are_returned_in_stable_bounded_pages`, `public_entry_search_and_semester_filters_return_filtered_totals`, `entry_search_treats_sql_wildcards_literally`, `public_curriculum_entries_hide_missing_and_drafts`, `rejects_invalid_published_entry_page_parameters`, and `returns_zero_pages_and_empty_entries_for_no_matches`. Seed only through the existing CSV import/publication flow; assert first/intermediate/final pages, defaults, counts, filters, ordering, all input bounds, localized error bodies, and 404 privacy.
-- [ ] **Step 2: Run the focused backend tests** from `backend/` in one PowerShell process:
+- [x] **Step 1: Write controller integration RED tests** named `published_curriculum_metadata_excludes_entry_rows`, `published_curriculum_entries_are_returned_in_stable_bounded_pages`, `public_entry_search_and_semester_filters_return_filtered_totals`, `entry_search_treats_sql_wildcards_literally`, `public_curriculum_entries_hide_missing_and_drafts`, `rejects_invalid_published_entry_page_parameters`, and `returns_zero_pages_and_empty_entries_for_no_matches`. Seed only through the existing CSV import/publication flow; assert first/intermediate/final pages, defaults, counts, filters, ordering, all input bounds, localized error bodies, and 404 privacy.
+- [x] **Step 2: Run the focused backend tests** from `backend/` in one PowerShell process:
 
 ```powershell
 & ..\tools\use-sdkman-java.ps1
@@ -56,11 +56,11 @@
 ```
 
 Expected: behavior assertions fail because metadata still wraps all rows, and anonymous page requests hit the existing default-deny route policy with 401; no compilation/setup errors.
-- [ ] **Step 3: Add the application query/page values and repository interface methods**, keeping framework types out of the application contract and reusing the existing entry-summary type.
-- [ ] **Step 4: Implement query validation, localized error mapping, response mapping and the `/entries` route; add only the new GET route to the explicit anonymous security allowlist; add the published-only count and limited row SQL** in `JdbcAcademicCatalogRepositoryAdapter`. Reuse `ix_academic_curriculum_entry_order_lookup`, bind all user values, escape literal wildcards, and keep writes/default-deny and administrative detail unchanged.
-- [ ] **Step 5: Rerun focused controller integration tests**; expected: new page/filter tests pass and existing catalog regressions remain green.
+- [x] **Step 3: Add the application query/page values and repository interface methods**, keeping framework types out of the application contract and reusing the existing entry-summary type.
+- [x] **Step 4: Implement query validation, localized error mapping, response mapping and the `/entries` route; add only the new GET route to the explicit anonymous security allowlist; add the published-only count and limited row SQL** in `JdbcAcademicCatalogRepositoryAdapter`. Reuse `ix_academic_curriculum_entry_order_lookup`, bind all user values, escape literal wildcards, and keep writes/default-deny and administrative detail unchanged.
+- [x] **Step 5: Rerun focused controller integration tests**; expected: new page/filter tests pass and existing catalog regressions remain green.
 - [ ] **Step 6: Run focused controller/security tests and the complete backend suite** using SDKMAN Java 25.0.4-tem. Expected: all catalog, identity, branding and security tests pass.
-- [ ] **Step 7: Commit backend code** as `feat: page published curriculum entries`.
+- [x] **Step 7: Commit backend code** as `feat: page published curriculum entries`.
 
 ### Task 2: React server-paged curriculum detail
 

@@ -1,6 +1,5 @@
 package co.edu.uptc.universiry.academics.application;
 
-import co.edu.uptc.universiry.academics.domain.AcademicCurriculumStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,9 +25,17 @@ public class DefaultAcademicCatalogQueryService implements AcademicCatalogQueryS
     }
 
     @Override
-    public AcademicCurriculumDetails publishedCurriculum(UUID curriculumId) {
-        return repository.findCurriculum(curriculumId)
-                .filter(details -> details.curriculum().status() == AcademicCurriculumStatus.PUBLISHED)
+    public CurriculumSummary publishedCurriculumSummary(UUID curriculumId) {
+        return repository.findPublishedCurriculumSummary(curriculumId)
+                .orElseThrow(AcademicCatalogNotFoundException::new);
+    }
+
+    @Override
+    public AcademicCurriculumEntriesPage publishedCurriculumEntries(
+            UUID curriculumId,
+            CurriculumEntriesPageQuery query
+    ) {
+        return repository.findPublishedCurriculumEntries(curriculumId, query)
                 .orElseThrow(AcademicCatalogNotFoundException::new);
     }
 

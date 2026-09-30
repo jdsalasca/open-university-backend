@@ -291,8 +291,18 @@ class AcademicCatalogControllerTest {
 
         mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}", curriculumId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.curriculum.id").value(curriculumId))
-                .andExpect(jsonPath("$.curriculum.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.id").value(curriculumId))
+                .andExpect(jsonPath("$.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.curriculum").doesNotExist())
+                .andExpect(jsonPath("$.entries").doesNotExist());
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.curriculumId").value(curriculumId))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.pageSize").value(100))
+                .andExpect(jsonPath("$.totalItems").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.entries.length()").value(1))
                 .andExpect(jsonPath("$.entries[0].subjectName").value("Asignatura sintética"))
                 .andExpect(jsonPath("$.entries[0].semester").value(1));
@@ -301,6 +311,171 @@ class AcademicCatalogControllerTest {
         mockMvc.perform(post("/api/v1/academic-catalog/curricula/{id}", curriculumId)
                         .with(catalogAdminJwt()))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void published_curriculum_entries_are_returned_in_stable_bounded_pages() throws Exception {
+        // Arrange
+        String code = programCode();
+        String curriculumId = importAndPublish(code, curriculumCsv(code, "V1", new String[][]{
+                {"2", subjectCode(), "Gamma", "3"},
+                {"1", subjectCode(), "Alfa", "4"},
+                {"1", subjectCode(), "Beta", "2"},
+        }));
+
+        // Act + Assert: defaults return only the first server-defined page.
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.pageSize").value(100))
+                .andExpect(jsonPath("$.totalItems").value(3))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.entries.length()").value(3));
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("page", "1").param("pageSize", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.entries[0].subjectName").value("Alfa"))
+                .andExpect(jsonPath("$.entries[0].semester").value(1))
+                .andExpect(jsonPath("$.entries[0].rowOrder").value(2));
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("page", "2").param("pageSize", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.entries[0].subjectName").value("Beta"))
+                .andExpect(jsonPath("$.entries[0].rowOrder").value(3));
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("page", "3").param("pageSize", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.entries[0].subjectName").value("Gamma"))
+                .andExpect(jsonPath("$.entries[0].semester").value(2))
+                .andExpect(jsonPath("$.entries[0].rowOrder").value(1));
+    }
+
+    @Test
+    void public_entry_search_and_semester_filters_return_filtered_totals() throws Exception {
+        // Arrange
+        String code = programCode();
+        String curriculumId = importAndPublish(code, curriculumCsv(code, "V1", new String[][]{
+                {"1", "SUB-SEARCH-01", "Calculo", "3"},
+                {"2", "SUB-SEARCH-02", "Fisica", "4"},
+                {"1", "SUB-OTHER-03", "Algebra", "2"},
+        }));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("search", "SUB-SEARCH").param("semester", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItems").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.entries.length()").value(1))
+                .andExpect(jsonPath("$.entries[0].subjectCode").value("SUB-SEARCH-01"));
+    }
+
+    @Test
+    void entry_search_treats_sql_wildcards_literally() throws Exception {
+        // Arrange
+        String code = programCode();
+        String curriculumId = importAndPublish(code, curriculumCsv(code, "V1", new String[][]{
+                {"1", subjectCode(), "Asignatura 100%_! literal", "3"},
+                {"1", subjectCode(), "Asignatura 100XYZ literal", "4"},
+        }));
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("search", "%_!"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItems").value(1))
+                .andExpect(jsonPath("$.entries.length()").value(1))
+                .andExpect(jsonPath("$.entries[0].subjectName").value("Asignatura 100%_! literal"));
+    }
+
+    @Test
+    void public_curriculum_entries_hide_missing_and_drafts() throws Exception {
+        // Arrange
+        String code = programCode();
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports")
+                        .file(upload(validCsv(code, "V1", "3")))
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isCreated());
+        String draftId = curriculumIdFor(programIdFor(code));
+        String missingId = UUID.randomUUID().toString();
+
+        // Act + Assert
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}", draftId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("curriculum_not_found"));
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", draftId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("curriculum_not_found"));
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", missingId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("curriculum_not_found"));
+
+        mockMvc.perform(post("/api/v1/academic-catalog/curricula/{id}/entries", draftId)
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void rejects_invalid_published_entry_page_parameters() throws Exception {
+        // Arrange
+        String code = programCode();
+        String curriculumId = importAndPublish(code, validCsv(code, "V1", "3"));
+        String tooLongSearch = "😀".repeat(121);
+
+        // Act + Assert
+        assertBadEntryQuery(curriculumId, "page", "0");
+        assertBadEntryQuery(curriculumId, "page", "2147483648");
+        assertBadEntryQuery(curriculumId, "page", "not-a-number");
+        assertBadEntryQuery(curriculumId, "pageSize", "0");
+        assertBadEntryQuery(curriculumId, "pageSize", "101");
+        assertBadEntryQuery(curriculumId, "semester", "0");
+        assertBadEntryQuery(curriculumId, "semester", "32768");
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("search", tooLongSearch)
+                        .header("Accept-Language", "es-CO"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_curriculum_entries_query"))
+                .andExpect(jsonPath("$.message").value("Los parámetros de consulta de asignaturas no son válidos."));
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("page", "2147483647"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(2147483647))
+                .andExpect(jsonPath("$.entries.length()").value(0));
+    }
+
+    @Test
+    void returns_zero_pages_and_empty_entries_for_no_matches() throws Exception {
+        // Arrange
+        String code = programCode();
+        String curriculumId = importAndPublish(code, validCsv(code, "V1", "3"));
+
+        // Act + Assert: a filtered empty result has zero pages; an out-of-range page preserves the counts.
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("search", "NO-SUCH-SUBJECT"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItems").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0))
+                .andExpect(jsonPath("$.entries.length()").value(0));
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("page", "2").param("pageSize", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItems").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.entries.length()").value(0));
+
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("search", "   "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItems").value(1));
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param("search", "X".repeat(120)).param("semester", "32767"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItems").value(0));
     }
 
     @Test
@@ -332,6 +507,41 @@ class AcademicCatalogControllerTest {
                 "2026-1", "2028-2", "Acuerdo de prueba", "1", subjectCode(),
                 "Asignatura sintética", credits, "Disciplinar", "Obligatorio", "");
         return headers + "\r\n" + row + "\r\n";
+    }
+
+    private String importAndPublish(String programCode, String csv) throws Exception {
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports")
+                        .file(upload(csv))
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isCreated());
+        String curriculumId = curriculumIdFor(programIdFor(programCode));
+        mockMvc.perform(post("/api/v1/admin/academic-catalog/curricula/{id}/publish", curriculumId)
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isOk());
+        return curriculumId;
+    }
+
+    private void assertBadEntryQuery(String curriculumId, String parameter, String value) throws Exception {
+        mockMvc.perform(get("/api/v1/academic-catalog/curricula/{id}/entries", curriculumId)
+                        .param(parameter, value)
+                        .header("Accept-Language", "en"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_curriculum_entries_query"))
+                .andExpect(jsonPath("$.message").value("The curriculum entry query parameters are invalid."));
+    }
+
+    private static String curriculumCsv(String programCode, String version, String[][] entries) {
+        String headers = "program_code,academic_level,study_modality,snies_code,program_name,faculty,"
+                + "campus_code,campus_name,curriculum_version,cohort_from,cohort_through,approval_reference,"
+                + "semester,subject_code,subject_name,credits,formation_space,component,choice_group";
+        StringBuilder csv = new StringBuilder(headers);
+        for (String[] entry : entries) {
+            csv.append("\r\n").append(String.join(",", programCode, "PREGRADO", "PRESENCIAL", "12345",
+                    "Programa sintético", "Facultad de Ingeniería", "TUNJA", "Tunja", version,
+                    "2026-1", "2028-2", "Acuerdo de prueba", entry[0], entry[1], entry[2], entry[3],
+                    "Disciplinar", "Obligatorio", ""));
+        }
+        return csv.append("\r\n").toString();
     }
 
     private static String programCode() {

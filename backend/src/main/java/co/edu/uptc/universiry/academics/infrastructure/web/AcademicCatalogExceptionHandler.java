@@ -2,6 +2,7 @@ package co.edu.uptc.universiry.academics.infrastructure.web;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogNotFoundException;
 import co.edu.uptc.universiry.academics.application.AcademicCatalogActorException;
+import co.edu.uptc.universiry.academics.application.InvalidCurriculumEntriesPageQueryException;
 import co.edu.uptc.universiry.academics.application.CurriculumCsvException;
 import co.edu.uptc.universiry.academics.application.CurriculumImportSourceException;
 import co.edu.uptc.universiry.academics.application.CurriculumVersionConflictException;
@@ -33,6 +34,12 @@ public class AcademicCatalogExceptionHandler {
     @ExceptionHandler(AcademicCatalogNotFoundException.class)
     ResponseEntity<AcademicCatalogErrorResponse> notFound() {
         return error(HttpStatus.NOT_FOUND, "curriculum_not_found", "academic-catalog.error.not-found");
+    }
+
+    @ExceptionHandler(InvalidCurriculumEntriesPageQueryException.class)
+    ResponseEntity<AcademicCatalogErrorResponse> invalidEntriesQuery() {
+        return error(HttpStatus.BAD_REQUEST, "invalid_curriculum_entries_query",
+                "academic-catalog.error.invalid-entries-query");
     }
 
     @ExceptionHandler(CurriculumVersionConflictException.class)

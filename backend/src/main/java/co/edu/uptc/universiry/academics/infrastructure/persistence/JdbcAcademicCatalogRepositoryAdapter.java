@@ -3,8 +3,10 @@ package co.edu.uptc.universiry.academics.infrastructure.persistence;
 import co.edu.uptc.universiry.academics.application.AcademicCatalogRepository;
 import co.edu.uptc.universiry.academics.application.AcademicCatalogActorSub;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDetails;
+import co.edu.uptc.universiry.academics.application.AcademicCurriculumEntriesPage;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumEntrySummary;
 import co.edu.uptc.universiry.academics.application.AcademicProgramSummary;
+import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumPublishResult;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumVersionConflictException;
@@ -77,6 +79,19 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
                     resultSet.getString("created_by"),
                     resultSet.getString("published_by"),
                     instant(resultSet, "published_at"));
+
+    private static final RowMapper<AcademicCurriculumEntrySummary> CURRICULUM_ENTRY_SUMMARY_MAPPER =
+            (resultSet, rowNumber) -> new AcademicCurriculumEntrySummary(
+                    uuid(resultSet.getString("subject_id")),
+                    uuid(resultSet.getString("subject_revision_id")),
+                    resultSet.getString("subject_code").trim(),
+                    resultSet.getString("subject_name"),
+                    resultSet.getBigDecimal("credits"),
+                    resultSet.getInt("semester"),
+                    resultSet.getString("formation_space"),
+                    resultSet.getString("component"),
+                    resultSet.getString("choice_group"),
+                    resultSet.getInt("row_order"));
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -154,19 +169,109 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
                 WHERE e.curriculum_id = ?
                 ORDER BY e.row_order
                 """,
-                (resultSet, rowNumber) -> new AcademicCurriculumEntrySummary(
-                        uuid(resultSet.getString("subject_id")),
-                        uuid(resultSet.getString("subject_revision_id")),
-                        resultSet.getString("subject_code").trim(),
-                        resultSet.getString("subject_name"),
-                        resultSet.getBigDecimal("credits"),
-                        resultSet.getInt("semester"),
-                        resultSet.getString("formation_space"),
-                        resultSet.getString("component"),
-                        resultSet.getString("choice_group"),
-                        resultSet.getInt("row_order")),
+                CURRICULUM_ENTRY_SUMMARY_MAPPER,
                 curriculumId.toString());
         return Optional.of(new AcademicCurriculumDetails(summaries.getFirst(), entries));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<CurriculumSummary> findPublishedCurriculumSummary(UUID curriculumId) {
+        if (curriculumId == null) {
+            return Optional.empty();
+        }
+        return jdbcTemplate.query(
+                        SUMMARY_SELECT + " WHERE c.curriculum_id = ? AND c.status = 'PUBLISHED'",
+                        CURRICULUM_SUMMARY_MAPPER,
+                        curriculumId.toString())
+                .stream()
+                .findFirst();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<AcademicCurriculumEntriesPage> findPublishedCurriculumEntries(
+            UUID curriculumId,
+            CurriculumEntriesPageQuery query
+    ) {
+        Objects.requireNonNull(query, "query");
+        if (curriculumId == null) {
+            return Optional.empty();
+        }
+
+        EntryFilters filters = entryFilters(query);
+        String countSql = """
+                SELECT COUNT(CASE WHEN %s THEN e.entry_id END) AS total_items
+                FROM academic_curriculum c
+                LEFT JOIN academic_curriculum_entry e ON e.curriculum_id = c.curriculum_id
+                LEFT JOIN academic_subject s ON s.subject_id = e.subject_id
+                LEFT JOIN academic_subject_revision sr
+                  ON sr.subject_revision_id = e.subject_revision_id AND sr.subject_id = e.subject_id
+                WHERE c.curriculum_id = ? AND c.status = 'PUBLISHED'
+                GROUP BY c.curriculum_id
+                """.formatted(filters.sql());
+        List<Object> countParameters = new ArrayList<>(filters.parameters());
+        countParameters.add(curriculumId.toString());
+        List<Long> counts = jdbcTemplate.query(
+                countSql,
+                (resultSet, rowNumber) -> resultSet.getLong("total_items"),
+                countParameters.toArray());
+        if (counts.isEmpty()) {
+            return Optional.empty();
+        }
+
+        long totalItems = counts.getFirst();
+        int totalPages = totalItems == 0
+                ? 0
+                : 1 + (int) ((totalItems - 1) / query.pageSize());
+        long offset = ((long) query.page() - 1L) * query.pageSize();
+        List<AcademicCurriculumEntrySummary> entries = List.of();
+        if (offset < totalItems) {
+            String pageSql = """
+                    SELECT e.subject_id, e.subject_revision_id, s.subject_code, sr.subject_name, sr.credits,
+                           e.semester, e.formation_space, e.component, e.choice_group, e.row_order
+                    FROM academic_curriculum c
+                    JOIN academic_curriculum_entry e ON e.curriculum_id = c.curriculum_id
+                    JOIN academic_subject s ON s.subject_id = e.subject_id
+                    JOIN academic_subject_revision sr
+                      ON sr.subject_revision_id = e.subject_revision_id AND sr.subject_id = e.subject_id
+                    WHERE c.curriculum_id = ? AND c.status = 'PUBLISHED' AND %s
+                    ORDER BY e.semester, e.row_order
+                    LIMIT ? OFFSET ?
+                    """.formatted(filters.sql());
+            List<Object> pageParameters = new ArrayList<>();
+            pageParameters.add(curriculumId.toString());
+            pageParameters.addAll(filters.parameters());
+            pageParameters.add(query.pageSize());
+            pageParameters.add(offset);
+            entries = jdbcTemplate.query(pageSql, CURRICULUM_ENTRY_SUMMARY_MAPPER, pageParameters.toArray());
+        }
+
+        return Optional.of(new AcademicCurriculumEntriesPage(
+                curriculumId, query.page(), query.pageSize(), totalItems, totalPages, entries));
+    }
+
+    private static EntryFilters entryFilters(CurriculumEntriesPageQuery query) {
+        StringBuilder sql = new StringBuilder();
+        List<Object> parameters = new ArrayList<>();
+        if (query.semester() != null) {
+            sql.append("e.semester = ?");
+            parameters.add(query.semester());
+        }
+        if (query.search() != null) {
+            if (!sql.isEmpty()) {
+                sql.append(" AND ");
+            }
+            sql.append("(LOWER(s.subject_code) LIKE LOWER(?) ESCAPE '!' "
+                    + "OR LOWER(sr.subject_name) LIKE LOWER(?) ESCAPE '!')");
+            String searchPattern = "%" + query.search()
+                    .replace("!", "!!")
+                    .replace("%", "!%")
+                    .replace("_", "!_") + "%";
+            parameters.add(searchPattern);
+            parameters.add(searchPattern);
+        }
+        return new EntryFilters(sql.isEmpty() ? "1 = 1" : sql.toString(), List.copyOf(parameters));
     }
 
     @Override
@@ -459,5 +564,8 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
     }
 
     private record EntryReference(UUID subjectId, UUID subjectRevisionId, ValidatedCurriculumEntry source) {
+    }
+
+    private record EntryFilters(String sql, List<Object> parameters) {
     }
 }

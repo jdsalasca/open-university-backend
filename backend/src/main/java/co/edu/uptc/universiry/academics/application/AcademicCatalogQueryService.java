@@ -9,7 +9,12 @@ public interface AcademicCatalogQueryService {
 
     List<CurriculumSummary> publishedCurricula(UUID programId);
 
-    AcademicCurriculumDetails publishedCurriculum(UUID curriculumId);
+    CurriculumSummary publishedCurriculumSummary(UUID curriculumId);
+
+    AcademicCurriculumEntriesPage publishedCurriculumEntries(
+            UUID curriculumId,
+            CurriculumEntriesPageQuery query
+    );
 
     List<CurriculumSummary> drafts();
 

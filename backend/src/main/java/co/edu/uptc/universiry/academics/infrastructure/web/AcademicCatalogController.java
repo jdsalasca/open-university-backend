@@ -2,7 +2,9 @@ package co.edu.uptc.universiry.academics.infrastructure.web;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogQueryService;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDetails;
+import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumCsvSchema;
+import co.edu.uptc.universiry.academics.application.InvalidCurriculumEntriesPageQueryException;
 import co.edu.uptc.universiry.academics.application.CurriculumImportSourceException;
 import co.edu.uptc.universiry.academics.application.CurriculumPublicationService;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,8 +65,25 @@ public class AcademicCatalogController {
     }
 
     @GetMapping("/api/v1/academic-catalog/curricula/{curriculumId}")
-    public AcademicCurriculumDetailsResponse publishedCurriculum(@PathVariable UUID curriculumId) {
-        return details(queryService.publishedCurriculum(curriculumId));
+    public AcademicCurriculumResponse publishedCurriculum(@PathVariable UUID curriculumId) {
+        return AcademicCurriculumResponse.from(queryService.publishedCurriculumSummary(curriculumId));
+    }
+
+    @GetMapping("/api/v1/academic-catalog/curricula/{curriculumId}/entries")
+    public AcademicCurriculumEntriesPageResponse publishedCurriculumEntries(
+            @PathVariable UUID curriculumId,
+            @RequestParam(defaultValue = CurriculumEntriesPageQuery.DEFAULT_PAGE) String page,
+            @RequestParam(defaultValue = CurriculumEntriesPageQuery.DEFAULT_PAGE_SIZE) String pageSize,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String semester
+    ) {
+        CurriculumEntriesPageQuery query = new CurriculumEntriesPageQuery(
+                parseQueryInteger(page),
+                parseQueryInteger(pageSize),
+                search,
+                semester == null ? null : parseQueryInteger(semester));
+        return AcademicCurriculumEntriesPageResponse.from(
+                queryService.publishedCurriculumEntries(curriculumId, query));
     }
 
     @GetMapping("/api/v1/admin/academic-catalog/drafts")
@@ -100,5 +120,13 @@ public class AcademicCatalogController {
 
     private static AcademicCurriculumDetailsResponse details(AcademicCurriculumDetails details) {
         return AcademicCurriculumDetailsResponse.from(details);
+    }
+
+    private static int parseQueryInteger(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException invalidInteger) {
+            throw new InvalidCurriculumEntriesPageQueryException();
+        }
     }
 }

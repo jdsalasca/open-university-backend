@@ -10,6 +10,13 @@ public interface AcademicCatalogRepository {
 
     Optional<AcademicCurriculumDetails> findCurriculum(UUID curriculumId);
 
+    Optional<CurriculumSummary> findPublishedCurriculumSummary(UUID curriculumId);
+
+    Optional<AcademicCurriculumEntriesPage> findPublishedCurriculumEntries(
+            UUID curriculumId,
+            CurriculumEntriesPageQuery query
+    );
+
     List<AcademicProgramSummary> listPublishedPrograms();
 
     List<CurriculumSummary> listPublishedCurricula(UUID programId);
