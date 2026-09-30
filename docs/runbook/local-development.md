@@ -65,7 +65,7 @@ Invoke-WebRequest http://localhost:8080/api/v1/academic-catalog/curriculum-templ
 docker compose exec -T mysql sh -lc 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -Nse "SELECT version FROM flyway_schema_history WHERE success = 1 ORDER BY installed_rank"'
 ```
 
-La última consulta debe mostrar las migraciones aplicadas, incluida `2`. Para comprobar que la importación administrativa rechaza anónimos sin guardar nada, ejecuta el siguiente smoke test PowerShell con el archivo de encabezados vacío de filas; la respuesta esperada es `401 Unauthorized`:
+La última consulta debe mostrar las migraciones aplicadas, incluida `4`. Para comprobar que la importación administrativa rechaza anónimos sin guardar nada, ejecuta el siguiente smoke test PowerShell con el archivo de encabezados vacío de filas; la respuesta esperada es `401 Unauthorized`:
 
 ```powershell
 $http = [System.Net.Http.HttpClient]::new()
@@ -82,4 +82,14 @@ $response.Dispose(); $content.Dispose(); $form.Dispose(); $http.Dispose()
 
 La plantilla solo declara el contrato de columnas; no contiene oferta académica. Una solicitud autenticada con `academic:catalog:write` sigue requiriendo datos completos válidos y nunca convierte este entorno en un sistema institucional autorizado. Las variables de importación `ACADEMIC_CATALOG_IMPORT_MAX_FILE_BYTES` y `ACADEMIC_CATALOG_IMPORT_MAX_ROWS`, definidas en `.env`, pueden ajustar límites hacia abajo, sin superar los máximos del dominio (2 MiB/10 000 filas); el arranque valida estos topes.
 
-La meta de consulta promedio menor a 50 ms queda pendiente de un conjunto de carga, volumen y percentiles aprobados; este entorno no constituye evidencia de rendimiento institucional.
+### Contrato y perfil MySQL de paginación curricular
+
+Desde la raíz del repositorio backend puedes repetir el perfil local:
+
+```powershell
+.\tools\verify-mysql-curriculum.ps1
+```
+
+El script crea un contenedor MySQL 8.4 único, temporal, sin volumen persistente y ligado a un puerto efímero de `127.0.0.1`. Ejecuta pruebas de collation/escape y un perfil de 10.000 entradas sintéticas con 10 calentamientos y 50 muestras, seleccionando Java 25 desde SDKMAN y usando Maven Wrapper. Al terminar elimina solo el contenedor de esa ejecución. No usa ni modifica el contenedor o volumen de MySQL de Compose.
+
+La última ejecución del perfil del 30 de septiembre de 2026 obtuvo medias de 22,062 ms (sin filtro) y 33,807 ms (búsqueda por subcadena); ambas quedan bajo el gate local `<50 ms`. En búsqueda, p50/p95/p99 fueron 33,544/37,983/40,694 ms. Una ejecución repetida anterior midió p99 de búsqueda de 52,894 ms, lo que muestra variación en la cola aunque la media se mantuvo cerca de 33 ms. El resultado acredita esa máquina y ese perfil de concurrencia 1 únicamente. La carga y latencia representativas de UPTC, el hardware destino y el SLO institucional siguen pendientes de acuerdo con los responsables.

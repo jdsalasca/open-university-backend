@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(properties = "spring.flyway.enabled=true")
@@ -133,7 +134,10 @@ class AcademicCatalogSchemaTest {
         // Assert
         assertTrue(curriculumIndexes.contains(Set.of("status", "program_id", "cohort_from", "cohort_through")));
         assertTrue(curriculumIndexes.contains(Set.of("status", "created_at")));
-        assertTrue(entryIndexes.contains(Set.of("curriculum_id", "semester", "row_order")));
+        assertTrue(entryIndexes.contains(Set.of(
+                "curriculum_id", "semester", "row_order", "search_subject_code", "search_subject_name")));
+        assertFalse(entryIndexes.contains(Set.of("curriculum_id", "semester", "row_order")),
+                "The earlier order-only index is redundant beside the covering search-order index.");
         assertTrue(auditIndexes.contains(Set.of("curriculum_id", "occurred_at")));
     }
 

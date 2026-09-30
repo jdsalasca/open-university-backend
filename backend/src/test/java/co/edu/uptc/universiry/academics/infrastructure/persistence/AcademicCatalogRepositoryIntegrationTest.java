@@ -82,6 +82,32 @@ class AcademicCatalogRepositoryIntegrationTest {
     }
 
     @Test
+    void stores_immutable_search_snapshots_from_each_validated_curriculum_entry() {
+        // Arrange
+        String programCode = programCode();
+        String subjectCode = "MAT_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8)
+                .toUpperCase(Locale.ROOT);
+        String subjectName = "Cálculo diferencial sintético";
+        ValidatedCurriculum curriculum = curriculum(
+                programCode, "V1", "Programa sintético", "Facultad de prueba", "Tunja",
+                subjectCode, subjectName, "3.00", sourceHash());
+
+        // Act
+        CurriculumSummary draft = repository.createDraft(curriculum, actorSub());
+        List<String> searchValues = jdbcTemplate.query(
+                "SELECT search_subject_code, search_subject_name FROM academic_curriculum_entry "
+                        + "WHERE curriculum_id = ?",
+                (resultSet, rowNumber) -> List.of(
+                        resultSet.getString("search_subject_code"), resultSet.getString("search_subject_name")),
+                draft.id().toString())
+                .getFirst();
+
+        // Assert
+        assertEquals(subjectCode, searchValues.get(0));
+        assertEquals(subjectName, searchValues.get(1));
+    }
+
+    @Test
     void duplicate_version_conflict_rolls_back_new_program_and_subject_revisions() {
         // Arrange
         String programCode = programCode();

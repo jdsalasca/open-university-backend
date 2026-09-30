@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-30-curriculum-server-pagination-design.md`
 
+**Follow-up:** The original plan's order-only index was superseded on 2026-09-30 by the measured search projection and covering index in [ADR-0002](../../architecture/decisions/ADR-0002-curriculum-search-snapshots.md). The local synthetic performance check is now recorded in [the MySQL probe spec](../specs/2026-09-30-curriculum-mysql-search-performance.md); this does not establish a production SLA.
+
 ## Global Constraints
 
 - Backend and frontend remain separate `develop` repositories; the frontend stays attached as the backend repository's `frontend/` submodule.
@@ -20,7 +22,7 @@
 - Escape SQL wildcard input and bind every parameter; no SQL assembled from user search text.
 - Keep the existing schema/index unless query evidence shows a required migration; never edit applied migrations.
 - Do not add institutional data, student PII, fake public catalogue rows, or production OIDC mappings.
-- The average MySQL query objective `<50 ms` remains unverified without an approved representative dataset and workload; report percentiles if measured.
+- The original pagination implementation did not measure `<50 ms`. A later local synthetic profile passes that regression gate; representative institutional dataset, workload, and SLO remain unverified.
 
 ## Review Focus
 
@@ -95,4 +97,4 @@ Expected: behavior assertions fail because metadata still wraps all rows, and an
 
 ## Execution note
 
-The user authorized continuous autonomous work across both repositories, TDD, and `develop` milestone pushes. The v0 response-shape replacement is limited to the unpublished local preview; production UPTC deployment, official records, SSO role mapping, student lifecycle rules and the `<50 ms` performance claim remain outside what this plan can authorize or prove.
+The user authorized continuous autonomous work across both repositories, TDD, and `develop` milestone pushes. The v0 response-shape replacement is limited to the unpublished local preview; production UPTC deployment, official records, SSO role mapping, student lifecycle rules and an institutional `<50 ms` SLA remain outside what this plan can authorize or prove.

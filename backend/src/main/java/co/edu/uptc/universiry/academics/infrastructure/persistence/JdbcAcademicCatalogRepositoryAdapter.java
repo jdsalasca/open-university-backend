@@ -201,12 +201,10 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
 
         EntryFilters filters = entryFilters(query);
         String countSql = """
-                SELECT COUNT(CASE WHEN %s THEN e.entry_id END) AS total_items
+                SELECT COUNT(e.entry_id) AS total_items
                 FROM academic_curriculum c
-                LEFT JOIN academic_curriculum_entry e ON e.curriculum_id = c.curriculum_id
-                LEFT JOIN academic_subject s ON s.subject_id = e.subject_id
-                LEFT JOIN academic_subject_revision sr
-                  ON sr.subject_revision_id = e.subject_revision_id AND sr.subject_id = e.subject_id
+                LEFT JOIN academic_curriculum_entry e
+                  ON e.curriculum_id = c.curriculum_id AND %s
                 WHERE c.curriculum_id = ? AND c.status = 'PUBLISHED'
                 GROUP BY c.curriculum_id
                 """.formatted(filters.sql());
@@ -262,8 +260,8 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
             if (!sql.isEmpty()) {
                 sql.append(" AND ");
             }
-            sql.append("(LOWER(s.subject_code) LIKE LOWER(?) ESCAPE '!' "
-                    + "OR LOWER(sr.subject_name) LIKE LOWER(?) ESCAPE '!')");
+            sql.append("(LOWER(e.search_subject_code) LIKE LOWER(?) ESCAPE '!' "
+                    + "OR LOWER(e.search_subject_name) LIKE LOWER(?) ESCAPE '!')");
             String searchPattern = "%" + query.search()
                     .replace("!", "!!")
                     .replace("%", "!%")
@@ -483,8 +481,9 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
         jdbcTemplate.batchUpdate("""
                 INSERT INTO academic_curriculum_entry (
                     curriculum_id, subject_id, subject_revision_id, semester,
-                    formation_space, component, choice_group, row_order
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    formation_space, component, choice_group, row_order,
+                    search_subject_code, search_subject_name
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 entries,
                 500,
@@ -502,6 +501,8 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
         statement.setString(6, entry.component());
         statement.setString(7, entry.choiceGroup());
         statement.setInt(8, entry.rowOrder());
+        statement.setString(9, entry.subjectCode());
+        statement.setString(10, entry.subjectName());
     }
 
     private void insertAuditEvent(

@@ -31,9 +31,9 @@ El backend escapa caracteres de comodín para que `%`, `_` y el carácter de esc
 
 ## Persistencia y consultas
 
-- Reutilizar `ix_academic_curriculum_entry_order_lookup (curriculum_id, semester, row_order)` para seleccionar el tramo ordenado; conservar las claves e índices existentes.
+- Usar el índice de cobertura `ix_academic_curriculum_entry_search_order_lookup (curriculum_id, semester, row_order, search_subject_code, search_subject_name)`, que soporta orden y búsqueda sobre snapshots derivados; conservar las claves normalizadas como fuente de verdad.
 - Filtrar por `status = 'PUBLISHED'` en la consulta de página y su conteo. No cargar la colección completa para luego aplicar `subList`.
-- Hacer el conteo y el `LIMIT/OFFSET` con parámetros enlazados. Calcular el offset con aritmética de 64 bits para evitar desbordamiento. No se añade caché ni se declara cumplida la meta promedio de `<50 ms`.
+- Hacer el conteo y el `LIMIT/OFFSET` con parámetros enlazados. Calcular el offset con aritmética de 64 bits para evitar desbordamiento. No se añade caché. El perfil local de 10.000 filas pasa el gate de regresión `<50 ms` promedio; el SLO institucional continúa sin caracterizar.
 - El límite de importación continúa en 10.000 filas; el límite de respuesta pública continúa en 100 por página.
 
 ## Interfaz
@@ -58,11 +58,11 @@ El backend escapa caracteres de comodín para que `%`, `_` y el carácter de esc
 4. Búsqueda coincide con código/nombre sin distinguir tildes, y trata `%`, `_` y `!` como texto literal.
 5. Borradores no son visibles ni en resultados ni en conteos públicos; lector anónimo puede consultar solo versiones publicadas.
 6. La interfaz nunca renderiza más de 100 filas, resetea página al cambiar filtros, cancela solicitudes antiguas y mantiene carga, error, vacío y reintento accesibles.
-7. `npm test`, `npm run build`, `npm run lint` y `mvnw verify` pasan; Compose sigue operativo. Se reporta latencia observada solo si se mide con un volumen/carga representativos aprobados.
+7. `npm test`, `npm run build`, `npm run lint` y `mvnw verify` pasan; Compose sigue operativo. El contrato aislado de MySQL 8.4 mide 10.000 filas sintéticas, publica medias y percentiles y aplica el gate local; su resultado no se presenta como rendimiento institucional.
 
 ## Decisiones y límites
 
 - Se reemplaza la forma completa del detalle público porque el producto sigue en v0/preview y las únicas aplicaciones consumidoras son los dos repositorios coordinados. La pantalla administrativa conserva su detalle de revisión.
 - Esta decisión puede requerir versionar la API si aparece un consumidor externo antes de publicar el preview; no se habilita el módulo institucional con este cambio.
 - La collation `utf8mb4_0900_ai_ci` está observada en el MySQL local de desarrollo. La suite automática de backend usa H2 y no prueba la equivalencia de acentos de MySQL; esa semántica se verifica con una consulta temporal en el MySQL de Compose. La búsqueda de producción exige confirmar collation/engine institucional antes de cargar datos.
-- El criterio `<50 ms` sigue pendiente de prueba con volumen y concurrencia acordados.
+- La última verificación local posterior de 2026-09-30 registró 22,062 ms sin filtro y 33,807 ms con búsqueda (10.000 filas, concurrencia 1); una repetición anterior observó p99 de búsqueda de 52,894 ms. Ver [la decisión ADR-0002](../../architecture/decisions/ADR-0002-curriculum-search-snapshots.md). El perfil institucional `<50 ms` permanece pendiente.
