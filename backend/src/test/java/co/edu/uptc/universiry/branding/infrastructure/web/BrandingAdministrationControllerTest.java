@@ -10,6 +10,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,6 +59,30 @@ class BrandingAdministrationControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("forbidden"))
                 .andExpect(jsonPath("$.message").value("The authenticated user lacks the required permission."));
+    }
+
+    @Test
+    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    void brand_admin_cannot_access_unregistered_administration_routes() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/students"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("forbidden"));
+    }
+
+    @Test
+    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    void brand_admin_cannot_access_unregistered_branding_subroutes() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/branding/roles"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("forbidden"));
+    }
+
+    @Test
+    @WithMockUser(username = "brand.editor", authorities = "BRAND_ADMIN")
+    void brand_admin_cannot_use_unregistered_methods_on_branding_routes() throws Exception {
+        mockMvc.perform(delete("/api/v1/admin/branding"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("forbidden"));
     }
 
     @Test

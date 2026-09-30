@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -60,7 +62,15 @@ public class SecurityConfiguration {
                                 "/actuator/health",
                                 "/actuator/health/**"
                         ).permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority("BRAND_ADMIN", "INSTITUTIONAL_ADMIN")
+                        .requestMatchers(GET, "/api/v1/admin/branding")
+                        .hasAnyAuthority("BRAND_ADMIN", "INSTITUTIONAL_ADMIN")
+                        .requestMatchers(PUT, "/api/v1/admin/branding")
+                        .hasAnyAuthority("BRAND_ADMIN", "INSTITUTIONAL_ADMIN")
+                        .requestMatchers(POST,
+                                "/api/v1/admin/branding/rollback",
+                                "/api/v1/admin/branding/assets")
+                        .hasAnyAuthority("BRAND_ADMIN", "INSTITUTIONAL_ADMIN")
+                        .requestMatchers("/api/v1/admin/**").denyAll()
                         .anyRequest().denyAll()
                 )
                 .exceptionHandling(exceptions -> exceptions
