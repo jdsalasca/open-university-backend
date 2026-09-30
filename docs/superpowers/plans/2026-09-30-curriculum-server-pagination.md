@@ -59,7 +59,7 @@ Expected: behavior assertions fail because metadata still wraps all rows, and an
 - [x] **Step 3: Add the application query/page values and repository interface methods**, keeping framework types out of the application contract and reusing the existing entry-summary type.
 - [x] **Step 4: Implement query validation, localized error mapping, response mapping and the `/entries` route; add only the new GET route to the explicit anonymous security allowlist; add the published-only count and limited row SQL** in `JdbcAcademicCatalogRepositoryAdapter`. Reuse `ix_academic_curriculum_entry_order_lookup`, bind all user values, escape literal wildcards, and keep writes/default-deny and administrative detail unchanged.
 - [x] **Step 5: Rerun focused controller integration tests**; expected: new page/filter tests pass and existing catalog regressions remain green.
-- [ ] **Step 6: Run focused controller/security tests and the complete backend suite** using SDKMAN Java 25.0.4-tem. Expected: all catalog, identity, branding and security tests pass.
+- [x] **Step 6: Run focused controller/security tests and the complete backend suite** using SDKMAN Java 25.0.4-tem. Expected: all catalog, identity, branding and security tests pass.
 - [x] **Step 7: Commit backend code** as `feat: page published curriculum entries`.
 
 ### Task 2: React server-paged curriculum detail
