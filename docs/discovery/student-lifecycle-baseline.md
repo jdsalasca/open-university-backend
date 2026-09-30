@@ -96,3 +96,5 @@ flowchart LR
 ## Próximo resultado verificable
 
 Un mapa de proceso de pregrado presencial y fuentes normativas confirmado por responsables, catálogo de eventos y reglas aprobado, contrato de datos minimizado, matriz actor-permiso y criterios de migración/conciliación. Solo después se planifica la primera historia TDD de expediente estudiantil con fixtures sintéticos. La fuente pública sirve para orientar el taller; no sustituye el acta de aprobación institucional.
+
+Para reunir esas decisiones en una sesión, usar la [plantilla de validación institucional de pregrado presencial](pregrado-presencial-validacion-institucional.md). Sus campos quedan intencionalmente vacíos hasta que los responsables UPTC los confirmen.
