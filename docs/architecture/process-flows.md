@@ -306,10 +306,15 @@ sequenceDiagram
     API-->>UI: 409
     UI->>API: vuelve a consultar el árbol vigente
     UI-->>Operator: pide revisar la prioridad antes de otro intento
+  else sesión o permiso rechazado
+    API-->>UI: 401 o 403
+    UI->>Identity: vuelve a consultar GET /api/v1/me
+    Identity-->>UI: sesión vencida, permisos actualizados o error
+    UI-->>Operator: oculta editores para el token rechazado
   end
 ```
 
-La interfaz no modifica el árbol de forma optimista. Un fallo al releer después de 204 se informa como escritura aceptada con vista pendiente de recarga; sin permiso de escritura las acciones no aparecen. La recarga del conflicto no repite el comando ni reemplaza la prioridad por una estimación local.
+La interfaz no modifica el árbol de forma optimista. Un fallo al releer después de 204 se informa como escritura aceptada con vista pendiente de recarga; sin permiso de escritura las acciones no aparecen. La recarga del conflicto no repite el comando ni reemplaza la prioridad por una estimación local. Un 401/403 oculta las acciones de inmediato y requiere una sesión nueva para volver a habilitarlas con el mismo token.
 
 ```mermaid
 sequenceDiagram

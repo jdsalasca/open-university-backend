@@ -20,6 +20,7 @@ El incremento añade comandos explícitos para cambiar cada prioridad. Cada coma
 - Mantener las mutaciones bajo `academic:structure:write`; un permiso de lectura, un método HTTP no registrado o una sesión ausente no pueden cambiar el orden.
 - En React, mostrar el control de edición solo cuando `/api/v1/me` otorgue `academic:structure:write`. Editar una prioridad numérica por comando, pedir una referencia institucional, enviar el orden observado como `expectedDisplayOrder` y no actualizar optimistamente el árbol.
 - Tras una respuesta aceptada, volver a consultar la estructura para reflejar el valor persistido. Ante 409, consultar el valor vigente y pedir al operador que revise antes de repetir; ante error de recarga, no presentar la vista anterior como actual.
+- Ante 401 o 403 del PATCH, ocultar de inmediato los editores y pedir a `IdentityProvider` que revalide `/api/v1/me`; mantener el bloqueo para el mismo token incluso si la consulta de identidad aún refleja permiso de escritura. Una sesión nueva puede habilitar otra vez la edición.
 - No añadir movimientos en lote ni intercambios de varias posiciones; cada elemento o relación usa su ruta y transacción auditada existente.
 - Mantener `/#academia` en consulta mientras SSO y los grupos/permisos UPTC no estén configurados. No sembrar datos institucionales.
 
@@ -33,5 +34,5 @@ Cierre/reasignación de relaciones, altas/bajas de maestros, carga del maestro o
 2. Una referencia obligatoria, orden fuera de rango, entidad ausente, registro inactivo, cambio concurrente o permiso insuficiente no deja datos ni auditoría parcial.
 3. Cada cambio aceptado deja una auditoría con actor, tipo e identificador concreto del elemento o vínculo, referencia y valores anterior/nuevo; un reintento idéntico no duplica el evento.
 4. Flyway conserva los catálogos existentes y no inserta datos oficiales.
-5. La interfaz ofrece controles solo a usuarios autorizados, exige una referencia, recarga después de escribir y refresca al detectar 409; sin OIDC los controles siguen ocultos.
+5. La interfaz ofrece controles solo a usuarios autorizados, exige una referencia, recarga después de escribir y refresca al detectar 409; ante 401/403 los oculta y revalida identidad; sin OIDC los controles siguen ocultos.
 6. Las pruebas usan datos sintéticos y AAA; la vista no simula datos ni permisos institucionales.
