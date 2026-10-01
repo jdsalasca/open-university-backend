@@ -14,6 +14,8 @@ Para personas externas, la publicación describe registro con correo personal, c
 
 Las fechas citadas en el comunicado corresponden a 2026-II: venta de PIN presencial hasta el 29 de mayo e inscripción web desde el 1 de junio; para programas a distancia o virtuales, PIN hasta el 6 de junio e inscripción desde el 9 de junio. No deben trasladarse a otras convocatorias.
 
+La [página pública de aspirantes de pregrado](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/), marcada como actualizada el 15 de septiembre de 2026, presenta el calendario 2027-I y enlaza la Resolución 111 de 2026 para pregrado presencial y la Resolución 112 para FESAD. El contenido consultado no identifica por nombre el sistema técnico que recibirá la inscripción 2027-I. La Resolución 111 sí nombra SIRA en una etapa del proceso, pero las fuentes públicas no asignan «Inscríbete» a SIRA ni a la Fase III. Esta es una brecha de identificación documental, no prueba de que la interfaz o integración no exista.
+
 ## Límites de la evidencia
 
 La publicación institucional confirma que UPTC reportó haber implementado este sistema para 2026-II y describe parte de la experiencia de inscripción. No publica artefactos que permitan verificar versiones, disponibilidad efectiva, uso o soporte operativo; tampoco identifica su producto técnico, URL funcional, contratos, custodio de datos, APIs, base de datos, controles de acceso, retención/eliminación de documentos, conexión con el sistema de pagos/PIN ni fuente maestra por entidad.
