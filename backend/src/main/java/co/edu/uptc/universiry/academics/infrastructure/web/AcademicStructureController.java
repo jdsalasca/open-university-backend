@@ -44,6 +44,16 @@ public class AcademicStructureController {
         return ResponseEntity.status(CREATED).body(new AcademicStructureMutationResponse(unit.id()));
     }
 
+    @PostMapping("/api/v1/admin/academic-structure/units/{parentId}/children")
+    public ResponseEntity<AcademicStructureMutationResponse> createChildUnit(
+            @PathVariable UUID parentId,
+            @Valid @RequestBody CreateAcademicOrganizationChildUnitRequest request,
+            Authentication authentication
+    ) {
+        var unit = service.createChildUnit(parentId, request.toCommand(), authentication.getName());
+        return ResponseEntity.status(CREATED).body(new AcademicStructureMutationResponse(unit.id()));
+    }
+
     @PostMapping("/api/v1/admin/academic-structure/sites")
     public ResponseEntity<AcademicStructureMutationResponse> createSite(
             @Valid @RequestBody CreateAcademicSiteRequest request,

@@ -106,6 +106,7 @@ public class SecurityConfiguration {
                         .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_WRITE.authority())
                         .requestMatchers(POST,
                                 "/api/v1/admin/academic-structure/units",
+                                "/api/v1/admin/academic-structure/units/*/children",
                                 "/api/v1/admin/academic-structure/sites",
                                 "/api/v1/admin/academic-structure/units/*/children/*",
                                 "/api/v1/admin/academic-structure/sites/*/children/*",

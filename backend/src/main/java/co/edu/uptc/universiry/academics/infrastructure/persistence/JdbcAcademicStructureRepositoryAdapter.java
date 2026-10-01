@@ -169,6 +169,38 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
 
     @Override
     @Transactional
+    public void createChildOrganizationUnit(AcademicOrganizationUnit unit, AcademicOrganizationRelation relation,
+                                            String actorSub, String sourceReference) {
+        if (!unit.id().equals(relation.childUnitId())) {
+            throw new IllegalArgumentException("organizationRelation.childUnitId does not match the new unit");
+        }
+        lockStructure();
+        Validity parent = requireActiveUnit(relation.parentUnitId());
+        requireContained(relation.validFrom(), relation.validThrough(), parent);
+        requireContained(relation.validFrom(), relation.validThrough(),
+                new Validity(unit.status(), unit.validFrom(), unit.validThrough()));
+
+        jdbcTemplate.update("""
+                INSERT INTO academic_organization_unit
+                    (organization_unit_id, unit_code, unit_type, display_name, display_order, status,
+                     valid_from, valid_through, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, unit.id().toString(), unit.code(), unit.type().name(), unit.displayName(), unit.displayOrder(),
+                unit.status().name(), unit.validFrom(), unit.validThrough(), timestamp(clock.instant()));
+        audit(unit.id(), "UNIT_CREATED", actorSub, sourceReference, "Organization unit created: " + unit.code());
+
+        jdbcTemplate.update("""
+                INSERT INTO academic_organization_relation
+                    (parent_unit_id, child_unit_id, display_order, valid_from, valid_through)
+                VALUES (?, ?, ?, ?, ?)
+                """, relation.parentUnitId().toString(), relation.childUnitId().toString(),
+                relation.displayOrder(), relation.validFrom(), relation.validThrough());
+        audit(unit.id(), "UNIT_RELATED", actorSub, sourceReference,
+                "Organization unit " + unit.id() + " added under " + relation.parentUnitId());
+    }
+
+    @Override
+    @Transactional
     public void createSite(AcademicSite site, String actorSub, String sourceReference) {
         lockStructure();
         jdbcTemplate.update("""

@@ -13,6 +13,9 @@ public interface AcademicStructureService {
 
     AcademicOrganizationUnit createUnit(AcademicOrganizationUnitCommand command, String actorSub);
 
+    AcademicOrganizationUnit createChildUnit(UUID parentId, AcademicOrganizationChildUnitCommand command,
+                                             String actorSub);
+
     AcademicSite createSite(AcademicSiteCommand command, String actorSub);
 
     void relateUnits(UUID parentId, UUID childId, AcademicStructureRelationCommand command, String actorSub);

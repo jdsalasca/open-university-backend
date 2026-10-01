@@ -83,6 +83,107 @@ class AcademicStructureControllerTest {
     }
 
     @Test
+    void authorized_operator_can_create_child_unit_and_parent_relation_in_one_audited_operation() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CHILD-CREATE", "FACULTY", "Facultad contenedora", 1,
+                "2026-01-01", "2027-12-31");
+        String reference = "Acuerdo sintético de estructura";
+        String request = "{\"code\":\"SCHOOL-CHILD-CREATE\",\"type\":\"SCHOOL\","
+                + "\"displayName\":\"Escuela hija\",\"displayOrder\":7,"
+                + "\"validFrom\":\"2026-06-01\",\"validThrough\":\"2027-06-30\","
+                + "\"sourceReference\":\"" + reference + "\"}";
+
+        // Act
+        MvcResult result = mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children", parentId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andReturn();
+
+        // Assert
+        UUID childId = responseUuid(result, "id");
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_unit
+                WHERE organization_unit_id = ? AND unit_code = 'SCHOOL-CHILD-CREATE' AND unit_type = 'SCHOOL'
+                  AND valid_from = '2026-06-01' AND valid_through = '2027-06-30'
+                """, Integer.class, childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND display_order = 7
+                  AND valid_from = '2026-06-01' AND valid_through = '2027-06-30'
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(2, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND actor_sub = 'structure.operator' AND source_reference = ?
+                  AND action_key IN ('UNIT_CREATED', 'UNIT_RELATED')
+                """, Integer.class, childId.toString(), reference));
+    }
+
+    @Test
+    void child_unit_creation_rejects_interval_outside_parent_without_persisting_partial_data() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CHILD-INTERVAL", "FACULTY", "Facultad futura", 1,
+                "2027-01-01", null);
+        String reference = "Intervalo fuera del padre";
+        String request = "{\"code\":\"SCHOOL-CHILD-INTERVAL\",\"type\":\"SCHOOL\","
+                + "\"displayName\":\"Escuela fuera de vigencia\",\"displayOrder\":1,"
+                + "\"validFrom\":\"2026-06-01\",\"validThrough\":null,"
+                + "\"sourceReference\":\"" + reference + "\"}";
+
+        // Act + Assert
+        mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children", parentId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isConflict());
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_organization_unit WHERE unit_code = 'SCHOOL-CHILD-INTERVAL'",
+                Integer.class));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
+                Integer.class, reference));
+    }
+
+    @Test
+    void child_unit_creation_requires_an_active_existing_parent() throws Exception {
+        // Arrange
+        UUID missingParentId = UUID.randomUUID();
+        String reference = "Padre inexistente";
+
+        // Act + Assert
+        mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children", missingParentId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"code\":\"SCHOOL-MISSING-PARENT\",\"type\":\"SCHOOL\","
+                                + "\"displayName\":\"Escuela sin padre\",\"displayOrder\":1,"
+                                + "\"validFrom\":\"2026-06-01\",\"validThrough\":null,"
+                                + "\"sourceReference\":\"" + reference + "\"}"))
+                .andExpect(status().isNotFound());
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_organization_unit WHERE unit_code = 'SCHOOL-MISSING-PARENT'",
+                Integer.class));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_structure_audit_event WHERE source_reference = ?",
+                Integer.class, reference));
+    }
+
+    @Test
+    void child_unit_creation_requires_write_permission() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CHILD-READ-ONLY", "FACULTY", "Facultad de solo lectura", 1);
+
+        // Act + Assert
+        mockMvc.perform(post("/api/v1/admin/academic-structure/units/{parentId}/children", parentId)
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"code\":\"SCHOOL-CHILD-READ-ONLY\",\"type\":\"SCHOOL\","
+                                + "\"displayName\":\"Escuela solo lectura\",\"displayOrder\":1,"
+                                + "\"validFrom\":\"2026-06-01\",\"validThrough\":null,"
+                                + "\"sourceReference\":\"Prueba de solo lectura\"}"))
+                .andExpect(status().isForbidden());
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_organization_unit WHERE unit_code = 'SCHOOL-CHILD-READ-ONLY'",
+                Integer.class));
+    }
+
+    @Test
     void missing_relationship_order_defaults_to_zero_for_existing_clients() throws Exception {
         // Arrange
         UUID parent = createUnit("FAC-DEFAULT-ORDER", "FACULTY", "Facultad orden base", 1);

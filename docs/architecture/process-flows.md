@@ -312,7 +312,7 @@ sequenceDiagram
   end
 ```
 
-La interfaz muestra el formulario solo con los permisos de lectura y escritura recibidos de `/api/v1/me`, pero el servidor aplica la regla final en cada `POST`. Un fallo al releer tras `201` se informa como alta aceptada con vista pendiente de recarga; no se repite el comando automáticamente. La forma no permite crear escuelas, hijos, relaciones de sede ni afiliaciones de programas.
+La interfaz muestra el formulario solo con los permisos de lectura y escritura recibidos de `/api/v1/me`, pero el servidor aplica la regla final en cada `POST`. Un fallo al releer tras `201` se informa como alta aceptada con vista pendiente de recarga; no se repite el comando automáticamente. Este formulario crea únicamente una facultad raíz; un formulario protegido separado crea unidad hija y primera relación en una sola transacción.
 
 ### Alta protegida de un lugar raíz
 
@@ -358,6 +358,55 @@ sequenceDiagram
 ```
 
 El tipo elegido se valida contra los seis valores del contrato (`CENTRAL`, `SECCIONAL`, `REGIONAL`, `CREAD`, `CAMPUS`, `OTHER`); son categorías técnicas, no un catálogo oficial de sedes aprobado por UPTC. La creación no establece padre ni vincula programas. Un fallo al releer después de `201` se comunica como alta aceptada con actualización visual pendiente; no se repite el comando automáticamente.
+
+### Alta protegida de una unidad hija y su primera relación
+
+El formulario combina el alta y el vínculo para que no quede una unidad huérfana. El intervalo de la relación es el intervalo inicial de la unidad; el backend lo compara con la vigencia del padre. No se define aquí qué combinaciones de tipos de unidad admite cada tipo de padre; esa matriz requiere validación institucional.
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia
+  participant Identity as API de identidad
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Service as AcademicStructureService
+  participant DB as MySQL
+
+  Operator->>UI: selecciona padre e ingresa código, tipo, nombre, orden, vigencia y referencia
+  UI->>Identity: GET /api/v1/me
+  Identity-->>UI: academic:structure:read y academic:structure:write
+  UI->>API: POST /units/{parentId}/children con Bearer
+  API->>Auth: autentica y exige academic:structure:write
+  alt sesión o permiso rechazado
+    API-->>UI: 401 o 403
+    UI->>Identity: revalida GET /api/v1/me
+  else permiso autorizado
+    API->>Service: crear unidad hija y relación
+    Service->>DB: inicia transacción y bloquea cambios estructurales
+    Service->>DB: valida padre activo y contención de vigencias
+    alt padre inexistente o vigencia incompatible
+      DB-->>Service: 404 o 409; sin inserciones
+      Service-->>API: error de dominio
+      API-->>UI: error localizado
+      UI->>API: relee vistas pública y administrativa tras conflicto 409
+    else código duplicado
+      DB-->>Service: error de integridad; rollback completo
+      Service-->>API: conflicto 409
+      API-->>UI: no se crea unidad ni auditoría parcial
+    else alta válida
+      Service->>DB: inserta unidad y evento UNIT_CREATED
+      Service->>DB: inserta relación y evento UNIT_RELATED
+      DB-->>Service: commit atómico de ambos registros y eventos
+      Service-->>API: id de la unidad
+      API-->>UI: 201
+      UI->>API: relee estructura pública y snapshot administrativo
+      API-->>UI: árboles autoritativos actualizados
+    end
+  end
+```
+
+La ruta requiere `academic:structure:write`; la consola presenta el formulario solo cuando `/api/v1/me` confirma lectura y escritura. La UI ofrece padres activos y acota fechas a su vigencia, pero el servidor conserva la autoridad final. Tras `409` se actualizan ambas vistas y no se repite automáticamente el comando. Sin OIDC institucional la escritura continúa cerrada.
 
 ### Crear una relación jerárquica fechada
 

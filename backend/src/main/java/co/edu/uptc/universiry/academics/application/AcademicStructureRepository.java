@@ -17,6 +17,9 @@ public interface AcademicStructureRepository {
 
     void createOrganizationUnit(AcademicOrganizationUnit unit, String actorSub, String sourceReference);
 
+    void createChildOrganizationUnit(AcademicOrganizationUnit unit, AcademicOrganizationRelation relation,
+                                     String actorSub, String sourceReference);
+
     void createSite(AcademicSite site, String actorSub, String sourceReference);
 
     void relateOrganizationUnits(AcademicOrganizationRelation relation, String actorSub, String sourceReference);

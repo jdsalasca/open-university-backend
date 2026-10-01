@@ -43,6 +43,19 @@ public class DefaultAcademicStructureService implements AcademicStructureService
     }
 
     @Override
+    public AcademicOrganizationUnit createChildUnit(UUID parentId, AcademicOrganizationChildUnitCommand command,
+                                                    String actorSub) {
+        String actor = AcademicCatalogActorSub.require(actorSub);
+        String reference = requiredReference(command.sourceReference());
+        AcademicOrganizationUnit unit = new AcademicOrganizationUnit(UUID.randomUUID(), command.code(), command.type(),
+                command.displayName(), 0, command.validFrom(), command.validThrough());
+        AcademicOrganizationRelation relation = new AcademicOrganizationRelation(
+                parentId, unit.id(), command.relationshipDisplayOrder(), command.validFrom(), command.validThrough());
+        repository.createChildOrganizationUnit(unit, relation, actor, reference);
+        return unit;
+    }
+
+    @Override
     public AcademicSite createSite(AcademicSiteCommand command, String actorSub) {
         String actor = AcademicCatalogActorSub.require(actorSub);
         AcademicSite site = AcademicSite.active(UUID.randomUUID(), command.code(), command.type(),
