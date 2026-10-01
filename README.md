@@ -47,10 +47,12 @@ Consulta [el README del backend](backend/README.md) para su arquitectura, comand
 `.sdkmanrc` fija `25.0.4-tem`. En PowerShell selecciona el candidato SDKMAN solo para esa sesión antes de Maven:
 
 ```powershell
-. .\tools\use-sdkman-java.ps1
+& .\tools\use-sdkman-java.ps1
 java -version
 .\backend\mvnw.cmd -f backend\pom.xml verify
 ```
+
+El helper lee la versión exacta de `.sdkmanrc` y falla si ese candidato no está instalado; no depende de que SDKMAN `current` apunte a Java 25. Verifica esta selección con `Invoke-Pester -Script .\tools\use-sdkman-java.Tests.ps1`.
 
 Consulta [desarrollo local](docs/runbook/local-development.md) y [el cronograma](docs/ROADMAP.md) antes de integrar cambios.
 

@@ -12,7 +12,7 @@ java -version
 .\mvnw.cmd verify
 ```
 
-El script selecciona el candidato `current` de SDKMAN para el proceso PowerShell y no cambia la configuración global de Windows. `mvnw verify` compila y ejecuta las suites del backend; las pruebas de persistencia usan H2 y Compose aporta el smoke de MySQL 8.4.
+El script lee la versión exacta de `../.sdkmanrc`, selecciona ese candidato aunque SDKMAN `current` apunte a otro JDK, y ajusta `JAVA_HOME`/`PATH` solo en el proceso PowerShell. Si el candidato fijado no está instalado, falla sin modificar el entorno. `Invoke-Pester -Script ..\tools\use-sdkman-java.Tests.ps1` comprueba este contrato. `mvnw verify` compila y ejecuta las suites del backend; `..\tools\verify-mysql-curriculum.ps1` ejecuta los contratos de persistencia y mediciones sobre un MySQL 8.4 desechable.
 
 ## Límites de módulos
 

@@ -7,6 +7,8 @@
 - Para compilar Java directamente en el host: SDKMAN con la versión declarada en `.sdkmanrc` (`25.0.4-tem`). El flujo Docker usa una imagen Maven basada en JDK 25.
 - Para pruebas del frontend en el host: Node.js 24 y npm.
 
+El helper `tools/use-sdkman-java.ps1` lee la versión exacta de `.sdkmanrc`; no depende de `sdk current` y solo cambia el entorno de la sesión actual. Prueba esa selección con `Invoke-Pester -Script .\tools\use-sdkman-java.Tests.ps1` desde la raíz del repositorio.
+
 ## Preparar el checkout
 
 ```powershell
