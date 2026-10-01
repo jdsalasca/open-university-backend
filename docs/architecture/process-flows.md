@@ -48,7 +48,7 @@ Si una validación o persistencia falla, no se publica una versión parcial. El 
 
 ## Pregrado presencial y gate de descubrimiento
 
-El alcance de descubrimiento priorizado es pregrado presencial. El catálogo público de trámites del estudiante (registro de asignaturas, renovación, aplazamiento, cancelación, reingreso, transferencia y grado) sigue siendo un inventario, no una secuencia universal. Para admisiones se localizó la cadena pública Acuerdo 130/1998 → Acuerdo 053/2008 (dos opciones y pruebas adicionales) → Resoluciones 19 y 28/2014 (Saber 11, ponderación, equivalencias y llamados), junto con Acuerdo 015/2021, Resolución 2941/2021 y modificación 5362/2025 para cupos especiales. El Acuerdo 031/2021 deroga el artículo 17 del Acuerdo 130; el Acuerdo 015/2021 deroga expresamente los Acuerdos 017/2001 y 120/2006. Boletines UPTC de enero y mayo de 2025 describen una actualización SIRA con migración de datos y alcance en PAE, planes, oferta y horarios; no establecen qué quedó desplegado en 2026. DTIC y Vicerrectoría Académica deben confirmar esos productos, fuentes maestras y la división entre dueño funcional y custodio técnico antes de diseñar sustitución o integración. El proceso técnico permanece futuro hasta que ACRA, Jurídica, Secretaría General, Registro Académico y DTIC validen la matriz consolidada, operación, contratos y datos.
+El alcance de descubrimiento priorizado es pregrado presencial. El catálogo público de trámites del estudiante (registro de asignaturas, renovación, aplazamiento, cancelación, reingreso, transferencia y grado) sigue siendo un inventario, no una secuencia universal. Para admisiones se localizó la cadena pública Acuerdo 130/1998 → Acuerdo 053/2008 (dos opciones y pruebas adicionales) → Resoluciones 19 y 28/2014 (Saber 11, ponderación, equivalencias y llamados), junto con Acuerdo 015/2021, Resolución 2941/2021 y modificación 5362/2025 para cupos especiales. El Acuerdo 031/2021 deroga el artículo 17 del Acuerdo 130; el Acuerdo 015/2021 deroga expresamente los Acuerdos 017/2001 y 120/2006. Además de la actualización SIRA de 2025, el informe UPTC de rendición de cuentas 2025 reporta formulación al 100 % de la Fase III de un nuevo sistema académico alternativo a SIRA y un avance de 50 % frente a la meta de ejecutar el 90 % de las fases de desarrollo ese año; el indicador no expresa porcentaje de producto terminado. El estado posterior y la relación con esta plataforma no están confirmados. Antes de diseñar sustitución o integración, DTIC, Vicerrectoría Académica, ACRA, Registro Académico y la instancia institucional de ese proyecto deben acordar la frontera, sistemas maestros y responsables funcionales/técnicos. El proceso técnico permanece futuro hasta que ACRA, Jurídica, Secretaría General, Registro Académico y DTIC validen la matriz consolidada, operación, contratos y datos.
 
 ```mermaid
 flowchart LR
@@ -63,12 +63,13 @@ flowchart LR
 
   subgraph Discovery[Puertas antes de implementar el ciclo real]
     Owner[Dueño de proceso y autoridad normativa]
+    Initiative[Relación con el nuevo sistema académico UPTC<br/>reutilizar, complementar, integrar o separar el alcance]
     Source[Registro maestro e interfaces autorizadas]
     Rules[Reglas, cohortes, actores y excepciones]
     Contract[Datos mínimos y permisos aprobados]
     Tests[Historia TDD con datos sintéticos]
     Reconcile[Ensayo, conciliación y reversa]
-    Owner --> Source --> Rules --> Contract --> Tests --> Reconcile
+    Owner --> Initiative --> Source --> Rules --> Contract --> Tests --> Reconcile
   end
 
   subgraph StudentServices[Trámites publicados — no son estados ni orden]

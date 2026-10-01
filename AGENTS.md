@@ -51,4 +51,5 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - Mantener `docs/architecture/` (C4, datos y procesos), `docs/ROADMAP.md`, decisiones ADR y planes de `docs/superpowers/plans/` sincronizados con el código.
 - Actualizar los diagramas cuando cambie una frontera, integración, fuente oficial de datos o flujo de corte.
 - Para cambios académicos, sincronizar explícitamente los diagramas C4, el modelo de datos, el proceso y `docs/ROADMAP.md`; mantener los gates institucionales visibles hasta que haya evidencia de aceptación.
+- Antes de ampliar catálogo, admisiones, expediente, oferta, carga o registro académico, revisar `docs/discovery/uptc-new-academic-system-phase-iii.md` y exigir una decisión institucional sobre relación, alcance, fuente maestra e interfaces para evitar duplicar la iniciativa nueva reportada como alternativa a SIRA.
 - No declarar migrado un dominio sin reconciliación, aceptación del responsable institucional, corte verificable, rollback probado y retiro acordado del legado.
