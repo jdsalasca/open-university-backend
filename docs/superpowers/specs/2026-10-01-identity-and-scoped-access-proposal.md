@@ -20,18 +20,19 @@ Alternativas evaluadas:
 | SSO autentica y la plataforma administra asignaciones locales | Permite administrar alcance funcional y revocación en esta plataforma | Requiere asignación inicial y conciliación periódica con las fuentes institucionales de vinculación y estructura. |
 | Roles locales y autenticación local | Independencia del proveedor para acceso | Duplica credenciales y procesos institucionales de identidad; no se propone. |
 
-## Identidad, perfil funcional y estado académico
+## Identidad, perfiles solicitados y estado académico
 
 - Una identidad de aplicación se vincula por el par validado (`issuer`, `subject`) del token. Ambos valores se validan criptográficamente con issuer y audience configurados por DTIC. La pareja es opaca: no se interpreta como correo ni documento.
 - Tras el primer token válido, el backend puede registrar de forma automática solo esa pareja mínima. Iniciar sesión no concede privilegios administrativos; la nueva identidad parte con cero permisos hasta recibir una asignación aprobada.
 - La revocación local de una asignación se aplica desde la siguiente solicitud autenticada. La latencia de baja de una cuenta institucional depende de la vigencia del token y de las capacidades de revocación/introspección del proveedor; DTIC debe fijar ese contrato antes de producción.
-- Aspirante, admitido y estudiante representan etapas/relaciones del ciclo académico. Sus permisos de autoservicio se derivarán de un vínculo verificado con el registro fuente que se apruebe para cada proceso; esas etiquetas no autorizan a leer o editar personas ajenas.
-- Docente, administrativo, directivo, admisiones y administrador son perfiles funcionales candidatos. El nombre del cargo por sí solo no concede permisos. La matriz rol–acción y la autoridad que asigna cada perfil requieren aprobación institucional.
+- El catálogo visible debe reconocer los perfiles/etapas solicitados por el patrocinador: aspirante, admitido, estudiante, docente, administrativo, admisiones, directivo y administrador. Esta etiqueta funcional no concede por sí sola permisos: cada perfil agrupa únicamente permisos allowlisted después de aprobar su matriz.
+- Aspirante, admitido y estudiante representan además etapas/relaciones del ciclo académico. Sus permisos de autoservicio se derivarán de un vínculo verificado con el registro fuente que se apruebe para cada proceso; esas etiquetas no autorizan a leer o editar personas ajenas ni a asignar permisos de gestión.
+- Docente, administrativo, directivo, admisiones y administrador son perfiles de gestión candidatos. Sus asignaciones pueden quedar limitadas a universidad, sede, facultad/unidad, programa y cargo/nombramiento, según la responsabilidad aprobada. El nombre del cargo por sí solo no concede permisos; administrador de alcance global exige concesión explícita y auditable.
 - La cuenta pública de aspirante, sus datos y sus documentos siguen el sistema de inscripción vigente que la UPTC confirme. La plataforma no crea una contraseña alterna ni una segunda cuenta de aspirante mientras no se determine una interfaz autorizada con «Inscríbete», SIRA y la Fase III.
 
 ## Ámbitos y reglas de autorización
 
-Una asignación contiene una identidad, un perfil funcional y uno o más límites tipados: universidad, sede, unidad académica/facultad, programa o cargo/nombramiento. `UNIVERSITY` es un alcance explícito, nunca un valor vacío por defecto. Los límites académicos reutilizan referencias normalizadas a las entidades existentes y validadas; el cargo conserva solo el identificador estable de nombramiento emitido por la fuente institucional autorizada. No se guardan nombres redundantes de facultades, programas o cargos en cada asignación.
+Una asignación contiene una identidad, un perfil funcional y uno o más límites tipados: universidad, sede, unidad académica/facultad, programa o cargo/nombramiento. Estos límites implementan los subroles por facultad, programa o cargo que solicitó el patrocinador. `UNIVERSITY` es un alcance explícito, nunca un valor vacío por defecto. Los límites académicos reutilizan referencias normalizadas a las entidades existentes y validadas; el cargo conserva solo el identificador estable de nombramiento emitido por la fuente institucional autorizada. No se guardan nombres redundantes de facultades, programas o cargos en cada asignación.
 
 Reglas propuestas:
 
@@ -57,7 +58,7 @@ El primer incremento de código, una vez aprobado el diseño, cubre:
 - Una vista de control React que lista/crea/revoca asignaciones solo con autorización de servidor, y presenta estados de carga, vacío, conflicto, error y pérdida de permiso.
 - Pruebas AAA de dominio, autorización de rutas y contratos MySQL con datos sintéticos.
 
-Los perfiles concretos (por ejemplo, admisiones o dirección de facultad) se habilitan en el catálogo después de aprobar su matriz de permisos. La vista no permite crear perfiles de aspirante, admitido o estudiante con acceso transversal; su acceso propio depende de la vinculación verificada del dominio correspondiente. La primera provisión del permiso global para administrar acceso deberá resolverse como operación institucional controlada; el producto no ofrece un botón de autorregistro privilegiado ni un seed de administrador.
+Los perfiles solicitados (aspirante, admitido, estudiante, docente, administrativo, admisiones, directivo y administrador) se habilitan en el catálogo después de aprobar su matriz de permisos y su fuente de vinculación. La vista no permite crear perfiles de aspirante, admitido o estudiante con acceso transversal; su acceso propio depende de la vinculación verificada del dominio correspondiente. Docentes y roles administrativos/de gestión reciben solo los subroles y ámbitos aprobados. La primera provisión del permiso global para administrar acceso deberá resolverse como operación institucional controlada; el producto no ofrece un botón de autorregistro privilegiado ni un seed de administrador.
 
 Quedan para incrementos separados: búsqueda de personas por directorio/HR, alta o recuperación de cuentas, administración del proceso público de admisión, expediente, matrícula, oferta de cursos, grupos, notas y notificaciones. Cada uno necesita el contrato de datos y la fuente maestra que le correspondan. El mecanismo de ámbito debe admitir una futura relación docente–grupo y estudiante–registro propio; no se inventan tablas para grupos o matrículas en esta primera migración.
 
