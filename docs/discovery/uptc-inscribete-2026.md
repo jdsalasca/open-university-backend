@@ -20,15 +20,17 @@ La publicación confirma que UPTC anunció este sistema para 2026-II y describe 
 
 La [Resolución 111 de 2026 para 2027-I](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/9906) menciona un proceso de admisión SIRA en su calendario. La fuente sobre «Inscríbete» citada aquí se refiere a 2026-II. No se ha demostrado que ambos nombres describan el mismo producto, que «Inscríbete» sea parte de la Fase III del nuevo sistema académico, ni cuál plataforma ejecutará la inscripción de 2027-I. Tampoco se presume que el canal antiguo publicado en `registro.uptc.edu.co` represente el procedimiento vigente.
 
+La UPTC publica por separado el [Sistema de Gestión de Documentos Electrónicos de Archivo (SGDEA)](https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-promueve-la-implementacion-del-Sistema-de-Gestion-de-Documentos-Electronicos-de-Archivo/). Una fuente contractual de 2024 para Sogamoso menciona historiales y expedientes en “SGDA”; no se ha verificado que esa sigla corresponda al SGDEA ni que cualquiera de ellos sea el repositorio integrado del anuncio de «Inscríbete». Evitar una segunda carga de documentos hasta identificar el sistema y el contrato de integración autorizado; ver [hallazgo de expedientes y gestión documental](uptc-academic-records-management.md).
+
 ## Gate antes de implementar admisiones
 
 Antes de desarrollar formularios, cuentas de aspirante, captura de PIN, carga de documentos, selección o migración de registros, la instancia institucional debe documentar:
 
 1. si «Inscríbete» corresponde a SIRA, a la Fase III, a una solución independiente o a un componente conectado;
 2. qué sistema opera cada paso de la convocatoria 2027-I y las siguientes, y cuál es la fuente maestra por entidad;
-3. dueño funcional, custodia técnica, autoridad de decisión y responsabilidades entre DTIC, la instancia de Fase III y las áreas que UPTC designe; ACRA/Registro Académico es participación funcional sugerida por el patrocinador, y debe aclararse si se refiere a dos equipos o a la dependencia cuyo nombre público integra Control de Registro Académico;
-4. interfaces autorizadas para PIN, identidad, validaciones y documentos; no se presume que exista una API;
+3. dueño funcional, custodia técnica, autoridad de decisión y responsabilidades entre DTIC, la instancia de Fase III y las áreas que UPTC designe; ACRA/Registro Académico es participación funcional sugerida. Mapear el Departamento central y la eventual operación local por seccional sin inferir dueños ni sistema fuente;
+4. interfaces autorizadas para PIN, identidad, validaciones y documentos; verificar el alcance del SGDEA y qué significa “SGDA” en la evidencia de Sogamoso; no se presume que exista una API;
 5. finalidades, campos mínimos, tratamiento de aspirantes menores y datos sensibles, permisos, auditoría, retención, eliminación y respuesta a incidentes;
-6. estrategia para reutilizar, integrar, coexistir o retirar componentes existentes sin crear doble captura ni dos registros oficiales.
+6. estrategia para reutilizar, integrar, coexistir o retirar componentes existentes sin crear doble captura, dos repositorios documentales ni dos registros oficiales.
 
 Hasta cerrar el gate se permite continuar el descubrimiento, documentar calendarios públicos y diseñar modelos técnicos sin datos personales; no se implementa una segunda inscripción ni un repositorio paralelo de documentos. Ver también el [control de solapamiento de Fase III](uptc-new-academic-system-phase-iii.md) y el [descubrimiento del ciclo del estudiante](student-lifecycle-baseline.md).

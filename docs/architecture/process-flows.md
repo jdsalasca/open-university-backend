@@ -110,7 +110,8 @@ flowchart LR
   Next[ISE, pagos y registro de asignaturas<br/>etapas posteriores]
   Normalista[Inscripción normalista publicada<br/>4 ciclos + diploma;<br/>vía, convenio y semestre por validar]
   Inscribete[«Inscríbete» anunciado por UPTC<br/>sistema para 2026-II;<br/>PIN + formulario + documentos]
-  PlatformGate[Confirmar sistema de inscripción 2027-I<br/>y relación Inscríbete / SIRA / Fase III]
+  PlatformGate[Confirmar plataforma de inscripción y archivo<br/>Inscríbete / SIRA / Fase III / SGDEA<br/>cobertura e integración por validar]
+  SGDEA[SGDEA institucional<br/>gestión documental electrónica]
   Gate[Redondeo, empates, apelaciones,<br/>pruebas y excepciones completas<br/>por validar]
 
   Call --> Register --> ICFES --> Assess
@@ -127,6 +128,7 @@ flowchart LR
   Register -. vía diferenciada publicada .-> Normalista
   Normalista -. no integrar a selección ordinaria sin validación .-> Gate
   Inscribete -. sin relación técnica presumida .-> PlatformGate
+  SGDEA -. alcance estudiantil e interfaz por confirmar .-> PlatformGate
   SIRA -. proceso nombrado en Resolución 111/2026 .-> PlatformGate
   PlatformGate -. cerrar frontera antes de construir .-> Gate
   Gate -. define antes de automatizar .-> SIRA
