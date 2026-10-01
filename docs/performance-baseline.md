@@ -35,6 +35,16 @@ Una segunda ejecución de `powershell -NoProfile -ExecutionPolicy Bypass -File .
 
 Las tres medias quedan por debajo del presupuesto local de desarrollo `<50 ms`. El script retiró el contenedor desechable y la base persistente de Compose siguió activa. Son consultas del repositorio con datos sintéticos y un cliente; no prueban concurrencia representativa, rendimiento de producción ni un SLA institucional.
 
+## Snapshot público de estructura con volumen sintético — 1 de octubre de 2026
+
+En MySQL Compose 8.4 y Java 25.0.3, el contrato ejecutó 10 calentamientos y 50 muestras secuenciales con 100 unidades, 20 sedes y 1.000 adscripciones sintéticas. `repository-jdbc` promedió 16,083 ms (P50 14,881; P95 24,715; P99 29,440); `mockmvc-json-api` promedió 30,425 ms (P50 29,549; P95 36,099; P99 42,907). Las dos capas quedaron bajo el presupuesto local promedio de 50 ms. El fixture se revirtió. Este perfil de una máquina, una corrida y concurrencia 1 no representa tamaños de UPTC, tráfico concurrente, red/TLS, navegador, OIDC ni un SLO institucional; el método y sus límites están en [la especificación de rendimiento de estructura](superpowers/specs/2026-10-01-academic-structure-read-performance.md).
+
+La repetición en MySQL 8.4 temporal sin volumen persistente con SDKMAN Java 25.0.4 promedió 12,745 ms en `repository-jdbc` (P50 12,376; P95 16,537; P99 17,218) y 27,597 ms en `mockmvc-json-api` (P50 26,976; P95 29,835; P99 47,407). Los ocho contratos MySQL del script terminaron sin fallos; el test comprobó el rollback de unidades, sedes, relaciones, programas y afiliaciones sintéticos. Las dos corridas siguen siendo de concurrencia 1 en esta máquina.
+
+Una revalidación adicional contra MySQL Compose 8.4 con Java 25.0.3 promedió 14,208 ms en `repository-jdbc` (P50 13,236; P95 18,402; P99 20,906) y 27,675 ms en `mockmvc-json-api` (P50 27,568; P95 30,224; P99 30,927).
+
+La cuarta corrida repitió el script completo sobre un MySQL 8.4 temporal con SDKMAN Java 25.0.4. Los ocho contratos terminaron sin fallos; la prueba verificó rollback de unidades, sedes, programas, afiliaciones y relaciones. `repository-jdbc` promedió 12,201 ms (P50 11,938; P95 14,886; P99 17,337) y `mockmvc-json-api` 26,970 ms (P50 26,812; P95 29,234; P99 30,480). El contenedor temporal se eliminó y Compose permaneció activo y sin filas sintéticas. Las cuatro corridas son perfiles de una máquina y concurrencia 1; además, las lecturas comparten la transacción de prueba que creó el fixture y no incluyen el ciclo de transacción ni el checkout de conexión por solicitud. No certifican un SLO institucional.
+
 ## Repetir la corrida
 
 Con Docker Compose arriba:

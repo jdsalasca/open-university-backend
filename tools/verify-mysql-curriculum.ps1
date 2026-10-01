@@ -74,7 +74,7 @@ try {
     Push-Location $backendRoot
     try {
         & '.\mvnw.cmd' `
-            '-Dtest=AcademicCatalogMySqlContractTest,AcademicPeriodMySqlContractTest' `
+            '-Dtest=AcademicCatalogMySqlContractTest,AcademicPeriodMySqlContractTest,AcademicStructureMySqlPerformanceContractTest' `
             '-Duniversiry.mysql-contract.enabled=true' `
             '-Duniversiry.mysql-performance.enabled=true' `
             '-Dsurefire.useFile=false' `
