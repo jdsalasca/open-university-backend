@@ -1,6 +1,6 @@
 # Identidad y permisos por ámbito — propuesta de diseño
 
-**Estado:** borrador para aprobación del patrocinador; no autoriza configuración institucional ni acceso a datos reales.<br>
+**Estado:** borrador para aprobación del patrocinador; una base técnica de consola, API, persistencia y auditoría está implementada en `develop`, pero no autoriza configuración institucional ni acceso a datos reales.<br>
 **Fecha:** 1 de octubre de 2026<br>
 **Primera capacidad:** asignación administrativa de permisos a identidades ya autenticadas, con alcance explícito y auditoría.<br>
 **Fuentes de autenticación:** proveedor OIDC institucional, pendiente de configuración y validación por DTIC.<br>
@@ -50,7 +50,7 @@ Las reglas 2 y 3 deben confirmarse con DTIC, ACRA/Registro Académico y los resp
 
 ## Límite de la primera entrega
 
-El primer incremento de código, una vez aprobado el diseño, cubre:
+La base técnica local implementada cubre lo siguiente. Su implementación no equivale a aprobación del diseño ni habilita la operación UPTC:
 
 - Contratos de aplicación para resolver principal autenticado, asignaciones activas, ámbito de recurso y decisión permiso–recurso.
 - Persistencia versionada con Flyway para la vinculación mínima de identidad, perfiles permitidos, asignaciones tipadas y auditoría append-only del módulo de acceso.
@@ -58,7 +58,7 @@ El primer incremento de código, una vez aprobado el diseño, cubre:
 - Una vista de control React que lista/crea/revoca asignaciones solo con autorización de servidor, y presenta estados de carga, vacío, conflicto, error y pérdida de permiso.
 - Pruebas AAA de dominio, autorización de rutas y contratos MySQL con datos sintéticos.
 
-Los perfiles solicitados (aspirante, admitido, estudiante, docente, administrativo, admisiones, directivo y administrador) se habilitan en el catálogo después de aprobar su matriz de permisos y su fuente de vinculación. La vista no permite crear perfiles de aspirante, admitido o estudiante con acceso transversal; su acceso propio depende de la vinculación verificada del dominio correspondiente. Docentes y roles administrativos/de gestión reciben solo los subroles y ámbitos aprobados. La primera provisión del permiso global para administrar acceso deberá resolverse como operación institucional controlada; el producto no ofrece un botón de autorregistro privilegiado ni un seed de administrador.
+La API expone el catálogo fijo de perfiles únicamente a una identidad que ya tenga `identity:roles:read`; esta allowlist no concede permisos por el nombre del perfil. La asignación manual rechaza aspirante, admitido y estudiante, cuyo acceso propio depende de una vinculación verificada del dominio correspondiente. Docentes y roles administrativos/de gestión permanecen sin permisos de aplicación hasta que sus matrices y fuentes sean aprobadas. La primera provisión del permiso global para administrar acceso deberá resolverse como operación institucional controlada; el producto no ofrece un botón de autorregistro privilegiado ni un seed de administrador.
 
 Quedan para incrementos separados: búsqueda de personas por directorio/HR, alta o recuperación de cuentas, administración del proceso público de admisión, expediente, matrícula, oferta de cursos, grupos, notas y notificaciones. Cada uno necesita el contrato de datos y la fuente maestra que le correspondan. El mecanismo de ámbito debe admitir una futura relación docente–grupo y estudiante–registro propio; no se inventan tablas para grupos o matrículas en esta primera migración.
 

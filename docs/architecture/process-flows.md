@@ -755,6 +755,47 @@ sequenceDiagram
 
 La respuesta no reproduce claims de perfil ni datos de otras personas. Sin issuer/audience configurados, el backend responde 401; con autenticación válida y sin rol mapeado, `/api/v1/me` devuelve permisos vacíos y las mutaciones responden 403. React no interpreta grupos ni claims. El callback acepta solo hashes locales conocidos, limpia `code`/`state` de la URL y elimina refresh tokens y claims de perfil no usados. El estado OIDC necesario durante la redirección permanece en `sessionStorage`, pero el usuario y sus tokens se guardan solo en memoria; una recarga exige iniciar sesión otra vez. Antes de habilitar expedientes personales reales deben aprobarse la arquitectura de sesión de producción y los headers/CSP de su punto de entrada. Compose y `.env.example` no incluyen una cuenta, grupo, token o proveedor de demostración.
 
+## Administración de perfiles y ámbitos
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador de acceso
+  participant UI as React: #accesos
+  participant Me as Spring Boot: GET /api/v1/me
+  participant Auth as Spring Security
+  participant API as Spring Boot: Admin Access API
+  participant UseCase as RoleAssignmentService
+  participant DB as MySQL
+  participant Audit as Auditoría de acceso
+
+  Operator->>UI: inicia sesión con el proveedor configurado
+  UI->>Me: consulta permisos y asignaciones activas
+  Me->>Auth: valida JWT y combina mapeo explícito con perfiles vigentes
+  Auth-->>Me: identidad issuer+subject y permisos efectivos
+  Me-->>UI: resumen de sesión con Cache-Control no-store
+  UI->>UI: oculta #accesos si falta identity:roles:read
+  Operator->>UI: busca prefijo de sujeto ya autenticado
+  UI->>API: GET identidades y perfiles con bearer en memoria
+  API->>Auth: exige identity:roles:read
+  Auth-->>API: permiso efectivo del servidor
+  API->>DB: consulta directorio opaco y asignaciones
+  DB-->>API: sujetos autenticados y roles/ámbitos
+  API-->>UI: resultados mínimos, sin correo ni perfil personal
+  opt Concesión o revocación autorizada
+    Operator->>UI: confirma perfil, ámbito, vigencia y referencia
+    UI->>API: POST asignación o PATCH revocación con versión esperada
+    API->>Auth: exige identity:roles:write
+    Auth-->>API: actor y permiso efectivo del servidor
+    API->>UseCase: valida alcance, autoasignación, fechas y referencia
+    UseCase->>DB: transacción de asignación o revocación
+    UseCase->>Audit: registra actor, referencia y transición de versión
+    DB-->>UseCase: commit conjunto o rollback
+    API-->>UI: resultado o conflicto 409; nunca reintenta la escritura
+  end
+```
+
+Los perfiles aspirante, admitido y estudiante no se conceden manualmente; dependen de una vinculación verificada con el ciclo estudiantil. `ADMINISTRATOR` se limita a gestionar roles con alcance universitario y no adquiere permisos sobre otros módulos. La consola y las rutas están implementadas, pero permanecen cerradas en Compose porque OIDC y la provisión inicial no están configurados. La propuesta de roles, su matriz y su operación institucional aún requieren aprobación; los tests usan sujetos sintéticos y no crean usuarios de desarrollo.
+
 ## Desarrollo local y selección de idioma
 
 ```mermaid
