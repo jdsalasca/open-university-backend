@@ -68,11 +68,11 @@
 - Crear `frontend/src/features/identity/IdentityProvider.test.tsx`.
 - Actualizar dependencias/lockfile con `oidc-client-ts`.
 
-**Contrato:** estado discriminado `unconfigured | loading | anonymous | authenticated | error`; `login()`, `logout()`; manager inyectable para pruebas. El usuario se guarda en `sessionStorage`, `response_type=code`, PKCE activo, `automaticSilentRenew=false`, `loadUserInfo=false` y scope mínimo.
+**Contrato original, supersedido en almacenamiento por ADR-0003:** estado discriminado `unconfigured | loading | anonymous | authenticated | error`; `login()`, `logout()`; manager inyectable para pruebas. El primer corte guardaba el usuario en `sessionStorage`; hoy el usuario y los tokens están solo en memoria, con `response_type=code`, PKCE activo, `automaticSilentRenew=false`, `loadUserInfo=false` y scope mínimo.
 
 - [x] **Step 1: Escribir pruebas AAA para sin-config, config inválida, callback válido/cancelado, estado de sesión, permisos del API y logout.**
 - [x] **Step 2: Ejecutar pruebas focalizadas en RED.**
-- [x] **Step 3: Añadir dependencia oficial `oidc-client-ts` y construir adapter/manager PKCE con state/nonce y sesión solo de pestaña.**
+- [x] **Step 3: Añadir dependencia oficial `oidc-client-ts` y construir adapter/manager PKCE con state/nonce y la sesión inicial de pestaña; ADR-0003 documenta el posterior cambio a memoria.**
 - [x] **Step 4: Implementar provider que consulta `/api/v1/me`, descarta permisos en errores y limpia un 401/cierre.**
 - [x] **Step 5: Ejecutar tests focalizados y suite frontend en GREEN.**
 - [x] **Step 6: Commit frontend** (`10472a9`).

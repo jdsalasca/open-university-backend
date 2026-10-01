@@ -4,6 +4,8 @@
 **Fecha:** 30 de septiembre de 2026.
 **Datos personales:** no se incorporan datos de estudiantes ni atributos personales de identidad a la aplicación.
 
+> **Enmienda de seguridad:** la decisión original permitía conservar el usuario en almacenamiento de la pestaña. [ADR-0003](../../architecture/decisions/ADR-0003-oidc-user-memory-only.md) la reemplaza: guardar usuario y tokens solo en memoria; persistir en `sessionStorage` únicamente el estado temporal del callback. Una recarga requiere autenticarse otra vez.
+
 ## Contexto y objetivo
 
 Como línea base, el backend validaba tokens OIDC como resource server y fallaba cerrado mientras emisor y audiencia estuvieran vacíos. La API `/api/v1/me` devuelve el identificador del principal y los permisos calculados en el servidor. Esta implementación conecta el flujo federado y la consulta de permisos para que la institución pueda habilitarlo cuando DTIC confirme sus valores.
@@ -14,7 +16,7 @@ El objetivo es permitir que una persona se autentique con OIDC y que el servidor
 
 - Mantener ambos monolitos, los dos repositorios y el backend resource server sin sesión/cookie.
 - Usar Authorization Code con PKCE para cliente público; no habilitar implicit grant, password grant ni `client_secret` en React.
-- Guardar estado de navegación OIDC en `sessionStorage`; mantener el usuario/access token solo durante la pestaña, y no habilitar renovación silenciosa ni persistencia en `localStorage`.
+- Guardar state/nonce y PKCE verifier del retorno OIDC en `sessionStorage`; mantener el usuario y los tokens solo en memoria, y no habilitar renovación silenciosa ni persistencia de tokens en Web Storage.
 - Leer permisos solo desde `GET /api/v1/me`; React no interpreta grupos ni claims para autorizar acciones.
 - Backend valida issuer y audience exactos y convierte el claim de autoridades únicamente mediante un mapa explícito configurado por servidor. Mapa vacío significa cero permisos; permisos desconocidos o configuración inválida impiden el arranque.
 - El mapa de grupos UPTC, issuer, audience, claim, scopes, URI de retorno, duración de token y despliegue son desconocidos y no se inventan en el repositorio.
@@ -32,7 +34,7 @@ El objetivo es permitir que una persona se autentique con OIDC y que el servidor
 ### Navegador
 
 - Usar `oidc-client-ts` para Authorization Code + PKCE. Construir el `UserManager` solo cuando `VITE_OIDC_AUTHORITY`, `VITE_OIDC_CLIENT_ID` y el retorno permitido estén completos y sean válidos. El retorno debe estar en el mismo origen.
-- Usar `response_type=code`, scope mínimo `openid` más el scope de API configurado, y `sessionStorage` para el estado temporal y la sesión de pestaña. No solicitar email/perfil si el proveedor no lo exige. No habilitar refresh-token ni iframe silent renew en este incremento.
+- Usar `response_type=code`, scope mínimo `openid` más el scope de API configurado, y `sessionStorage` solo para el estado temporal de redirección; el usuario y los tokens viven en memoria. No solicitar email/perfil si el proveedor no lo exige. No habilitar refresh-token ni iframe silent renew en este incremento.
 - Procesar el retorno OIDC, restaurar solo hashes internos conocidos (`#inicio`, `#programas`, `#academia`) y limpiar el código/estado de la URL después del intercambio.
 - Una sesión autenticada llama `/api/v1/me` con Bearer y recibe `{subject, permissions}`. Los errores de red o formato dejan permisos vacíos; 401 elimina la sesión local; 403 nunca habilita controles.
 - Mostrar estados sin configuración, cargando, sin sesión, autenticado, vencido y error. Inicio/cierre de sesión no muestra ni registra tokens o claims.
