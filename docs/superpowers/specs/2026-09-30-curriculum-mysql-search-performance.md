@@ -47,3 +47,15 @@ Four invocations of `tools/verify-mysql-curriculum.ps1` selected SDKMAN Java 25.
 All twelve means were below the local `<50 ms` average budget (10.964–25.258 ms). The two new tail outliers appeared in different queries and did not recur in either the GC-logged run or the 20:29 rerun. With 50 samples, the nearest-rank p99 is the maximum sample (`ceil(0.99 × 50) = 50`), so an isolated pause determines this reported percentile. In the diagnostic run, observed G1 pauses were approximately 4.6–7.7 ms and no comparable pause appeared in the GC log. The cause of the isolated latency outliers is not established; this evidence does not justify attributing them to SQL, garbage collection, or a particular host event. Earlier runs also observed search p95/p99 up to 108.218/126.693 ms, preserving evidence of variability.
 
 `EXPLAIN ANALYZE` for the draft queue shows MySQL reading the first 26 rows directly from `ix_academic_curriculum_drafts` in reverse order before joining program metadata. The filtered catalogue page showed only the corresponding subject/revision lookups after its indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA; representative hardware, concurrency, workload mix, and acceptance thresholds remain to be agreed with institutional owners.
+
+## Latest local Compose MySQL run — 2026-09-30 (UTC-5)
+
+The opt-in MySQL contract and performance classes also passed against the MySQL 8.4 database already used by the local Compose preview. Java in the backend container was 25.0.4.1 and Flyway schema version 11 was current. Seven MySQL-backed contract tests passed with no failures or skips. The performance fixture used 10,000 synthetic rows per scenario, 10 warmups, 50 samples, page size 100 (25 for the draft queue), and concurrency 1. Fixture writes were transactional and rolled back after each test.
+
+| Query | Average | p50 | p95 | p99 |
+|---|---:|---:|---:|---:|
+| Draft review queue, first page | 11.259 ms | 11.193 ms | 13.145 ms | 13.740 ms |
+| Curriculum first page, no filter | 9.746 ms | 9.616 ms | 11.702 ms | 15.916 ms |
+| Curriculum substring-filter page | 16.759 ms | 16.741 ms | 18.293 ms | 18.809 ms |
+
+All three latest means were below the local `<50 ms` average regression budget. This run reuses the Compose development database rather than the disposable container used by the four prior runs; the synthetic fixtures rolled back, and follow-up public catalog, structure, period, and health reads remained empty/healthy. As before, the result is local single-concurrency evidence only, not a production SLO or representative institutional workload.
