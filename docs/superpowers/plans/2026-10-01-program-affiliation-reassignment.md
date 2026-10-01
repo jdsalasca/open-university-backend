@@ -53,15 +53,15 @@
 - Command fields: `LocalDate expectedValidFrom`, nullable `LocalDate expectedValidThrough`, `LocalDate effectiveFrom`, `UUID organizationUnitId`, `UUID siteId`, `int displayOrder`, `String sourceReference`.
 - REST request fields have the same names and limits as the spec; `expectedValidThrough` is required in JSON but nullable. Return the created affiliation ID in the existing `AcademicStructureMutationResponse`.
 
-- [ ] **Step 1: Add the happy-path controller integration test** `authorized_operator_can_reassign_program_affiliation_from_effective_date_without_duplicate_program`. Arrange an open-ended affiliation and different active destination; assert `201`, response ID, old inclusive end, new start/end, same `program_id`, and exactly one `PROGRAM_AFFILIATION_REASSIGNED` audit event.
-- [ ] **Step 2: Run the test to verify RED.** From `backend/`, run `.\mvnw.cmd -Dtest=AcademicStructureControllerTest test`. Expected: the authorized request returns `403` because the path falls through to the default deny rule.
-- [ ] **Step 3: Add the exact POST security matcher.** Add `/api/v1/admin/academic-structure/programs/*/affiliations/*/reassign` to the `ACADEMIC_STRUCTURE_WRITE` allowlist in `SecurityConfiguration`; rerun the test. Expected: it now reaches MVC and returns `404`, proving the permission matcher no longer blocks the route before the controller exists.
-- [ ] **Step 4: Add the command, validated request, application/repository signatures and controller route.** The route is `POST /api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/reassign`; the service generates one successor UUID and returns it.
-- [ ] **Step 5: Implement the transactional JDBC operation.** Lock `academic_structure_control`; load by program and affiliation IDs; compare both expected dates including nullable end; require a strictly later effective date inside the old interval; reject unchanged unit+site; validate active target status and full interval containment; exclude the source from overlap checks; update the source end conditionally; insert the successor preserving the old final date; insert one audit event whose entity ID is the successor ID. Let any failed write roll back all three mutations.
-- [ ] **Step 6: Add migration V19.** Replace `ck_academic_structure_audit_action` with the same allowlist plus `PROGRAM_AFFILIATION_REASSIGNED`; keep the existing 32-character column limit and all previous actions.
-- [ ] **Step 7: Add AAA integration tests before tightening each rule.** Use a parameterized success contract to cover moving only the unit, only the site and both. Also cover null expected end and stale dates, month-end cutover, missing source/target, inactive and insufficiently valid targets, no destination change even with a new order, overlap with another affiliation, malformed fields/order/reference, read-only and anonymous writers, and rollback after an induced audit insert failure. Run the targeted controller test after each red/green slice; expected statuses and unchanged-row/audit assertions must match the spec.
-- [ ] **Step 8: Run the complete backend verification.** From `backend/`, run `.\mvnw.cmd verify`. Expected: Maven verify succeeds with all existing tests and the new H2-compatible migration/API tests.
-- [ ] **Step 9: Commit backend changes.** Commit only backend source, migration, security and tests as `feat(academics): reassign program affiliations atomically`.
+- [x] **Step 1: Add the happy-path controller integration test** `authorized_operator_can_reassign_program_affiliation_from_effective_date_without_duplicate_program`. Arrange an open-ended affiliation and different active destination; assert `201`, response ID, old inclusive end, new start/end, same `program_id`, and exactly one `PROGRAM_AFFILIATION_REASSIGNED` audit event.
+- [x] **Step 2: Run the test to verify RED.** From `backend/`, run `.\mvnw.cmd -Dtest=AcademicStructureControllerTest test`. Expected: the authorized request returns `403` because the path falls through to the default deny rule.
+- [x] **Step 3: Add the exact POST security matcher.** Add `/api/v1/admin/academic-structure/programs/*/affiliations/*/reassign` to the `ACADEMIC_STRUCTURE_WRITE` allowlist in `SecurityConfiguration`; rerun the test. Expected: it now reaches MVC and returns `404`, proving the permission matcher no longer blocks the route before the controller exists.
+- [x] **Step 4: Add the command, validated request, application/repository signatures and controller route.** The route is `POST /api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/reassign`; the service generates one successor UUID and returns it.
+- [x] **Step 5: Implement the transactional JDBC operation.** Lock `academic_structure_control`; load by program and affiliation IDs; compare both expected dates including nullable end; require a strictly later effective date inside the old interval; reject unchanged unit+site; validate active target status and full interval containment; exclude the source from overlap checks; update the source end conditionally; insert the successor preserving the old final date; insert one audit event whose entity ID is the successor ID. Let any failed write roll back all three mutations.
+- [x] **Step 6: Add migration V19.** Replace `ck_academic_structure_audit_action` with the same allowlist plus `PROGRAM_AFFILIATION_REASSIGNED`; keep the existing 32-character column limit and all previous actions.
+- [x] **Step 7: Add AAA integration tests before tightening each rule.** Use a parameterized success contract to cover moving only the unit, only the site and both. Also cover null expected end and stale dates, month-end cutover, missing source/target, inactive and insufficiently valid targets, no destination change even with a new order, overlap with another affiliation, malformed fields/order/reference, read-only and anonymous writers, and rollback after an induced audit insert failure. Run the targeted controller test after each red/green slice; expected statuses and unchanged-row/audit assertions must match the spec.
+- [x] **Step 8: Run the complete backend verification.** From `backend/`, run `.\mvnw.cmd verify`. Expected: Maven verify succeeds with all existing tests and the new H2-compatible migration/API tests.
+- [x] **Step 9: Commit backend changes.** Commit only backend source, migration, security and tests as `feat(academics): reassign program affiliations atomically`.
 
 ### Task 2: Frontend client and confirmed reassignment form
 
@@ -70,19 +70,21 @@
 - Modify: `frontend/src/features/academics/academicOperationsClient.ts`
 - Test: `frontend/src/features/academics/academicOperationsClient.test.ts`
 - Create: `frontend/src/features/academics/ReassignAcademicProgramAffiliationForm.tsx`
+- Create: `frontend/src/features/academics/ReassignAcademicProgramAffiliationForm.scss`
 - Create: `frontend/src/features/academics/ReassignAcademicProgramAffiliationForm.test.tsx`
+- Modify: `frontend/src/App.test.tsx` to complete the typed client mock
 - Modify: `frontend/src/features/academics/AcademicOperationsPage.scss` only if shared form styles do not cover the confirmation preview.
 
 **Interfaces:**
 - Client method `reassignProgramAffiliation(programId: string, affiliationId: string, command: AcademicProgramAffiliationReassignmentCommand, accessToken: string, signal?: AbortSignal): Promise<string>` returns the server-created affiliation ID.
 - The form receives programs, full administrative affiliations, units, sites, client, access token, refresh callback and authorization-rejected callback. It uses the selected affiliation snapshot's IDs and expected dates.
 
-- [ ] **Step 1: Add client-contract tests first.** Assert the exact POST URL/body, bearer header, optional abort signal and parsed `id`; run the targeted Vitest file and confirm RED because the method is absent.
-- [ ] **Step 2: Implement the typed client method.** Preserve existing API error and authorization handling; rerun the targeted client test and expect GREEN.
-- [ ] **Step 3: Add RHF form tests before creating the component.** Cover source selection, destination validation, preview of the inclusive cutover, explicit confirmation, success refresh, conflict refresh without retry, and 403 authorization revalidation; confirm RED because the component is absent.
-- [ ] **Step 4: Implement `ReassignAcademicProgramAffiliationForm` with React Hook Form.** Show source and expected interval, destinations, effective date, order and reference; require a changed unit or site; preview source end/new start/inherited end; send once only after confirmation; refresh both structure views after success or conflict; provide clear 400/404/409/connection feedback; do not retain tokens or persist form data.
-- [ ] **Step 5: Run focused frontend tests.** Run `npx vitest run src/features/academics/academicOperationsClient.test.ts src/features/academics/ReassignAcademicProgramAffiliationForm.test.tsx` from `frontend/`. Expected: both files pass.
-- [ ] **Step 6: Commit frontend changes in the frontend repository.** Commit as `feat(academics): add program reassignment form` on its integration branch.
+- [x] **Step 1: Add client-contract tests first.** Assert the exact POST URL/body, bearer header, optional abort signal and parsed `id`; run the targeted Vitest file and confirm RED because the method is absent.
+- [x] **Step 2: Implement the typed client method.** Preserve existing API error and authorization handling; rerun the targeted client test and expect GREEN.
+- [x] **Step 3: Add RHF form tests before creating the component.** Cover source selection, destination validation, preview of the inclusive cutover, explicit confirmation, success refresh, conflict refresh without retry, and 403 authorization revalidation; confirm RED because the component is absent.
+- [x] **Step 4: Implement `ReassignAcademicProgramAffiliationForm` with React Hook Form.** Show source and expected interval, destinations, effective date, order and reference; require a changed unit or site; preview source end/new start/inherited end; send once only after confirmation; refresh both structure views after success or conflict; provide clear 400/404/409/connection feedback; do not retain tokens or persist form data.
+- [x] **Step 5: Run focused frontend tests.** Run `npx vitest run src/features/academics/academicOperationsClient.test.ts src/features/academics/ReassignAcademicProgramAffiliationForm.test.tsx` from `frontend/`. Expected: both files pass.
+- [x] **Step 6: Commit frontend changes in the frontend repository.** Commit as `feat(academics): add program reassignment form` on its integration branch.
 
 ### Task 3: Protected console integration and architecture records
 
@@ -99,11 +101,11 @@
 - `AcademicOperationsPage` renders the new form only when `academic:structure:read` and `academic:structure:write` are both present and the administrative snapshot has loaded.
 - On success or conflict the existing reload callback refreshes public and administrative structures; the page does not introduce another API/cache source.
 
-- [ ] **Step 1: Add page-level tests first.** Assert the form is absent without either permission and appears with both; success and conflict reload both snapshots; then run `npx vitest run src/features/academics/AcademicOperationsPage.test.tsx` and confirm RED for the missing integration.
-- [ ] **Step 2: Integrate the form into the program-affiliations panel.** Pass published programs, snapshot affiliations/units/sites and the established callbacks; keep authorization enforced by the server.
-- [ ] **Step 3: Update diagrams and operational docs.** Show the administrative command and read/write boundary in C4; document V19, temporal split and atomic audit in the model; add a Mermaid sequence for preview/confirm/transaction/refresh/conflict in process flows; mark the function as implemented but still gated from production pending UPTC data/SSO approval; add the new audit action and requirement to `AGENTS.md`.
-- [ ] **Step 4: Run all frontend checks.** Run `npm test`, `npm run build` and `npm run lint` from `frontend/`. Expected: all commands succeed.
-- [ ] **Step 5: Commit page and documentation changes.** Commit frontend integration in the frontend repository as `feat(academics): integrate program reassignment`; commit backend-repository diagrams and docs as `docs(academics): document program reassignment`.
+- [x] **Step 1: Add page-level tests first.** Assert the form is absent without either permission and appears with both; success and conflict reload both snapshots; then run `npx vitest run src/features/academics/AcademicOperationsPage.test.tsx` and confirm RED for the missing integration.
+- [x] **Step 2: Integrate the form into the program-affiliations panel.** Pass published programs, snapshot affiliations/units/sites and the established callbacks; keep authorization enforced by the server.
+- [x] **Step 3: Update diagrams and operational docs.** Show the administrative command and read/write boundary in C4; document V19, temporal split and atomic audit in the model; add a Mermaid sequence for preview/confirm/transaction/refresh/conflict in process flows; mark the function as implemented but still gated from production pending UPTC data/SSO approval; add the new audit action and requirement to `AGENTS.md`.
+- [x] **Step 4: Run all frontend checks.** Run `npm test`, `npm run build` and `npm run lint` from `frontend/`. Expected: all commands succeed.
+- [x] **Step 5: Commit page and documentation changes.** Commit frontend integration in the frontend repository as `feat(academics): integrate program reassignment`; commit backend-repository diagrams and docs as `docs(academics): document program reassignment`.
 
 ### Task 4: Integrate the milestone and verify the live preview
 

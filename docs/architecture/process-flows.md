@@ -558,6 +558,62 @@ sequenceDiagram
 
 El formulario protegido consume el listado público del catálogo, por lo que permite elegir programas publicados, y usa únicamente unidades y lugares activos que ya existen. No toma la facultad o el campus de texto legado como relación. El POST reutiliza `academic_program_affiliation` y la auditoría `PROGRAM_AFFILIATED`; el backend exige escritura, valida vigencias y evita afiliaciones simultáneas incompatibles. La vista de gestión exige tanto `academic:structure:read` como `academic:structure:write`: vuelve a consultar el snapshot administrativo completo tras éxito o `409`, así que una afiliación futura o histórica sigue visible en la lista de vigencias con fechas y procedencia. El árbol principal conserva la estructura efectiva del endpoint público; cuando la vigencia comience, la afiliación aparecerá allí automáticamente. Sin permiso de lectura, la aplicación muestra únicamente el árbol público vigente y oculta la línea temporal y los controles de escritura. No repite la mutación automáticamente. Los catálogos y la adscripción oficial siguen pendientes de aprobación institucional.
 
+### Reasignación de programa entre unidad y sede
+
+La reasignación es una operación de afiliación, no la creación de otro programa. El formulario elige una fila concreta del snapshot administrativo y envía las dos fechas esperadas de esa versión, incluso cuando el final esperado es `null`. La vista previa muestra el último día de la afiliación existente y la sucesora propuesta. Una confirmación explícita envía un único POST; no hay reintento automático tras conflictos ni resultados de red ambiguos.
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: formulario de reasignación
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Structure as AcademicStructureService
+  participant DB as MySQL
+
+  Operator->>UI: elige afiliación, destino, fecha, orden y referencia
+  UI->>UI: valida destinos disponibles y presenta el corte inclusivo
+  UI-->>Operator: origen finaliza en D-1; sucesora inicia en D
+  Operator->>UI: confirma reasignación
+  UI->>API: POST /programs/{programId}/affiliations/{affiliationId}/reassign
+  API->>Auth: autentica y exige academic:structure:write
+  alt sesión o permiso rechazado
+    API-->>UI: 401 o 403
+    UI->>API: solicita revalidación de permisos; no repite el POST
+  else permiso autorizado
+    API->>Structure: envía destino y versión esperada de la afiliación
+    Structure->>DB: bloquea academic_structure_control y carga origen
+    alt origen ausente o IDs no corresponden
+      Structure-->>API: 404 sin mutaciones
+      API-->>UI: entidad no encontrada
+    else inicio/final esperado no coincide o fecha inválida
+      Structure-->>API: 409 sin mutaciones
+      API-->>UI: conflicto de versión o intervalo
+      UI->>API: GET estructura pública y snapshot administrativo
+      API-->>UI: ambos snapshots actualizados
+      UI-->>Operator: revisa el estado; no hay reintento automático
+    else destino inactivo/fuera de vigencia o existe otro solapamiento
+      Structure-->>API: 409 sin mutaciones
+      API-->>UI: conflicto de destino o vigencia
+      UI->>API: GET estructura pública y snapshot administrativo
+      API-->>UI: ambos snapshots actualizados
+      UI-->>Operator: revisa el estado; no hay reintento automático
+    else reasignación válida
+      Structure->>DB: trunca origen en D-1
+      Structure->>DB: inserta sucesora en D con el mismo program_id
+      Structure->>DB: registra PROGRAM_AFFILIATION_REASSIGNED
+      DB-->>Structure: commit conjunto o rollback completo
+      Structure-->>API: ID de la afiliación sucesora
+      API-->>UI: 201 con {id}
+      UI->>API: GET estructura pública y snapshot administrativo
+      API-->>UI: ambos snapshots actualizados
+      UI-->>Operator: presenta la línea temporal confirmada
+    end
+  end
+```
+
+`academic_structure_control` serializa esta escritura con otros cambios de estructura. El backend compara `expectedValidFrom` y `expectedValidThrough`, exige `effectiveFrom > validFrom`, mantiene el final inclusivo heredado, valida la vigencia completa de unidad y sede y descarta de la comprobación de cruces únicamente la fila fuente. La fila sucesora obtiene otro `affiliation_id`, mantiene el `program_id` y genera un único evento auditado en la misma transacción. El formulario requiere lectura y escritura administrativas; el backend exige escritura en la ruta. Datos maestros, actos de adscripción y grupos OIDC oficiales siguen pendientes de validación antes de operación institucional.
+
 ### Corrección de prioridad organizacional
 
 ```mermaid
