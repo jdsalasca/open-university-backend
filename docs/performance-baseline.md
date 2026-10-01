@@ -23,6 +23,18 @@ Se ejecutó `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify-
 
 Estas duraciones rodean las consultas del repositorio dentro de la JVM e incluyen MySQL/JDBC; no son mediciones HTTP ni de navegador y no equivalen a carga concurrente. Las medias de esta corrida cumplen el umbral de desarrollo `<50 ms` para los tres escenarios observados, no un SLO de producción.
 
+## Revalidación desechable MySQL 8.4 — 1 de octubre de 2026, 05:47 (UTC-5)
+
+Una segunda ejecución de `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify-mysql-curriculum.ps1` usó Java 25.0.4-tem de SDKMAN y un contenedor MySQL 8.4 sin volumen persistente. Los siete contratos MySQL terminaron sin fallos, errores ni omisiones. Cada medición usó 10.000 filas sintéticas, 10 calentamientos, 50 muestras y concurrencia 1:
+
+| Escenario de repositorio | Filas | Tamaño de página | Promedio | P50 | P95 | P99 nearest-rank |
+|---|---:|---:|---:|---:|---:|---:|
+| Cola de borradores | 10.000 | 25 | 12,789 ms | 12,682 ms | 13,900 ms | 14,099 ms |
+| Currículo sin filtro | 10.000 | 100 | 11,149 ms | 11,130 ms | 12,050 ms | 13,161 ms |
+| Currículo con filtro por subcadena | 10.000 | 100 | 18,432 ms | 18,005 ms | 21,597 ms | 21,951 ms |
+
+Las tres medias quedan por debajo del presupuesto local de desarrollo `<50 ms`. El script retiró el contenedor desechable y la base persistente de Compose siguió activa. Son consultas del repositorio con datos sintéticos y un cliente; no prueban concurrencia representativa, rendimiento de producción ni un SLA institucional.
+
 ## Repetir la corrida
 
 Con Docker Compose arriba:
