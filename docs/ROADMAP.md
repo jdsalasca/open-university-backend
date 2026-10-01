@@ -64,7 +64,7 @@ Los incrementos de software ya disponibles en `develop` son una base técnica, n
 | 6 | Ejecutar aceptación del flujo regular e intersemestral en un entorno institucional no productivo; probar enmiendas, cierre, conciliación, respaldo y reversa | 2–3 semanas | Acta de aceptación de dueños; casos borde y concurrencia aprobados; rollback ensayado |
 | 7 | Implementar grupos/oferta, matrícula y controles de capacidad por curso; planear piloto de cohorte con los dueños operativos | 6–10+ semanas | Reglas y datos maestros aprobados; el conteo por curso se valida contra normativa vigente antes de automatizar |
 
-Las actividades 1–6 son gates para poner en operación la administración de la estructura y de calendarios. Los controles de transición ya se conectan a la API, pero quedan cerrados hasta configurar OIDC y grupos aprobados; la interfaz de reordenamiento de facultades, unidades, sedes y afiliaciones sigue pendiente. La etapa 7 depende además de implementar oferta y matrícula, actualmente ausentes.
+Las actividades 1–6 son gates para poner en operación la administración de la estructura y de calendarios. Los controles de transición y la edición auditada del orden ya se conectan a la API, pero quedan cerrados hasta configurar OIDC y grupos aprobados. La interfaz permite ajustar, una prioridad por solicitud, facultades/unidades, sedes, relaciones jerárquicas y adscripciones de programas; los formularios para altas, bajas y correcciones de esos maestros siguen pendientes. La etapa 7 depende además de implementar oferta y matrícula, actualmente ausentes.
 
 ## Desglose del siguiente hito: pregrado presencial
 
