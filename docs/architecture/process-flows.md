@@ -152,6 +152,7 @@ sequenceDiagram
   actor Comunidad as Visitante de consulta
   participant UI as React: vista previa del catálogo
   participant API as Spring Boot: Academic Catalog API
+  participant StructureAPI as Spring Boot: Academic Structure API
   participant Auth as Spring Security
   participant CSV as Parser y validador CSV
   participant UseCase as Casos de uso de academics
@@ -208,10 +209,25 @@ sequenceDiagram
     UI->>API: recarga la posición vigente con su cursor
     end
   end
-  UI->>API: GET /api/v1/academic-catalog/programs
-  API->>DB: consulta solo programas con plan PUBLISHED
-  DB-->>API: catálogo público; en desarrollo retorna [] hasta una publicación autorizada
-  API-->>UI: versiones publicadas y cohortes
+  par programas publicados y afiliaciones vigentes
+    UI->>API: GET /api/v1/academic-catalog/programs
+    API->>DB: consulta solo programas con plan PUBLISHED
+    DB-->>API: catálogo público; en desarrollo retorna [] hasta una publicación autorizada
+    API-->>UI: versiones publicadas y cohortes con programId
+  and estructura académica pública
+    UI->>StructureAPI: GET /api/v1/academic-structure
+    StructureAPI->>DB: lee unidades, lugares y afiliaciones vigentes ordenadas
+    DB-->>StructureAPI: relaciones vigentes por fecha institucional
+    StructureAPI-->>UI: snapshot público, sin la línea temporal administrativa
+  end
+  UI->>UI: resuelve unidad y lugar por programId; omite facultad/sede del CSV
+  alt consulta de estructura fallida
+    UI-->>Comunidad: muestra error y reintento; no muestra ubicación histórica
+  else falta, es ambigua o no resuelve la afiliación
+    UI-->>Comunidad: muestra "Adscripción pendiente de validar"
+  else afiliación vigente única y resoluble
+    UI-->>Comunidad: muestra unidad y sede vigentes
+  end
   Comunidad->>UI: elige una versión publicada
   UI->>API: GET /api/v1/academic-catalog/curricula/{id}
   API->>UseCase: consultar metadata pública por UUID
@@ -237,7 +253,7 @@ sequenceDiagram
   end
 ```
 
-La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. El detalle público obtiene metadata separada de entradas y consulta páginas filtradas por código/nombre o semestre; solo `PUBLISHED` puede producir conteos o filas, y borradores y UUID inexistentes comparten 404 en ambos endpoints. La consulta de página fija el tamaño máximo en 100, enlaza parámetros, escapa los comodines SQL y mantiene orden `(semester, row_order)`. La interfaz pide la metadata y su primera página en paralelo; espera 250 ms para búsqueda de texto, vuelve a página 1 al cambiar filtros y cancela solicitudes anteriores con `AbortSignal`. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la cola de revisión usa cursores anclados en fecha y UUID para que publicar una fila anterior no desplace borradores pendientes. La prevalidación, importación y publicación requieren `academic:catalog:write`. `POST /import-previews` valida el mismo contrato, devuelve metadata, semestres y como máximo 10 filas sin persistir datos ni eventos; `POST /imports` vuelve a validar antes de la transacción de escritura. Durante una vista previa, el cliente entrega `AbortSignal`; al perder `academic:catalog:write` o desmontarse el panel, aborta la espera, borra el archivo y el resultado local, e ignora respuestas tardías. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
+La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. Para mostrar la organización actual, React carga en paralelo esa lista y `GET /api/v1/academic-structure`, enlaza afiliación, unidad y sede mediante `programId`, y no usa `faculty`, `campus_name` ni `campus_code` del CSV como ubicación actual. Si la afiliación no es única o resoluble, muestra "Adscripción pendiente de validar"; si falla la consulta de estructura, bloquea el catálogo y permite reintentar. El detalle público obtiene metadata separada de entradas y consulta páginas filtradas por código/nombre o semestre; solo `PUBLISHED` puede producir conteos o filas, y borradores y UUID inexistentes comparten 404 en ambos endpoints. La consulta de página fija el tamaño máximo en 100, enlaza parámetros, escapa los comodines SQL y mantiene orden `(semester, row_order)`. La interfaz pide la metadata y su primera página en paralelo; espera 250 ms para búsqueda de texto, vuelve a página 1 al cambiar filtros y cancela solicitudes anteriores con `AbortSignal`. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la cola de revisión usa cursores anclados en fecha y UUID para que publicar una fila anterior no desplace borradores pendientes. La prevalidación, importación y publicación requieren `academic:catalog:write`. `POST /import-previews` valida el mismo contrato, devuelve metadata, semestres y como máximo 10 filas sin persistir datos ni eventos; `POST /imports` vuelve a validar antes de la transacción de escritura. Durante una vista previa, el cliente entrega `AbortSignal`; al perder `academic:catalog:write` o desmontarse el panel, aborta la espera, borra el archivo y el resultado local, e ignora respuestas tardías. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
 
 ## Orden organizacional y periodos académicos
 
