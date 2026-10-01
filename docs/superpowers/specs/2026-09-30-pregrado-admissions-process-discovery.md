@@ -5,6 +5,8 @@
 **Ruta:** pregrado presencial<br>
 **Datos personales:** ninguno; no se capturan ni se copian aspirantes reales
 
+**Responsables propuestos por el patrocinador:** ACRA y Registro Académico participarán en la validación de la fuente maestra y los campos del expediente estudiantil. Su asignación es una propuesta de trabajo, no confirma aún el sistema autoritativo, el contrato de aspirante/estudiante ni la autorización de tratamiento.
+
 ## Propósito, alcance y límite
 
 El patrocinador priorizó el subproceso de **inscripción y selección de aspirantes de pregrado presencial**. Este documento registra los actos oficiales y las instrucciones públicas consultadas para preparar la validación con ACRA, Secretaría General, Jurídica y los programas académicos. No es una interpretación jurídica aprobada ni autoriza reemplazar SIRA, procesar aspirantes reales o publicar una decisión automática.

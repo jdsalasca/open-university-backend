@@ -3,6 +3,7 @@
 **Estado:** borrador para revisión del patrocinador; no habilita implementación ni tratamiento de datos reales.
 **Objetivo:** construir por etapas el ciclo académico de pregrado presencial desde el catálogo curricular y la inscripción hasta el expediente del estudiante y la matrícula de asignaturas.
 **Datos personales:** no se usan datos reales en este diseño ni en desarrollo.
+**Responsables propuestos por el patrocinador:** ACRA y Registro Académico para acordar la fuente maestra y validar los campos del expediente estudiantil. Esta propuesta no confirma todavía el sistema autoritativo, los contratos de datos ni la autorización para tratar información personal.
 
 ## Entendimiento del objetivo
 
@@ -26,7 +27,7 @@ Los módulos permanecen dentro de los dos monolitos y comparten MySQL transaccio
 |---|---|---|
 | `academics` | Unidades, sedes, afiliaciones, programas, asignaturas, versiones de plan de estudios y periodos/calendarios | Maestro académico y actos aprobatorios confirmados por sus responsables |
 | `admissions` | Convocatorias y reglas versionadas; inscripciones, opciones, validaciones, decisiones, reclamaciones y llamados | ACRA y autoridad normativa, con contratos institucionales aprobados |
-| `students` | Vínculo persistente de persona con condición de estudiante, programa(s), cohorte(s) e historia académica | Registro Académico y fuentes de identidad autorizadas |
+| `students` | Vínculo persistente de persona con condición de estudiante, programa(s), cohorte(s) e historia académica | Registro Académico (responsable propuesto por el patrocinador) y fuentes de identidad autorizadas; confirmar formalmente maestro, campos y contratos |
 | `academic-operations` | Oferta de grupos, matrícula de asignaturas, novedades y resultados | Áreas responsables de programación, escuelas y Registro Académico |
 | `identity` / seguridad | Identidad de operador y permisos por acción; auditoría de cambios | Proveedor OIDC institucional y matriz de roles aprobada |
 
@@ -121,8 +122,8 @@ Cada etapa se divide en cortes verticales con backend, interfaz, Flyway, pruebas
 
 ## Decisiones pendientes de los dueños UPTC
 
-1. Inventario maestro actual y claves oficiales de persona, aspirante, estudiante, programa, materia, cohorte, sede y grupo; fuentes autoritativas y contratos disponibles.
-2. Campos personales mínimos por etapa, menores de edad, datos sensibles, soportes, finalidades, base del tratamiento, destinatarios y retención; política vigente y matriz de roles/claims.
+1. Con ACRA y Registro Académico como áreas propuestas, confirmar el inventario maestro actual, las claves oficiales de persona, aspirante y estudiante, los sistemas autoritativos y sus contratos; para programa, materia, cohorte, sede y grupo, confirmar sus fuentes con los responsables académicos respectivos.
+2. ACRA, Registro Académico y las áreas institucionales competentes deben aprobar los campos personales mínimos por etapa, menores de edad, datos sensibles, soportes, finalidades, base del tratamiento, destinatarios y retención; también la política vigente y la matriz de roles/claims.
 3. Vigencia consolidada por cohorte de reglas de admisión, ponderaciones, pruebas, cupos, normalistas, empates, recursos, PIN y beneficios financieros.
 4. Alcance aprobatorio de mallas/PAE, archivo maestro, códigos de asignatura, prerrequisitos, equivalencias y adscripción a cohortes/programas.
 5. Ventanas/actos para apertura de matrícula, reglas de inscripción/cancelación, tope de créditos, conflictos de horario, cupos, mínimo/máximo por grupo e intersemestral, excepciones y cierre.
