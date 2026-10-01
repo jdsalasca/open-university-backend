@@ -30,3 +30,5 @@ La retención de la TRD regula las series archivísticas descritas. No se traduc
 6. Definir alineación con el proyecto UPTC de Fase III y el repositorio documental que el comunicado reporta integrado a «Inscríbete»; evitar captura doble o un repositorio paralelo.
 
 Hasta cerrar estas decisiones, el desarrollo usa datos ficticios y no implementa carga de soportes ni un expediente paralelo. Para la relación con SIRA/Fase III y «Inscríbete», ver [control de solapamiento](uptc-new-academic-system-phase-iii.md), [hallazgo de Inscríbete](uptc-inscribete-2026.md) y [descubrimiento del ciclo estudiantil](student-lifecycle-baseline.md).
+
+Para registrar las decisiones de forma trazable antes de modelar campos o migrar información, usar la [ficha institucional de validación del ciclo y expediente estudiantil](student-record-validation-template.md). Es una plantilla vacía: no contiene campos ni datos de estudiantes aprobados.
