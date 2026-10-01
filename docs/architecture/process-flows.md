@@ -667,6 +667,21 @@ La modificación de calendario cambia la revisión activa, no reescribe el histo
 
 Las fechas de las actividades no se limitan al inicio/final de instrucción. En el calendario de estudiantes de pregrado 2026-2, ACRA publicó inscripción web del 22 de junio al 10 de julio y clases presenciales desde el 10 de agosto; la implementación conserva esa separación entre ventana de proceso y rango lectivo ([ACRA](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/2estu/est_pre.html)).
 
+El calendario de cursos intersemestrales 2024 dejó este recorrido fechado: solicitud del estudiante al Comité de Currículo → análisis/recomendación curricular → aprobación del Consejo de Facultad → pago e inscripción → verificación/programación e inscripción de asignaturas por las Escuelas en SIRA → desarrollo del curso → ingreso de notas → cierre académico ([Resolución 015 de 2024](https://www.uptc.edu.co/export/sites/default/secretaria_general/consejo_academico/resoluciones_2024/res_015_2024.pdf)). Este diagrama registra el ejemplo 2024 y su uso de SIRA; no afirma que los actores, sistema o secuencia sean los actuales.
+
+```mermaid
+flowchart LR
+  Student[Solicitud del estudiante] --> Curriculum[Comité de Currículo analiza y recomienda]
+  Curriculum --> Faculty[Consejo de Facultad aprueba]
+  Faculty --> Payment[Pago e inscripción al curso]
+  Payment --> School[Escuelas verifican y programan en SIRA]
+  School --> Course[Desarrollo del curso]
+  Course --> Grade[Ingreso de notas]
+  Grade --> Close[Cierre académico]
+```
+
+El Acuerdo 027 de 2024 también autorizó, exclusivamente para los cursos de junio-julio de 2024, hasta dos cursos por estudiante si uno era en calidad de repitente; la disposición no fue declarada permanente. No se automatizan esta excepción ni otras reglas por analogía entre cohortes ([Acuerdo 027 de 2024](https://www.uptc.edu.co/export/sites/default/secretaria_general/consejo_superior/acuerdos_2024/Acuerdo_027_2024.pdf)).
+
 ## Consulta de identidad propia
 
 ```mermaid
