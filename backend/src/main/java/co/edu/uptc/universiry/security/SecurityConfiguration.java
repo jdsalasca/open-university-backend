@@ -22,6 +22,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,9 +39,11 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 public class SecurityConfiguration {
 
     private final MessageCatalog messages;
+    private final ObjectMapper objectMapper;
 
-    public SecurityConfiguration(MessageCatalog messages) {
+    public SecurityConfiguration(MessageCatalog messages, ObjectMapper objectMapper) {
         this.messages = messages;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -208,6 +211,9 @@ public class SecurityConfiguration {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"error\":\"" + code + "\",\"message\":\"" + message + "\"}");
+        objectMapper.writeValue(response.getWriter(), new SecurityErrorResponse(code, message));
+    }
+
+    private record SecurityErrorResponse(String error, String message) {
     }
 }
