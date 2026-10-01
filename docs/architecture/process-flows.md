@@ -310,6 +310,46 @@ sequenceDiagram
 
 Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional; la consola administrativa consulta la línea temporal completa mediante el endpoint protegido. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo, un lugar raíz con tipo explícito y relaciones fechadas entre unidades o lugares existentes; las altas raíz no crean jerarquía/afiliación y los vínculos no asignan programas. No carga datos oficiales. Formularios y editores requieren permisos de lectura y escritura de estructura. Las operaciones envían una referencia institucional; el backend audita cada alta/cambio y, tras un alta o una relación, la pantalla vuelve a consultar el snapshot administrativo.
 
+### Consulta paginada de la bitácora de estructura
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia
+  participant Me as API de identidad
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Query as Consulta de auditoría
+  participant DB as MySQL
+
+  Operator->>UI: abre la bitácora administrativa
+  UI->>Me: consulta permisos vigentes
+  Me-->>UI: academic:structure:read
+  UI->>API: GET /api/v1/admin/academic-structure/audit-events?limit=50
+  API->>Auth: exige academic:structure:read
+  Auth-->>API: principal autorizado
+  API->>Query: valida límite, UUID, acción y cursor
+  Query->>DB: lee academic_structure_audit_event por clave de página
+  DB-->>Query: máximo 101 filas para decidir si hay otra página
+  Query-->>API: devuelve hasta 100 movimientos y cursor opaco
+  API-->>UI: fecha, acción, actor opaco, referencia y resumen
+  opt aplicar filtros
+    Operator->>UI: ingresa UUID de entidad y/o acción
+    UI->>API: consulta filtrada sin conservar filtros en URL
+    API->>Auth: vuelve a autorizar la lectura
+  end
+  opt cargar más
+    UI->>API: reenvía filtros con el cursor
+    API->>Query: solicita la página siguiente
+  end
+  opt revocar permiso o desmontar panel
+    UI->>UI: aborta solicitud y descarta eventos cargados
+    UI->>Me: revalida sesión si el servidor responde 401/403
+  end
+```
+
+La ruta administrativa usa únicamente la auditoría ya creada por mutaciones de estructura; no busca ni une personas, aspirantes, matrículas o expedientes. Los límites, filtros cerrados y cursor se validan también en backend. Los errores y la ausencia de resultados se muestran sin permitir editar o borrar eventos. La vista permanece oculta y no envía la consulta sin permiso de lectura.
+
 ### Alta protegida de una facultad raíz
 
 ```mermaid

@@ -5,10 +5,13 @@ import co.edu.uptc.universiry.academics.domain.AcademicOrganizationUnit;
 import co.edu.uptc.universiry.academics.domain.AcademicProgramAffiliation;
 import co.edu.uptc.universiry.academics.domain.AcademicSite;
 import co.edu.uptc.universiry.academics.domain.AcademicSiteRelation;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditAction;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditEvent;
 import co.edu.uptc.universiry.academics.domain.AcademicStructureSnapshot;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,6 +33,19 @@ public class DefaultAcademicStructureService implements AcademicStructureService
     @Override
     public AcademicStructureSnapshot adminStructure() {
         return repository.findAdminStructure();
+    }
+
+    @Override
+    public AcademicStructureAuditPage auditEvents(int limit, String before, UUID entityId,
+                                                   AcademicStructureAuditAction actionKey) {
+        if (limit < 1 || limit > 100) throw new IllegalArgumentException("Audit page limit must be between 1 and 100.");
+        AcademicStructureAuditCursor cursor = AcademicStructureAuditCursor.parse(before);
+        List<AcademicStructureAuditEvent> candidates = repository.findAuditEvents(limit + 1, cursor,
+                entityId, actionKey);
+        boolean hasNext = candidates.size() > limit;
+        List<AcademicStructureAuditEvent> events = candidates.subList(0, Math.min(limit, candidates.size()));
+        String nextCursor = hasNext ? AcademicStructureAuditCursor.from(events.getLast()).encode() : null;
+        return new AcademicStructureAuditPage(events, nextCursor);
     }
 
     @Override

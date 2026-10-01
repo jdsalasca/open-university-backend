@@ -1,11 +1,14 @@
 package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
-import co.edu.uptc.universiry.academics.application.AcademicStructureConflictException;
 import co.edu.uptc.universiry.academics.application.AcademicDisplayOrderCommand;
 import co.edu.uptc.universiry.academics.application.AcademicProgramAffiliationReassignmentCommand;
-import co.edu.uptc.universiry.academics.application.AcademicStructureRelationCloseCommand;
+import co.edu.uptc.universiry.academics.application.AcademicStructureAuditCursor;
+import co.edu.uptc.universiry.academics.application.AcademicStructureConflictException;
 import co.edu.uptc.universiry.academics.application.AcademicStructureNotFoundException;
+import co.edu.uptc.universiry.academics.application.AcademicStructureRelationCloseCommand;
 import co.edu.uptc.universiry.academics.application.AcademicStructureRepository;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditAction;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditEvent;
 import co.edu.uptc.universiry.academics.domain.AcademicEntityStatus;
 import co.edu.uptc.universiry.academics.domain.AcademicOrganizationRelation;
 import co.edu.uptc.universiry.academics.domain.AcademicOrganizationUnit;
@@ -14,8 +17,8 @@ import co.edu.uptc.universiry.academics.domain.AcademicProgramAffiliation;
 import co.edu.uptc.universiry.academics.domain.AcademicSite;
 import co.edu.uptc.universiry.academics.domain.AcademicSiteRelation;
 import co.edu.uptc.universiry.academics.domain.AcademicSiteType;
-import co.edu.uptc.universiry.academics.domain.AcademicStructureRules;
 import co.edu.uptc.universiry.academics.domain.AcademicStructureSnapshot;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureRules;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -27,6 +30,7 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -154,6 +158,41 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 ORDER BY a.display_order, p.program_code, p.academic_level, p.study_modality, p.campus_code, a.valid_from
                 """, AFFILIATION_MAPPER);
         return new AcademicStructureSnapshot(units, organizationRelations, sites, siteRelations, affiliations);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AcademicStructureAuditEvent> findAuditEvents(int limit, AcademicStructureAuditCursor before,
+                                                              UUID entityId,
+                                                              AcademicStructureAuditAction actionKey) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT audit_event_id, entity_id, action_key, actor_sub, source_reference, occurred_at, event_summary
+                FROM academic_structure_audit_event
+                WHERE 1 = 1
+                """);
+        List<Object> parameters = new ArrayList<>();
+        if (entityId != null) {
+            sql.append(" AND entity_id = ?");
+            parameters.add(entityId.toString());
+        }
+        if (actionKey != null) {
+            sql.append(" AND action_key = ?");
+            parameters.add(actionKey.name());
+        }
+        if (before != null) {
+            Timestamp occurredAt = Timestamp.from(before.occurredAt());
+            sql.append(" AND (occurred_at < ? OR (occurred_at = ? AND audit_event_id < ?))");
+            parameters.add(occurredAt);
+            parameters.add(occurredAt);
+            parameters.add(before.eventId());
+        }
+        sql.append(" ORDER BY occurred_at DESC, audit_event_id DESC LIMIT ?");
+        parameters.add(limit);
+        return jdbcTemplate.query(sql.toString(), (rs, row) -> new AcademicStructureAuditEvent(
+                rs.getLong("audit_event_id"), uuid(rs.getString("entity_id")),
+                AcademicStructureAuditAction.valueOf(rs.getString("action_key")), rs.getString("actor_sub"),
+                rs.getString("source_reference"), rs.getTimestamp("occurred_at").toInstant(),
+                rs.getString("event_summary")), parameters.toArray());
     }
 
     @Override

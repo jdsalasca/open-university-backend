@@ -98,7 +98,9 @@ public class SecurityConfiguration {
                         .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_READ.authority())
                         .requestMatchers(GET, "/api/v1/admin/academic-periods/*/history")
                                 .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_READ.authority())
-                        .requestMatchers(GET, "/api/v1/admin/academic-structure")
+                        .requestMatchers(GET,
+                                "/api/v1/admin/academic-structure",
+                                "/api/v1/admin/academic-structure/audit-events")
                         .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_READ.authority())
                         .requestMatchers(GET,
                                 "/api/v1/admin/access/role-profiles",

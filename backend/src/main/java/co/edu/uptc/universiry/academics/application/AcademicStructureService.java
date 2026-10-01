@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.academics.application;
 
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditAction;
 import co.edu.uptc.universiry.academics.domain.AcademicOrganizationUnit;
 import co.edu.uptc.universiry.academics.domain.AcademicSite;
 import co.edu.uptc.universiry.academics.domain.AcademicStructureSnapshot;
@@ -10,6 +11,9 @@ public interface AcademicStructureService {
     AcademicStructureSnapshot publicStructure();
 
     AcademicStructureSnapshot adminStructure();
+
+    AcademicStructureAuditPage auditEvents(int limit, String before, UUID entityId,
+                                            AcademicStructureAuditAction actionKey);
 
     AcademicOrganizationUnit createUnit(AcademicOrganizationUnitCommand command, String actorSub);
 

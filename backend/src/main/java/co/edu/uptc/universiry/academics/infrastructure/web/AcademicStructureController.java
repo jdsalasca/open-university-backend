@@ -1,6 +1,7 @@
 package co.edu.uptc.universiry.academics.infrastructure.web;
 
 import co.edu.uptc.universiry.academics.application.AcademicStructureService;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditAction;
 import co.edu.uptc.universiry.academics.domain.AcademicStructureSnapshot;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -33,6 +35,16 @@ public class AcademicStructureController {
     @GetMapping("/api/v1/admin/academic-structure")
     public AcademicStructureSnapshot adminStructure() {
         return service.adminStructure();
+    }
+
+    @GetMapping("/api/v1/admin/academic-structure/audit-events")
+    public AcademicStructureAuditPageResponse auditEvents(
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(required = false) String before,
+            @RequestParam(required = false) UUID entityId,
+            @RequestParam(required = false) AcademicStructureAuditAction actionKey
+    ) {
+        return AcademicStructureAuditPageResponse.from(service.auditEvents(limit, before, entityId, actionKey));
     }
 
     @PostMapping("/api/v1/admin/academic-structure/units")

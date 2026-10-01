@@ -6,14 +6,20 @@ import co.edu.uptc.universiry.academics.domain.AcademicProgramAffiliation;
 import co.edu.uptc.universiry.academics.domain.AcademicSite;
 import co.edu.uptc.universiry.academics.domain.AcademicSiteRelation;
 import co.edu.uptc.universiry.academics.domain.AcademicStructureSnapshot;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditAction;
+import co.edu.uptc.universiry.academics.domain.AcademicStructureAuditEvent;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface AcademicStructureRepository {
     AcademicStructureSnapshot findPublicStructure(LocalDate asOf);
 
     AcademicStructureSnapshot findAdminStructure();
+
+    List<AcademicStructureAuditEvent> findAuditEvents(int limit, AcademicStructureAuditCursor before,
+                                                       UUID entityId, AcademicStructureAuditAction actionKey);
 
     void createOrganizationUnit(AcademicOrganizationUnit unit, String actorSub, String sourceReference);
 
