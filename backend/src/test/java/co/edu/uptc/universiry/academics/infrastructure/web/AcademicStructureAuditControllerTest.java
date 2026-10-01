@@ -126,6 +126,14 @@ class AcademicStructureAuditControllerTest {
                 .encodeToString("v1|not-an-instant|5".getBytes(StandardCharsets.UTF_8));
         mockMvc.perform(get(ENDPOINT).param("before", invalidTimestamp).with(reader))
                 .andExpect(status().isBadRequest());
+        String timestampBeforeMySqlRange = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("v1|1969-12-31T23:59:59Z|5".getBytes(StandardCharsets.UTF_8));
+        mockMvc.perform(get(ENDPOINT).param("before", timestampBeforeMySqlRange).with(reader))
+                .andExpect(status().isBadRequest());
+        String timestampAfterMySqlRange = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("v1|2038-01-19T03:14:07.500000Z|5".getBytes(StandardCharsets.UTF_8));
+        mockMvc.perform(get(ENDPOINT).param("before", timestampAfterMySqlRange).with(reader))
+                .andExpect(status().isBadRequest());
         mockMvc.perform(get(ENDPOINT).param("actionKey", "UNKNOWN_ACTION").with(reader))
                 .andExpect(status().isBadRequest());
     }
