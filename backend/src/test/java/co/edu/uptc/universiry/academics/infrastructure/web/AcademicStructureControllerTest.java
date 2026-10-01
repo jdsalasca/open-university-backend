@@ -459,7 +459,7 @@ class AcademicStructureControllerTest {
                 VALUES (?, 'ING-01', 'PREGRADO', 'PRESENCIAL', 'REG-01', CURRENT_TIMESTAMP)
                 """, programId.toString());
         String affiliation = "{\"organizationUnitId\":\"" + unitId + "\",\"siteId\":\"" + siteId
-                + "\",\"displayOrder\":7,\"validFrom\":\"2026-01-01\",\"validThrough\":null,"
+                + "\",\"displayOrder\":7,\"validFrom\":\"2027-01-01\",\"validThrough\":null,"
                 + "\"sourceReference\":\"Acuerdo validado\"}";
 
         // Act
@@ -468,15 +468,20 @@ class AcademicStructureControllerTest {
                 .andExpect(status().isCreated());
         mockMvc.perform(post("/api/v1/admin/academic-structure/programs/{programId}/affiliations", programId)
                         .with(writer()).contentType(MediaType.APPLICATION_JSON)
-                        .content(affiliation.replace("2026-01-01", "2026-06-01")))
+                        .content(affiliation.replace("2027-01-01", "2027-06-01")))
                 .andExpect(status().isConflict());
 
         // Assert
         mockMvc.perform(get("/api/v1/academic-structure"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.programAffiliations.length()").value(0));
+        mockMvc.perform(get("/api/v1/admin/academic-structure")
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ))))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.programAffiliations.length()").value(1))
                 .andExpect(jsonPath("$.programAffiliations[0].programId").value(programId.toString()))
-                .andExpect(jsonPath("$.programAffiliations[0].displayOrder").value(7));
+                .andExpect(jsonPath("$.programAffiliations[0].displayOrder").value(7))
+                .andExpect(jsonPath("$.programAffiliations[0].validFrom").value("2027-01-01"));
         org.junit.jupiter.api.Assertions.assertEquals(7, jdbcTemplate.queryForObject(
                 "SELECT display_order FROM academic_program_affiliation WHERE program_id = ?", Integer.class,
                 programId.toString()));

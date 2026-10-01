@@ -251,7 +251,7 @@ sequenceDiagram
   DB-->>API: raíces por orden de nodo; hijos por orden de relación; programas por orden de afiliación
 ```
 
-Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo, un lugar raíz con tipo explícito y relaciones fechadas entre unidades o lugares existentes; las altas raíz no crean jerarquía/afiliación y los vínculos no asignan programas. No carga datos oficiales. Formularios y editores requieren autorización de escritura. Las operaciones envían una referencia institucional; el backend audita cada alta/cambio y, tras un alta o una relación, la pantalla vuelve a consultar el árbol.
+Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional; la consola administrativa consulta la línea temporal completa mediante el endpoint protegido. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo, un lugar raíz con tipo explícito y relaciones fechadas entre unidades o lugares existentes; las altas raíz no crean jerarquía/afiliación y los vínculos no asignan programas. No carga datos oficiales. Formularios y editores requieren permisos de lectura y escritura de estructura. Las operaciones envían una referencia institucional; el backend audita cada alta/cambio y, tras un alta o una relación, la pantalla vuelve a consultar el snapshot administrativo.
 
 ### Alta protegida de una facultad raíz
 
@@ -267,7 +267,7 @@ sequenceDiagram
 
   Operator->>UI: ingresa código, nombre, prioridad, vigencia y referencia
   UI->>Identity: GET /api/v1/me
-  Identity-->>UI: permiso academic:structure:write
+  Identity-->>UI: permisos academic:structure:read y academic:structure:write
   UI->>API: POST /api/v1/admin/academic-structure/units con Bearer
   API->>Auth: autentica y exige academic:structure:write
   alt sesión o permiso rechazado
@@ -293,8 +293,8 @@ sequenceDiagram
         DB-->>Service: inserta unidad y evento UNIT_CREATED; commit atómico
         Service-->>API: identidad creada
         API-->>UI: 201 con id de unidad
-        UI->>API: GET /api/v1/academic-structure
-        API->>DB: consulta estructura vigente ordenada
+        UI->>API: GET /api/v1/admin/academic-structure
+        API->>DB: consulta snapshot completo ordenado
         DB-->>API: árbol actualizado
         API-->>UI: estructura autoritativa
         UI-->>Operator: muestra facultad después de releer el árbol
@@ -303,7 +303,7 @@ sequenceDiagram
   end
 ```
 
-La interfaz muestra el formulario solo con el permiso recibido de `/api/v1/me`, pero el servidor aplica la regla final en cada `POST`. Un fallo al releer tras `201` se informa como alta aceptada con vista pendiente de recarga; no se repite el comando automáticamente. La forma no permite crear escuelas, hijos, relaciones de sede ni afiliaciones de programas.
+La interfaz muestra el formulario solo con los permisos de lectura y escritura recibidos de `/api/v1/me`, pero el servidor aplica la regla final en cada `POST`. Un fallo al releer tras `201` se informa como alta aceptada con vista pendiente de recarga; no se repite el comando automáticamente. La forma no permite crear escuelas, hijos, relaciones de sede ni afiliaciones de programas.
 
 ### Alta protegida de un lugar raíz
 
@@ -319,7 +319,7 @@ sequenceDiagram
 
   Operator->>UI: elige tipo de lugar e ingresa código, nombre, prioridad, vigencia y referencia
   UI->>Identity: GET /api/v1/me
-  Identity-->>UI: permiso academic:structure:write
+  Identity-->>UI: permisos academic:structure:read y academic:structure:write
   UI->>API: POST /api/v1/admin/academic-structure/sites con Bearer
   API->>Auth: autentica y exige academic:structure:write
   alt sesión o permiso rechazado
@@ -339,8 +339,8 @@ sequenceDiagram
       DB-->>Service: commit atómico
       Service-->>API: identidad creada
       API-->>UI: 201 con id de lugar
-      UI->>API: GET /api/v1/academic-structure
-      API->>DB: consulta estructura vigente ordenada
+      UI->>API: GET /api/v1/admin/academic-structure
+      API->>DB: consulta snapshot completo ordenado
       DB-->>API: árbol actualizado
       API-->>UI: estructura autoritativa
       UI-->>Operator: muestra el lugar raíz después de releer el árbol
@@ -365,7 +365,7 @@ sequenceDiagram
   Operator->>UI: selecciona unidad/lugar superior e inferior, orden, vigencia y referencia
   UI->>UI: bloquea pares idénticos; exige dos entidades existentes
   UI->>Identity: GET /api/v1/me
-  Identity-->>UI: permiso academic:structure:write
+  Identity-->>UI: permisos academic:structure:read y academic:structure:write
   UI->>API: POST /units/{parentId}/children/{childId} o /sites/{parentId}/children/{childId}
   API->>Auth: autentica y exige academic:structure:write
   alt sesión o permiso rechazado
@@ -380,8 +380,8 @@ sequenceDiagram
     alt ciclo, padre concurrente o conflicto de vigencia
       Structure-->>API: 409; no inserta relación ni auditoría parcial
       API-->>UI: error de validación o conflicto
-      UI->>API: GET /api/v1/academic-structure para actualizar el árbol
-      API-->>UI: estructura autoritativa
+      UI->>API: GET /api/v1/admin/academic-structure para actualizar la línea temporal
+      API-->>UI: snapshot administrativo con vigencias futuras e históricas
       UI-->>Operator: informa del conflicto y exige revisar antes de reintentar
     else entidad ausente o intervalo inválido
       Structure-->>API: 404 o 400; no inserta relación ni auditoría
@@ -392,8 +392,8 @@ sequenceDiagram
       DB-->>Structure: commit atómico
       Structure-->>API: relación registrada
       API-->>UI: 201 sin cuerpo
-      UI->>API: GET /api/v1/academic-structure
-      API->>DB: consulta árbol vigente y ordenado
+      UI->>API: GET /api/v1/admin/academic-structure
+      API->>DB: consulta snapshot completo ordenado
       DB-->>API: jerarquía actualizada
       API-->>UI: estructura autoritativa
       UI-->>Operator: presenta el árbol guardado
@@ -401,7 +401,56 @@ sequenceDiagram
   end
 ```
 
-La interfaz no propone una afiliación de programa con este formulario. El servicio valida ambas entidades y sus vigencias bajo bloqueo, rechaza ciclos y padres simultáneos incompatibles, y guarda relación/auditoría en la misma transacción. El catálogo oficial, la jerarquía aprobada y los permisos de escritura continúan pendientes de validación institucional.
+El formulario de jerarquía no afilia programas. El servicio valida ambas entidades y sus vigencias bajo bloqueo, rechaza ciclos y padres simultáneos incompatibles, y guarda relación/auditoría en la misma transacción. El catálogo oficial, la jerarquía aprobada y los permisos de escritura continúan pendientes de validación institucional.
+
+### Afiliar un programa a una unidad y un lugar
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia
+  participant Identity as API de identidad
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Structure as AcademicStructureService
+  participant DB as MySQL
+
+  Operator->>UI: selecciona programa publicado, unidad, lugar, orden, vigencia y referencia
+  UI->>Identity: GET /api/v1/me
+  Identity-->>UI: permisos academic:structure:read y academic:structure:write
+  UI->>API: POST /programs/{programId}/affiliations con Bearer
+  API->>Auth: autentica y exige academic:structure:write
+  alt sesión o permiso rechazado
+    API-->>UI: 401 o 403
+    UI->>Identity: revalida GET /api/v1/me
+    UI-->>Operator: conserva el mensaje y revalida acceso antes de continuar
+  else permiso autorizado
+    Auth-->>API: sujeto y permiso autorizados
+    API->>Structure: afilia identidad existente con vigencia y referencia
+    Structure->>DB: bloquea estructura y valida programa, unidad, lugar e intervalo
+    alt entidad ausente o vigencia inválida
+      Structure-->>API: 404 o 400 sin persistir
+      API-->>UI: error localizado
+      UI-->>Operator: informa qué debe revisar
+    else ya existe afiliación incompatible en el intervalo
+      Structure-->>API: 409 sin duplicar relación ni auditoría
+      API-->>UI: conflicto de afiliación
+      UI->>API: GET /api/v1/admin/academic-structure para actualizar la línea temporal
+      API-->>UI: snapshot administrativo con vigencias futuras e históricas
+      UI-->>Operator: informa el conflicto; requiere revisión manual
+    else afiliación válida
+      Structure->>DB: inserta academic_program_affiliation y PROGRAM_AFFILIATED
+      DB-->>Structure: commit atómico
+      Structure-->>API: afiliación registrada
+      API-->>UI: 201 con identidad del programa
+      UI->>API: GET /api/v1/admin/academic-structure
+      API-->>UI: snapshot administrativo con la nueva afiliación
+      UI-->>Operator: presenta el intervalo en la lista administrativa de adscripciones
+    end
+  end
+```
+
+El formulario protegido consume el listado público del catálogo, por lo que permite elegir programas publicados, y usa únicamente unidades y lugares activos que ya existen. No toma la facultad o el campus de texto legado como relación. El POST reutiliza `academic_program_affiliation` y la auditoría `PROGRAM_AFFILIATED`; el backend exige escritura, valida vigencias y evita afiliaciones simultáneas incompatibles. La vista de gestión exige tanto `academic:structure:read` como `academic:structure:write`: vuelve a consultar el snapshot administrativo completo tras éxito o `409`, así que una afiliación futura o histórica sigue visible en la lista de vigencias con fechas y procedencia. El árbol principal conserva la estructura efectiva del endpoint público; cuando la vigencia comience, la afiliación aparecerá allí automáticamente. Sin permiso de lectura, la aplicación muestra únicamente el árbol público vigente y oculta la línea temporal y los controles de escritura. No repite la mutación automáticamente. Los catálogos y la adscripción oficial siguen pendientes de aprobación institucional.
 
 ### Corrección de prioridad organizacional
 
@@ -430,7 +479,7 @@ sequenceDiagram
   end
 ```
 
-La ruta no edita afiliaciones si el programa/unidad/sede no coincide y solo cambia metadatos de prioridad; un reordenamiento no reasigna unidades o lugares. La referencia se conserva junto con el actor y los valores anterior/nuevo. El resumen identifica también la pareja padre/hijo de una relación o el ID de la afiliación de programa, evitando eventos ambiguos cuando existen vínculos históricos. Las rutas están en la allowlist de `PATCH` y requieren permiso de escritura.
+La ruta no edita afiliaciones si el programa/unidad/sede no coincide y solo cambia metadatos de prioridad; un reordenamiento no reasigna unidades o lugares. La referencia se conserva junto con el actor y los valores anterior/nuevo. El resumen identifica también la pareja padre/hijo de una relación o el ID de la afiliación de programa, evitando eventos ambiguos cuando existen vínculos históricos. Las rutas están en la allowlist de `PATCH`; el backend exige escritura y la consola requiere lectura administrativa y escritura para mostrar los editores.
 
 ```mermaid
 sequenceDiagram
@@ -441,15 +490,15 @@ sequenceDiagram
   participant DB as MySQL
   Operator->>UI: abre editor y propone nuevo orden con referencia institucional
   UI->>Identity: GET /api/v1/me con Bearer
-  Identity-->>UI: academic:structure:write
+  Identity-->>UI: permisos academic:structure:read y academic:structure:write
   UI->>API: PATCH de un solo nodo, relación o afiliación con Bearer
   API->>API: valida permiso, valor esperado y referencia
   API->>DB: actualiza prioridad y auditoría atómicamente
   alt guardado válido
     DB-->>API: commit
     API-->>UI: 204
-    UI->>API: GET /api/v1/academic-structure
-    API->>DB: lee el árbol vigente ordenado
+    UI->>API: GET /api/v1/admin/academic-structure
+    API->>DB: lee la línea temporal administrativa
     DB-->>API: estructura vigente
     API-->>UI: árbol guardado
   else edición concurrente
