@@ -59,3 +59,15 @@ The opt-in MySQL contract and performance classes also passed against the MySQL 
 | Curriculum substring-filter page | 16.759 ms | 16.741 ms | 18.293 ms | 18.809 ms |
 
 All three latest means were below the local `<50 ms` average regression budget. This run reuses the Compose development database rather than the disposable container used by the four prior runs; the synthetic fixtures rolled back, and follow-up public catalog, structure, period, and health reads remained empty/healthy. As before, the result is local single-concurrency evidence only, not a production SLO or representative institutional workload.
+
+## Disposable MySQL 8.4 revalidation — 2026-10-01 (UTC-5)
+
+`tools/verify-mysql-curriculum.ps1` ran with SDKMAN Java 25.0.4-tem against a fresh MySQL 8.4 container bound to an ephemeral loopback port, with no persistent volume. The two MySQL contract classes passed all seven tests with no failures, errors, or skips. Each performance scenario used 10,000 synthetic rows, 10 warmups, 50 measured samples, and concurrency 1; page size was 100 for curriculum reads and 25 for the draft queue.
+
+| Query | Average | p50 | p95 | p99 |
+|---|---:|---:|---:|---:|
+| Draft review queue, first page | 16.270 ms | 15.163 ms | 22.439 ms | 27.274 ms |
+| Curriculum first page, no filter | 13.218 ms | 12.850 ms | 14.812 ms | 30.554 ms |
+| Curriculum substring-filter page | 20.830 ms | 20.598 ms | 22.857 ms | 23.648 ms |
+
+All three means were below the local `<50 ms` average regression budget. The runner's `finally` block removed the disposable container; the persistent Compose database and applications stayed running. This is a single run on the development machine, using synthetic fixtures and concurrency 1. It does not establish production performance or an institutional SLA; representative hardware, concurrency, workload mix, and acceptance thresholds remain to be agreed with institutional owners.
