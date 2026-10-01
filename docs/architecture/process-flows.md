@@ -251,7 +251,59 @@ sequenceDiagram
   DB-->>API: raíces por orden de nodo; hijos por orden de relación; programas por orden de afiliación
 ```
 
-Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. Estos envían la versión esperada y una referencia institucional; el backend audita el cambio y la pantalla vuelve a consultar el árbol.
+Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo; no crea una jerarquía ni carga datos oficiales. Tanto el formulario como los editores requieren autorización de escritura. Las operaciones envían una referencia institucional; el backend audita cada cambio y, tras un alta, la pantalla vuelve a consultar el árbol.
+
+### Alta protegida de una facultad raíz
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia
+  participant Identity as API de identidad
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Service as AcademicStructureService
+  participant DB as MySQL
+
+  Operator->>UI: ingresa código, nombre, prioridad, vigencia y referencia
+  UI->>Identity: GET /api/v1/me
+  Identity-->>UI: permiso academic:structure:write
+  UI->>API: POST /api/v1/admin/academic-structure/units con Bearer
+  API->>Auth: autentica y exige academic:structure:write
+  alt sesión o permiso rechazado
+    API-->>UI: 401 o 403
+    UI->>Identity: revalida GET /api/v1/me y suspende este token para escritura
+    UI-->>Operator: oculta controles administrativos hasta revalidar acceso
+  else permiso autorizado
+    Auth-->>API: sujeto y permiso autorizados
+    API->>Service: solicita crear unidad tipo FACULTY
+    Service->>Service: valida datos y referencia; el comando no contiene padre
+    alt datos inválidos
+      Service-->>API: error de validación
+      API-->>UI: 400; no se intenta persistir
+      UI-->>Operator: conserva el formulario y pide corregir los campos
+    else datos válidos
+      Service->>DB: inicia transacción e intenta insertar código único
+      alt código duplicado u otra restricción de integridad
+        DB-->>Service: conflicto; revierte la transacción
+        Service-->>API: error de integridad
+        API-->>UI: 409; no se duplica la identidad
+        UI-->>Operator: conserva el formulario e informa del conflicto
+      else alta válida
+        DB-->>Service: inserta unidad y evento UNIT_CREATED; commit atómico
+        Service-->>API: identidad creada
+        API-->>UI: 201 con id de unidad
+        UI->>API: GET /api/v1/academic-structure
+        API->>DB: consulta estructura vigente ordenada
+        DB-->>API: árbol actualizado
+        API-->>UI: estructura autoritativa
+        UI-->>Operator: muestra facultad después de releer el árbol
+      end
+    end
+  end
+```
+
+La interfaz muestra el formulario solo con el permiso recibido de `/api/v1/me`, pero el servidor aplica la regla final en cada `POST`. Un fallo al releer tras `201` se informa como alta aceptada con vista pendiente de recarga; no se repite el comando automáticamente. La forma no permite crear escuelas, hijos, relaciones de sede ni afiliaciones de programas.
 
 ### Corrección de prioridad organizacional
 

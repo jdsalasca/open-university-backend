@@ -155,6 +155,7 @@ Resultado de revisión: no se encontraron defectos críticos ni funcionales en l
 
 ## Continuación necesaria antes de operar estructura oficial
 
-- Añadir comandos auditables para cerrar y corregir relaciones/afiliaciones vigentes y formularios protegidos para altas/bajas de unidades, sedes y adscripciones. La corrección auditada del orden ya cuenta con API e interfaz numérica de un elemento por vez; requiere conectar OIDC autorizado para habilitarla en la máquina.
+- **Incremento del 30 de septiembre de 2026:** el formulario React y el comando existente permiten crear una facultad raíz tipo `FACULTY`, con referencia institucional y auditoría `UNIT_CREATED` en la misma transacción. La interfaz se muestra solo con `academic:structure:write`; después del alta vuelve a leer el árbol. No crea hijos ni relaciones y no se añadieron datos oficiales o tablas duplicadas.
+- Añadir comandos auditables para cerrar y corregir relaciones/afiliaciones vigentes y formularios protegidos para altas de escuelas/unidades hijas, sedes y adscripciones, y bajas/cierres según reglas validadas. La corrección auditada del orden y el alta raíz ya cuentan con API e interfaz; requieren conectar OIDC autorizado para habilitarlas en la máquina.
 - Añadir los formularios restantes solo después de conectar OIDC y confirmar los grupos/permisos UPTC.
 - No cargar el maestro oficial ni editar estas tablas directamente mientras esos comandos no existan.
