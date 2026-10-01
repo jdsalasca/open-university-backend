@@ -262,6 +262,7 @@ public class JdbcAcademicPeriodRepositoryAdapter implements AcademicPeriodReposi
                           String actorSub, String reference) {
         AcademicPeriodStatus currentStatus = lockPeriodStatus(period.id());
         if (currentStatus != expectedStatus) throw new AcademicPeriodConflictException();
+        boolean expectCalendarRevisionToBeEmpty = expectedStatus == AcademicPeriodStatus.DRAFT;
         boolean requireLatestCalendar = "PERIOD_APPROVED".equals(actionKey) || "PERIOD_OPENED".equals(actionKey);
         int changed = jdbcTemplate.update("""
                 UPDATE academic_period
@@ -269,6 +270,8 @@ public class JdbcAcademicPeriodRepositoryAdapter implements AcademicPeriodReposi
                     approved_by = ?, approved_at = ?,
                     opened_by = ?, opened_at = ?, closed_by = ?, closed_at = ?, cancelled_by = ?, cancelled_at = ?
                 WHERE period_id = ? AND status = ?
+                  AND ((? = TRUE AND approved_calendar_revision_id IS NULL)
+                    OR (? = FALSE AND approved_calendar_revision_id = ?))
                   AND (? = FALSE OR EXISTS (
                     SELECT 1 FROM academic_calendar_revision selected
                     WHERE selected.calendar_revision_id = ? AND selected.period_id = ?
@@ -281,7 +284,8 @@ public class JdbcAcademicPeriodRepositoryAdapter implements AcademicPeriodReposi
                 """, period.status().name(), idString(period.approvedCalendarRevisionId()), period.approvalReference(),
                 period.approvedBy(), timestamp(period.approvedAt()), period.openedBy(), timestamp(period.openedAt()), period.closedBy(),
                 timestamp(period.closedAt()), period.cancelledBy(), timestamp(period.cancelledAt()),
-                period.id().toString(), expectedStatus.name(), requireLatestCalendar,
+                period.id().toString(), expectedStatus.name(), expectCalendarRevisionToBeEmpty,
+                expectCalendarRevisionToBeEmpty, idString(period.approvedCalendarRevisionId()), requireLatestCalendar,
                 idString(period.approvedCalendarRevisionId()), period.id().toString());
         if (changed != 1) throw new AcademicPeriodConflictException();
         audit(period.id(), actionKey, actorSub, reference, "Academic period state changed to " + period.status() + ".");

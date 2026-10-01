@@ -137,6 +137,13 @@
 
 Resultado de revisión: no se encontraron defectos críticos ni funcionales en la implementación de orden. Se cerró la brecha importante de evidencia con pruebas de integración concurrente para apertura de periodos y orden relacional, además de rollback cuando falla la auditoría. La transición de periodo cambia únicamente su estado; no publica oferta ni habilita inscripciones.
 
+### Refuerzo de concurrencia — 2026-09-30
+
+- [x] Agregar primero una regresión que reproduce cómo un cierre basado en lectura obsoleta restauraba una revisión de calendario anterior; comprobar el fallo en el adaptador JDBC.
+- [x] Hacer que cada transición compare estado y revisión activa observados bajo bloqueo; una orden obsoleta responde conflicto sin revertir la revisión ni insertar auditoría de cierre.
+- [x] Repetir el contrato contra H2 y MySQL 8.4 desechable; conservar el periodo abierto, la revisión nueva activa y cero eventos de cierre tras el conflicto.
+- [x] Actualizar el diagrama de flujo y el modelo de datos para describir el resultado de la concurrencia obsoleta.
+
 ## Verificación final esperada
 
 - Backend: mvn -f backend/pom.xml test termina con BUILD SUCCESS.

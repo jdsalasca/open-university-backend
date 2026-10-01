@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:academic-period-concurrency;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
@@ -76,6 +77,43 @@ class AcademicPeriodConcurrencyTest {
         }
     }
 
+    @Test
+    void closing_from_a_stale_open_snapshot_conflicts_without_reverting_the_calendar_revision() {
+        // Arrange
+        String setupActor = "period.stale-close.setup";
+        String code = "STALE-CLOSE-" + UUID.randomUUID().toString().substring(0, 8);
+        var draftPeriod = service.createPeriod(new AcademicPeriodCreateCommand(code, AcademicPeriodKind.REGULAR,
+                2028, 1, LocalDate.of(2028, 1, 15), LocalDate.of(2028, 6, 30)), setupActor).period();
+        var firstDraft = service.createCalendar(draftPeriod.id(), new AcademicCalendarDraftCommand(
+                "Resolución sintética 1 de 2028",
+                java.util.List.of(new AcademicCalendarActivity("REGISTRATION", "Inscripción",
+                        LocalDateTime.of(2028, 1, 10, 8, 0), LocalDateTime.of(2028, 1, 12, 17, 0)))), setupActor);
+        var firstPublished = service.publishCalendar(draftPeriod.id(), firstDraft.id(), setupActor);
+        var approved = service.approve(draftPeriod.id(), firstPublished.id(),
+                "Acuerdo sintético 1 de 2028", setupActor);
+        service.open(draftPeriod.id(), setupActor);
+        AcademicPeriod staleOpenSnapshot = repository.findPeriod(draftPeriod.id()).orElseThrow();
+
+        var amendmentDraft = service.createCalendar(draftPeriod.id(), new AcademicCalendarDraftCommand(
+                "Resolución modificatoria sintética 2 de 2028",
+                java.util.List.of(new AcademicCalendarActivity("REGISTRATION", "Inscripción ajustada",
+                        LocalDateTime.of(2028, 1, 11, 8, 0), LocalDateTime.of(2028, 1, 13, 17, 0)))), setupActor);
+        var amendment = service.publishCalendar(draftPeriod.id(), amendmentDraft.id(), setupActor);
+        service.activateCalendarRevision(draftPeriod.id(), amendment.id(), setupActor);
+        AcademicPeriod staleClosingSnapshot = staleOpenSnapshot.close(
+                "period.operator.close", Instant.parse("2028-07-01T15:30:00Z"));
+
+        // Act
+        assertThrows(AcademicPeriodConflictException.class, () -> repository.transition(staleClosingSnapshot,
+                AcademicPeriodStatus.OPEN, "PERIOD_CLOSED", "period.operator.close", null));
+
+        // Assert
+        AcademicPeriod current = repository.findPeriod(approved.period().id()).orElseThrow();
+        assertEquals(AcademicPeriodStatus.OPEN, current.status());
+        assertEquals(amendment.id(), current.approvedCalendarRevisionId());
+        assertEquals(0, countClosingEvents(approved.period().id()));
+    }
+
     private boolean transitionAfter(CountDownLatch start, AcademicPeriod opened, String actor) throws Exception {
         if (!start.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("Concurrent start timed out.");
         try {
@@ -90,6 +128,13 @@ class AcademicPeriodConcurrencyTest {
         return jdbcTemplate.queryForObject("""
                 SELECT COUNT(*) FROM academic_period_audit_event
                 WHERE period_id = ? AND action_key = 'PERIOD_OPENED'
+                """, Integer.class, periodId.toString());
+    }
+
+    private int countClosingEvents(UUID periodId) {
+        return jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_period_audit_event
+                WHERE period_id = ? AND action_key = 'PERIOD_CLOSED'
                 """, Integer.class, periodId.toString());
     }
 }
