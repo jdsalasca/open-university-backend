@@ -86,6 +86,29 @@ flowchart LR
 
 La flecha punteada hacia el gate es una dependencia por descubrir, no un estado confirmado del estudiante. La lista de servicios se mantiene desconectada deliberadamente hasta que los responsables aprueben el proceso y su relación. El detalle de las fuentes y decisiones pendientes está en [descubrimiento del ciclo](../discovery/student-lifecycle-baseline.md).
 
+### Agenda pública de admisiones 2027-I
+
+La ruta `/#admisiones` presenta las fechas de pregrado presencial publicadas por ACRA, la fecha en que se revisó la fuente y enlaces oficiales para confirmar cambios. El contenido se mantiene versionado con la aplicación para que cada actualización tenga revisión y trazabilidad. El calendario no crea postulaciones ni se conecta a PIN, selección, documentos o sistemas académicos; la inscripción se realiza únicamente en el canal oficial que UPTC publique.
+
+```mermaid
+sequenceDiagram
+  actor Aspirante as Persona interesada
+  participant UI as React: agenda pública 2027-I
+  participant Content as Contenido versionado del frontend
+  participant ACRA as Portal público ACRA
+  participant News as Comunicado institucional UPTC
+
+  Aspirante->>UI: abre #admisiones
+  UI->>Content: carga convocatoria y fechas revisadas
+  Content-->>UI: hitos, fecha de consulta y referencias oficiales
+  UI-->>Aspirante: presenta la agenda y advierte que no recibe inscripciones
+  Aspirante->>ACRA: abre el calendario oficial para confirmar detalles
+  Aspirante->>News: consulta el comunicado institucional enlazado
+  Note over UI,Content: No hay captura de datos, llamadas a APIs de admisión ni escrituras en MySQL
+```
+
+La fuente ACRA se marcaba como actualizada el 15 de septiembre de 2026 y se consultó el 1 de octubre de 2026; cualquier modificación posterior debe reflejarse en el contenido y en su fecha de consulta. La [página oficial de aspirantes](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/) es la referencia operativa y el [comunicado institucional 240](https://dsp.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-abre-inscripciones-para-estudiar-un-pregrado-presencial-a-distancia-o-virtual-el-proximo-semestre/) sirve como confirmación pública de apertura y fechas principales.
+
 ### Flujo público de inscripción y selección para 2027-I
 
 El mapa separa fechas y reglas que aparecen en actos públicos de los puntos operativos pendientes. Es una guía para el taller, no una máquina de estados ni autorización para automatizar decisiones. UPTC reportó la implementación de «Inscríbete» para 2026-II; la Resolución 111/2026 nombra SIRA en el proceso 2027-I. El diagrama conserva esos nombres separados: no afirma que sean el mismo sistema ni que el portal descrito en el comunicado sea el de 2027-I. ISE, pago y matrícula/asignaturas quedan fuera del primer corte funcional.

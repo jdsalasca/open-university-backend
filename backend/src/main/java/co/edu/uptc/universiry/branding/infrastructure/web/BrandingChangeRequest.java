@@ -22,7 +22,7 @@ public record BrandingChangeRequest(
         @NotNull @Size(min = 6, max = 6)
         Map<@NotBlank @Size(max = 32) String, @NotBlank @Pattern(regexp = "^#[0-9A-Fa-f]{6}$") String> colors,
         @NotNull @Valid AssetsRequest assets,
-        @NotNull @Size(min = 7, max = 7) List<@NotNull @Valid ModuleRequest> modules,
+        @NotNull @Size(min = 8, max = 8) List<@NotNull @Valid ModuleRequest> modules,
         @NotNull @Size(max = 12) List<@NotNull @Valid BannerRequest> banners
 ) {
 

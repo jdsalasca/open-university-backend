@@ -47,3 +47,7 @@ Las tareas entre semanas 2 y 5 pueden solaparse; las tareas que dependen de deci
 5. **A4 — Integración y ensayo:** sistemas autorizados, resultados/recursos, conciliación, rendimiento, aceptación y reversa.
 
 Los hitos A1–A4 son una propuesta de secuencia para revisar; los responsables institucionales pueden ajustar alcance y orden antes de iniciar las historias funcionales.
+
+## Entrega de orientación pública disponible
+
+La ruta React `/#admisiones` publica una agenda informativa para pregrado presencial 2027-I, con hitos consultados en ACRA el 1 de octubre de 2026 y enlaces a la fuente y al comunicado institucional. El contenido está versionado en el frontend; no tiene consola de edición, API de admisiones ni captura de aspirantes, PIN o documentos. Esta entrega de orientación no completa A0/A1 ni habilita el flujo transaccional. ACRA continúa siendo la referencia que la persona debe consultar antes de realizar cada trámite, y la futura convocatoria administrable depende de confirmar mandato, fuente maestra y reglas en los gates anteriores.

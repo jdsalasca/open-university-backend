@@ -40,7 +40,7 @@ class BrandingRepositoryIntegrationTest {
         assertEquals("#FFCC29", configuration.colors().get("primary").hex());
         assertEquals("#1A1A1A", configuration.colors().get("ink").hex());
         assertEquals(List.of(
-                "home", "students", "programs", "curricula", "subjects", "academic-load", "visual-identity"
+                "home", "students", "programs", "curricula", "subjects", "academic-load", "visual-identity", "admissions"
         ), configuration.modules().stream().map(module -> module.key()).toList());
     }
 

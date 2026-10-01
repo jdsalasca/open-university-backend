@@ -175,7 +175,8 @@ class BrandingAdministrationControllerTest {
                     {"key":"curricula","label":"Mallas curriculares","available":false,"visible":false,"order":40},
                     {"key":"subjects","label":"Asignaturas","available":false,"visible":false,"order":50},
                     {"key":"academic-load","label":"Carga académica","available":false,"visible":false,"order":60},
-                    {"key":"visual-identity","label":"Identidad visual","available":true,"visible":true,"order":90}
+                    {"key":"visual-identity","label":"Identidad visual","available":true,"visible":true,"order":90},
+                    {"key":"admissions","label":"Admisiones","available":true,"visible":true,"order":100}
                   ],
                   "banners": []
                 }

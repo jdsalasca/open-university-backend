@@ -6,6 +6,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BrandingConfigurationTest {
 
@@ -37,7 +38,7 @@ class BrandingConfigurationTest {
     void default_catalog_has_stable_keys() {
         // Arrange
         List<String> expectedKeys = List.of(
-                "home", "students", "programs", "curricula", "subjects", "academic-load", "visual-identity"
+                "home", "students", "programs", "curricula", "subjects", "academic-load", "visual-identity", "admissions"
         );
 
         // Act
@@ -46,5 +47,8 @@ class BrandingConfigurationTest {
         // Assert
         assertEquals(expectedKeys, actualKeys);
         assertEquals(actualKeys.size(), actualKeys.stream().distinct().count());
+        assertTrue(BrandModule.defaultCatalog().stream()
+                .filter(module -> module.key().equals("admissions"))
+                .findFirst().orElseThrow().available());
     }
 }
