@@ -114,7 +114,7 @@
 - [x] **Step 1: Write AAA service and MockMvc tests** for initial identity registration, role assignment/revocation, scope and reference validation, audit atomicity, no self-elevation, no lifecycle-role manual assignment, issuer isolation, effective admin permissions, no PII response, 401 without OIDC, 403 without read/write authority, and 409 stale version.
 - [x] **Step 2: Run tests and confirm RED** with missing service/routes or schema.
 - [x] **Step 3: Implement application service, i18n errors, role-aware authority resolution, response records, and explicit SecurityFilterChain matchers**; retain the final `/api/v1/admin/**` deny-all rule.
-- [ ] **Step 4: Run focused tests and the full backend suite**, including MySQL contracts, and confirm GREEN.
+- [x] **Step 4: Run focused tests and the full backend suite**, including MySQL contracts, and confirm GREEN.
 - [x] **Step 5: Commit** the backend access-management vertical slice.
 
 ### Task 4: Frontend access client and contracts
@@ -163,8 +163,8 @@
 - [x] **Step 1: Update C4, data and process diagrams** to show OIDC issuer/subject, role assignments, typed scopes, audit, default-deny bootstrap and the staged permission boundary.
 - [x] **Step 2: Update the roadmap and agent guidance** to distinguish delivered identity/assignment infrastructure from institutional operation and from still-unbuilt admissions, student, teacher, grades, reservations and notification capabilities.
 - [x] **Step 3: Run link/diff checks and inspect both repositories/submodule status.**
-- [ ] **Step 4: Run backend Maven verification with Java 25, MySQL 8.4 contracts, and frontend test/build/lint; inspect Compose health and the actual HTTP/UI response.**
-- [ ] **Step 5: Update the backend submodule pointer to the tested frontend commit, commit the backend docs/pointer, push both `develop` branches, and inspect resulting CI runs.**
+- [x] **Step 4: Run backend Maven verification with Java 25, MySQL 8.4 contracts, and frontend test/build/lint; inspect Compose health and the actual HTTP/UI response.**
+- [x] **Step 5: Update the backend submodule pointer to the tested frontend commit, commit the backend docs/pointer, push both `develop` branches, and inspect resulting CI runs.**
 
 ---
 

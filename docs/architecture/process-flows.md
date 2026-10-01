@@ -88,13 +88,14 @@ La flecha punteada hacia el gate es una dependencia por descubrir, no un estado 
 
 ### Agenda pública de admisiones 2027-I
 
-La ruta `/#admisiones` presenta las fechas de pregrado presencial publicadas por ACRA, la fecha en que se revisó la fuente y enlaces oficiales para confirmar cambios. El contenido se mantiene versionado con la aplicación para que cada actualización tenga revisión y trazabilidad. El calendario no crea postulaciones ni se conecta a PIN, selección, documentos o sistemas académicos; la inscripción se realiza únicamente en el canal oficial que UPTC publique.
+La ruta `/#admisiones` presenta las fechas de pregrado presencial publicadas por ACRA, la fecha en que se revisó la fuente y enlaces oficiales para confirmar cambios. El contenido se mantiene versionado con la aplicación para que cada actualización tenga revisión y trazabilidad. La persona puede descargar una instantánea `.ics` con eventos de día completo, fechas finales inclusivas convertidas al formato iCalendar y la fuente oficial incluida en cada evento. El archivo no se sincroniza después de descargarlo. El calendario no crea postulaciones ni se conecta a PIN, selección, documentos o sistemas académicos; la inscripción se realiza únicamente en el canal oficial que UPTC publique.
 
 ```mermaid
 sequenceDiagram
   actor Aspirante as Persona interesada
   participant UI as React: agenda pública 2027-I
   participant Content as Contenido versionado del frontend
+  participant File as Archivo iCalendar local
   participant ACRA as Portal público ACRA
   participant News as Comunicado institucional UPTC
 
@@ -102,9 +103,14 @@ sequenceDiagram
   UI->>Content: carga convocatoria y fechas revisadas
   Content-->>UI: hitos, fecha de consulta y referencias oficiales
   UI-->>Aspirante: presenta la agenda y advierte que no recibe inscripciones
+  Aspirante->>UI: solicita descargar las fechas oficiales
+  UI->>Content: genera eventos de día completo con la fuente atribuida
+  Content-->>File: crea una instantánea UTF-8 .ics
+  File-->>Aspirante: descarga para el calendario personal
   Aspirante->>ACRA: abre el calendario oficial para confirmar detalles
   Aspirante->>News: consulta el comunicado institucional enlazado
-  Note over UI,Content: No hay captura de datos, llamadas a APIs de admisión ni escrituras en MySQL
+  Note over UI,File: La descarga no consulta APIs ni contiene datos personales
+  Note over UI,Content: No hay captura de datos ni escrituras en MySQL
 ```
 
 La fuente ACRA se marcaba como actualizada el 15 de septiembre de 2026 y se consultó el 1 de octubre de 2026; cualquier modificación posterior debe reflejarse en el contenido y en su fecha de consulta. La [página oficial de aspirantes](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/) es la referencia operativa y el [comunicado institucional 240](https://dsp.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-abre-inscripciones-para-estudiar-un-pregrado-presencial-a-distancia-o-virtual-el-proximo-semestre/) sirve como confirmación pública de apertura y fechas principales.
