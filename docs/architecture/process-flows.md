@@ -251,7 +251,7 @@ sequenceDiagram
   DB-->>API: raíces por orden de nodo; hijos por orden de relación; programas por orden de afiliación
 ```
 
-Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo o un lugar raíz tras elegir explícitamente su tipo; ninguno crea una jerarquía, una afiliación ni carga datos oficiales. Tanto los formularios como los editores requieren autorización de escritura. Las operaciones envían una referencia institucional; el backend audita cada alta/cambio y, tras un alta, la pantalla vuelve a consultar el árbol.
+Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo, un lugar raíz con tipo explícito y relaciones fechadas entre unidades o lugares existentes; las altas raíz no crean jerarquía/afiliación y los vínculos no asignan programas. No carga datos oficiales. Formularios y editores requieren autorización de escritura. Las operaciones envían una referencia institucional; el backend audita cada alta/cambio y, tras un alta o una relación, la pantalla vuelve a consultar el árbol.
 
 ### Alta protegida de una facultad raíz
 
@@ -349,6 +349,59 @@ sequenceDiagram
 ```
 
 El tipo elegido se valida contra los seis valores del contrato (`CENTRAL`, `SECCIONAL`, `REGIONAL`, `CREAD`, `CAMPUS`, `OTHER`); son categorías técnicas, no un catálogo oficial de sedes aprobado por UPTC. La creación no establece padre ni vincula programas. Un fallo al releer después de `201` se comunica como alta aceptada con actualización visual pendiente; no se repite el comando automáticamente.
+
+### Crear una relación jerárquica fechada
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia
+  participant Identity as API de identidad
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Structure as AcademicStructureService
+  participant DB as MySQL
+
+  Operator->>UI: selecciona unidad/lugar superior e inferior, orden, vigencia y referencia
+  UI->>UI: bloquea pares idénticos; exige dos entidades existentes
+  UI->>Identity: GET /api/v1/me
+  Identity-->>UI: permiso academic:structure:write
+  UI->>API: POST /units/{parentId}/children/{childId} o /sites/{parentId}/children/{childId}
+  API->>Auth: autentica y exige academic:structure:write
+  alt sesión o permiso rechazado
+    API-->>UI: 401 o 403
+    UI->>Identity: revalida GET /api/v1/me y suspende este token para escritura
+    UI-->>Operator: conserva el mensaje y revalida acceso antes de continuar
+  else permiso autorizado
+    Auth-->>API: sujeto y permiso autorizados
+    API->>Structure: solicita relación fechada con referencia
+    Structure->>DB: bloquea cambios estructurales y comprueba vigencia activa
+    Structure->>Structure: valida contención temporal, padre único y ausencia de ciclos
+    alt ciclo, padre concurrente o conflicto de vigencia
+      Structure-->>API: 409; no inserta relación ni auditoría parcial
+      API-->>UI: error de validación o conflicto
+      UI->>API: GET /api/v1/academic-structure para actualizar el árbol
+      API-->>UI: estructura autoritativa
+      UI-->>Operator: informa del conflicto y exige revisar antes de reintentar
+    else entidad ausente o intervalo inválido
+      Structure-->>API: 404 o 400; no inserta relación ni auditoría
+      API-->>UI: error localizado
+      UI-->>Operator: conserva los datos e informa qué debe revisar
+    else relación válida
+      Structure->>DB: inserta relación y evento UNIT_RELATED o SITE_RELATED
+      DB-->>Structure: commit atómico
+      Structure-->>API: relación registrada
+      API-->>UI: 201 sin cuerpo
+      UI->>API: GET /api/v1/academic-structure
+      API->>DB: consulta árbol vigente y ordenado
+      DB-->>API: jerarquía actualizada
+      API-->>UI: estructura autoritativa
+      UI-->>Operator: presenta el árbol guardado
+    end
+  end
+```
+
+La interfaz no propone una afiliación de programa con este formulario. El servicio valida ambas entidades y sus vigencias bajo bloqueo, rechaza ciclos y padres simultáneos incompatibles, y guarda relación/auditoría en la misma transacción. El catálogo oficial, la jerarquía aprobada y los permisos de escritura continúan pendientes de validación institucional.
 
 ### Corrección de prioridad organizacional
 
