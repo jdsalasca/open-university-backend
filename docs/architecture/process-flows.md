@@ -280,7 +280,36 @@ sequenceDiagram
   end
 ```
 
-La ruta no edita afiliaciones si el programa/unidad/sede no coincide y solo cambia metadatos de prioridad; un reordenamiento no reasigna unidades o lugares. La referencia se conserva junto con el actor y los valores anterior/nuevo. El resumen identifica también la pareja padre/hijo de una relación o el ID de la afiliación de programa, evitando eventos ambiguos cuando existen vínculos históricos. Las rutas están en la allowlist de `PATCH` y requieren permiso de escritura. La interfaz React todavía no expone estas cinco operaciones hasta completar controles de orden con confirmación y referencia.
+La ruta no edita afiliaciones si el programa/unidad/sede no coincide y solo cambia metadatos de prioridad; un reordenamiento no reasigna unidades o lugares. La referencia se conserva junto con el actor y los valores anterior/nuevo. El resumen identifica también la pareja padre/hijo de una relación o el ID de la afiliación de programa, evitando eventos ambiguos cuando existen vínculos históricos. Las rutas están en la allowlist de `PATCH` y requieren permiso de escritura.
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia
+  participant Identity as API de identidad
+  participant API as Spring Boot: Academic Structure API
+  participant DB as MySQL
+  Operator->>UI: abre editor y propone nuevo orden con referencia institucional
+  UI->>Identity: GET /api/v1/me con Bearer
+  Identity-->>UI: academic:structure:write
+  UI->>API: PATCH de un solo nodo, relación o afiliación con Bearer
+  API->>API: valida permiso, valor esperado y referencia
+  API->>DB: actualiza prioridad y auditoría atómicamente
+  alt guardado válido
+    DB-->>API: commit
+    API-->>UI: 204
+    UI->>API: GET /api/v1/academic-structure
+    API->>DB: lee el árbol vigente ordenado
+    DB-->>API: estructura vigente
+    API-->>UI: árbol guardado
+  else edición concurrente
+    API-->>UI: 409
+    UI->>API: vuelve a consultar el árbol vigente
+    UI-->>Operator: pide revisar la prioridad antes de otro intento
+  end
+```
+
+La interfaz no modifica el árbol de forma optimista. Un fallo al releer después de 204 se informa como escritura aceptada con vista pendiente de recarga; sin permiso de escritura las acciones no aparecen. La recarga del conflicto no repite el comando ni reemplaza la prioridad por una estimación local.
 
 ```mermaid
 sequenceDiagram

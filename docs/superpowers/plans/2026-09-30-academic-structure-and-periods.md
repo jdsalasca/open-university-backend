@@ -147,6 +147,6 @@ Resultado de revisión: no se encontraron defectos críticos ni funcionales en l
 
 ## Continuación necesaria antes de operar estructura oficial
 
-- Añadir comandos auditables para cerrar y corregir relaciones/afiliaciones vigentes y para cambiar el orden de unidades, sedes y programas ya creados.
-- Añadir formularios administrativos solo después de conectar OIDC y confirmar los grupos/permisos UPTC.
+- Añadir comandos auditables para cerrar y corregir relaciones/afiliaciones vigentes y formularios protegidos para altas/bajas de unidades, sedes y adscripciones. La corrección auditada del orden ya cuenta con API e interfaz numérica de un elemento por vez; requiere conectar OIDC autorizado para habilitarla en la máquina.
+- Añadir los formularios restantes solo después de conectar OIDC y confirmar los grupos/permisos UPTC.
 - No cargar el maestro oficial ni editar estas tablas directamente mientras esos comandos no existan.

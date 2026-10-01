@@ -1,6 +1,6 @@
 # Mantenimiento auditable del orden académico
 
-**Estado:** aprobado para implementación local por la autorización continua de trabajo del proyecto.
+**Estado:** implementación local; OIDC institucional sigue pendiente.
 **Alcance:** corregir prioridades visibles de unidades, lugares, relaciones y adscripciones a programas con autorización del backend.
 
 ## Problema y resultado
@@ -18,11 +18,14 @@ El incremento añade comandos explícitos para cambiar cada prioridad. Cada coma
 - Usar el bloqueo transaccional de estructura existente más una comparación condicional con el valor esperado. Una repetición que ya encuentra el orden solicitado es idempotente y no agrega otra auditoría.
 - Registrar el actor, referencia y transición `orden anterior → orden nuevo` en el evento existente. Para relaciones y afiliaciones, incluir además los identificadores de ambos extremos o de la afiliación para que el evento no sea ambiguo. Añadir claves de auditoría permitidas mediante una migración Flyway aditiva.
 - Mantener las mutaciones bajo `academic:structure:write`; un permiso de lectura, un método HTTP no registrado o una sesión ausente no pueden cambiar el orden.
+- En React, mostrar el control de edición solo cuando `/api/v1/me` otorgue `academic:structure:write`. Editar una prioridad numérica por comando, pedir una referencia institucional, enviar el orden observado como `expectedDisplayOrder` y no actualizar optimistamente el árbol.
+- Tras una respuesta aceptada, volver a consultar la estructura para reflejar el valor persistido. Ante 409, consultar el valor vigente y pedir al operador que revise antes de repetir; ante error de recarga, no presentar la vista anterior como actual.
+- No añadir movimientos en lote ni intercambios de varias posiciones; cada elemento o relación usa su ruta y transacción auditada existente.
 - Mantener `/#academia` en consulta mientras SSO y los grupos/permisos UPTC no estén configurados. No sembrar datos institucionales.
 
 ## Fuera de alcance
 
-Cierre/reasignación de relaciones, carga del maestro oficial, interfaz de administración, configuración OIDC, periodos y apertura de grupos. Estas capacidades necesitan su propio contrato y validación funcional.
+Cierre/reasignación de relaciones, altas/bajas de maestros, carga del maestro oficial, configuración OIDC, periodos y apertura de grupos. Estas capacidades necesitan su propio contrato y validación funcional.
 
 ## Aceptación
 
@@ -30,4 +33,5 @@ Cierre/reasignación de relaciones, carga del maestro oficial, interfaz de admin
 2. Una referencia obligatoria, orden fuera de rango, entidad ausente, registro inactivo, cambio concurrente o permiso insuficiente no deja datos ni auditoría parcial.
 3. Cada cambio aceptado deja una auditoría con actor, tipo e identificador concreto del elemento o vínculo, referencia y valores anterior/nuevo; un reintento idéntico no duplica el evento.
 4. Flyway conserva los catálogos existentes y no inserta datos oficiales.
-5. Las pruebas usan datos sintéticos y AAA; la vista web permanece de solo lectura.
+5. La interfaz ofrece controles solo a usuarios autorizados, exige una referencia, recarga después de escribir y refresca al detectar 409; sin OIDC los controles siguen ocultos.
+6. Las pruebas usan datos sintéticos y AAA; la vista no simula datos ni permisos institucionales.
