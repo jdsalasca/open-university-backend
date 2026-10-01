@@ -131,9 +131,9 @@ Run desde `backend/`: `& ..\tools\use-sdkman-java.ps1; .\mvnw.cmd '-Dspring.main
 
 Expected/results: `npm test` 24 archivos/231 pruebas + 4 checks de presupuesto pasan; `npm run build`, `npm run lint` y el Maven full suite salen 0. Maven reporta 228 pruebas, 0 fallos, 0 errores y 8 contratos MySQL opt-in omitidos; el benchmark queda diferido por prioridad del usuario. Compose MySQL 8.4 está healthy; `GET /api/v1/spaces` devuelve 21 registros, branding ofrece nueve módulos y `http://localhost:5173/#espacios` muestra búsqueda y las 21 fichas.
 
-- [x] **Step 6 (frontend): Commit** `feat(spaces): add public searchable space guide` (`08b7884`). El gitlink y commit documental/backend quedan para cerrar tras la revisión.
-- [ ] **Step 7: Revisar CI de ambos repositorios y preservar los archivos no relacionados sin stagear.**
+- [x] **Step 6: Integrar ambos repositorios**. Frontend `feat(spaces): add public searchable space guide` (`08b7884`); backend/documentación `feat(spaces): document guide and sync frontend` (`0a86767`) actualiza el gitlink.
+- [x] **Step 7: Revisar CI de ambos repositorios y preservar los archivos no relacionados sin stagear.** CI pasó en [frontend](https://github.com/jdsalasca/Universiry-frontend/actions/runs/36893267441) y [backend](https://github.com/jdsalasca/Universiry-backend/actions/runs/36893280564), ambos para los HEAD publicados en `develop`. Permanecen sin stagear los archivos preexistentes `backend/time,uptime,level,tags`, `backend/time,uptime,level,tags.0` y `output/`.
 
 ## Verificación final
 
-Comparar cada requisito de la especificación con su prueba o artefacto; revisar `git diff --check` en ambos repositorios, estado de Compose, SHA local/remoto de `develop`, gitlink y workflows. No declarar inventario completo, orientación accesible, rutas interiores ni datos vigentes más allá de las fechas/fuentes registradas.
+Comparar cada requisito de la especificación con su prueba o artefacto; revisar `git diff --check` en ambos repositorios, estado de Compose, SHA local/remoto de `develop`, gitlink y workflows. Se verificó: `git diff --check` limpio antes de integrar; ambos `develop` locales coinciden con `origin/develop`; gitlink `frontend` apunta a `08b7884`; tres servicios Compose siguen arriba y MySQL healthy; ambos workflows terminaron en verde. La revisión final fue auto-revisión del implementador porque no se pueden invocar agentes en este turno. No declarar inventario completo, orientación accesible, rutas interiores ni datos vigentes más allá de las fechas/fuentes registradas.
