@@ -142,6 +142,7 @@ Resultado de revisión: no se encontraron defectos críticos ni funcionales en l
 - [x] Agregar primero una regresión que reproduce cómo un cierre basado en lectura obsoleta restauraba una revisión de calendario anterior; comprobar el fallo en el adaptador JDBC.
 - [x] Hacer que cada transición compare estado y revisión activa observados bajo bloqueo; una orden obsoleta responde conflicto sin revertir la revisión ni insertar auditoría de cierre.
 - [x] Repetir el contrato contra H2 y MySQL 8.4 desechable; conservar el periodo abierto, la revisión nueva activa y cero eventos de cierre tras el conflicto.
+- [x] Actualizar el cliente React para refrescar el calendario después de `409`, descartar la confirmación obsoleta y revalidar identidad ante `401/403`; cubrir los casos con pruebas AAA.
 - [x] Actualizar el diagrama de flujo y el modelo de datos para describir el resultado de la concurrencia obsoleta.
 
 ## Verificación final esperada
