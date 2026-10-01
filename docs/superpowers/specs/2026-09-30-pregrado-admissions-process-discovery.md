@@ -1,6 +1,7 @@
 # Inscripción y selección de aspirantes — descubrimiento inicial
 
-**Corte de fuentes públicas:** 30 de septiembre de 2026<br>
+**Fuentes normativas y de calendario:** consultadas al 30 de septiembre de 2026<br>
+**Fuentes de sistema y gobierno de datos:** revisión complementaria del 1 de octubre de 2026<br>
 **Estado:** investigación normativa pública ampliada; reglas y contratos aún no aprobados por los responsables institucionales<br>
 **Ruta:** pregrado presencial<br>
 **Datos personales:** ninguno; no se capturan ni se copian aspirantes reales
@@ -12,6 +13,15 @@
 El patrocinador priorizó el subproceso de **inscripción y selección de aspirantes de pregrado presencial**. Este documento registra los actos oficiales y las instrucciones públicas consultadas para preparar la validación con ACRA, Secretaría General, Jurídica y los programas académicos. No es una interpretación jurídica aprobada ni autoriza reemplazar SIRA, procesar aspirantes reales o publicar una decisión automática.
 
 La convocatoria 2027-I ya está en curso: la venta de PIN comenzó el 21 de septiembre de 2026, la inscripción cierra el 23 de octubre y los resultados están previstos para el 13 de noviembre. Por calendario y por las aprobaciones faltantes, esta convocatoria sirve como evidencia de descubrimiento; no se asume como cohorte objetivo de reemplazo.
+
+## Hallazgos complementarios de sistemas y gobierno de datos
+
+- Boletines de Vicerrectoría Académica de enero y mayo de 2025 describen una actualización de SIRA con liderazgo técnico de DTIC, trabajo de Transformación Curricular y una comisión académica. El alcance publicado incluye migración de datos, PAE, planes de estudio, prerrequisitos, créditos de libre elección, oferta/programación de cursos, horarios y selección de cursos ([enero](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/vic_aca/vic_acad/inf/doc/2025/001_bolvicacad_2025.pdf), [mayo](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/vic_aca/vic_acad/inf/doc/2025/005_bolvicaca_2025.pdf)). No confirman qué se desplegó después de 2025. DTIC y Vicerrectoría Académica deben precisar estado, arquitectura, fuentes autoritativas e interfaces antes de diseñar un catálogo paralelo o una sustitución.
+- Una noticia de UPTC de 2023 describió la aplicación móvil SIRA y accesos a Web Estudiante, Web Docente y Mesa de Servicio, con consultas, calificaciones, horarios e información académica ([noticia institucional](https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/Aplicaciones-de-la-UPTC-ahora-disponibles-en-Google-Play/)). Un informe público de acreditación de Ingeniería Civil también atribuye a SIRA la consulta de registro académico del programa ([informe institucional](https://www.uptc.edu.co/export/sites/default/facultades/f_ingenieria/pregrado/civil/documentos/DOCUMENTO_VS5.pdf)). Son descripciones institucionales con fecha y alcance propios, no una verificación del inventario de 2026 ni de todas las facultades.
+- El portal público de ACRA separa rutas de aspirante (pregrado, posgrado y transferencia) y estudiante (pregrado y posgrado); su página de aspirante publica el calendario 2027-I ([ACRA](https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/index.html), [pregrado](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/)). La navegación pública no acredita el modelo interno de identidades, el ciclo de conversión aspirante-estudiante ni las APIs de SIRA.
+- El aviso visible en el formulario público de inscripción declara tratamiento de datos personales, sociales y académicos para admisión y posterior Registro Académico y remite a la Resolución 3842 de 2013 ([aviso de privacidad](https://registro.uptc.edu.co/valida_entrada.jsp?tipoUsuarioInscripcion=1), [resolución](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/cam_virt/por_dig/.content/docs/Resolucion_3842_2013.pdf)). La página pública de DTIC lista además la Resolución 1372 de 2023 sobre el Oficial de Protección de Datos Personales y la Resolución 4529 de 2023 sobre roles de seguridad ([DTIC: normatividad](https://uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/02_presentacion.html)). No se deriva de esos textos un conjunto de campos aprobado: Jurídica, Oficial de Protección de Datos, ACRA, Registro Académico y DTIC deben confirmar política vigente, finalidades, responsable/encargado, retención, población menor de edad, accesos y contratos antes de capturar datos.
+
+**Implicación de gobierno:** el patrocinador sugiere ACRA y Registro Académico para validar proceso y datos del ciclo del estudiante. Esto no determina por sí mismo quién es dueño funcional de cada dominio, custodio técnico, operador de SIRA ni responsable del tratamiento. Las fuentes de 2025 atribuyen a DTIC el liderazgo técnico de la actualización y a Vicerrectoría Académica/una comisión la coordinación curricular; sus responsabilidades actuales deben confirmarse. No se agregan campos, datos de muestra personales ni conexiones a SIRA/ICFES.
 
 ## Fuentes oficiales localizadas
 
@@ -124,7 +134,7 @@ flowchart LR
   Aptitude[Pruebas adicionales/aptitud<br/>según programa y convocatoria]
   Disability[Examen médico / lengua de señas<br/>según condición y calendario]
   Correct[Revisión de datos errados<br/>y actuaciones hasta 10 nov]
-  SIRA[Proceso de admisión SIRA<br/>11–12 nov]
+  SIRA[Proceso de admisión SIRA<br/>11–12 nov; estado actual por validar]
   Rank[Aplicar ponderación Saber 11<br/>y cupos aprobados; aptitud aprobada cuando aplica]
   First[Admitir primera opción<br/>por orden/reglas vigentes]
   Second[Opcionados a segunda opción<br/>si no admitido en primera y hay cupos]
@@ -147,9 +157,11 @@ flowchart LR
   Results --> ISE --> Tuition
   Results --> Special2 --> Calls --> ISE
   Open -. define controles previos .-> SIRA
+  Renewal[Actualización SIRA reportada por UPTC en 2025<br/>productos y estado actuales por confirmar]
+  Renewal -. alinear antes de sustituir .-> Open
 ```
 
-## Decisiones que siguen abiertas para ACRA, Jurídica y Secretaría General
+## Decisiones que siguen abiertas para ACRA, Registro Académico, DTIC, Jurídica, Secretaría General y privacidad
 
 | Tema | Lo que ya se encontró | Confirmación requerida |
 |---|---|---|
@@ -161,7 +173,7 @@ flowchart LR
 | Gratuidad del derecho de inscripción | Ley 2367/2024 y Decreto 0617/2026 regulan un beneficio progresivo y financiado, con validación/asignación MEN y reglamento operativo. ACRA publica venta de PIN para 2027-I. | Confirmar aplicabilidad a UPTC/2027-I, grupos y recursos asignados, reglamento vigente, elegibilidad y evidencia mínima, canal de consulta, momento de aplicación al PIN, conciliación/reintegro y responsables; segregar datos socioeconómicos del motor de selección. |
 | Errores/recursos | Resolución 111 establece verificación/anulación hasta 10 nov.; portal advierte coincidencia de nombres y SNP con ICFES. | Quién corrige/anula, causales, validación humana, aviso, recursos, reinstalación y trazabilidad. |
 | Exámenes antiguos/extranjeros | Acuerdo 61/2000, Resoluciones 19/2014 y 28/2014 contemplan equivalencias y casos externos. | Qué tipos/años de pruebas acepta la convocatoria actual, equivalencias vigentes y autoridad que resuelve. |
-| Sistemas y datos | Resolución 111 menciona proceso SIRA y verificación por ICFES. | Sistema maestro actual, APIs/autorizaciones, contrato mínimo, identificadores, conciliación, continuidad y tiempos de respuesta. |
+| Sistemas, actualización SIRA y datos | Resolución 111 menciona proceso SIRA y verificación por ICFES. Boletines UPTC de 2025 describen actualización SIRA con migración de datos y alcance de PAE/planes/oferta/horarios. | DTIC y Vicerrectoría Académica entregan estado, alcance, arquitectura y productos vigentes; ACRA/Registro/DTIC identifican sistema maestro actual, dueños funcionales y custodios técnicos, APIs/autorizaciones, contrato mínimo, identificadores, conciliación, continuidad y tiempos de respuesta. |
 | Resolución 111 | Título/artículo primero dicen primer semestre 2027; un considerando dice segundo semestre 2026. | Confirmar fe de erratas o interpretación formal y orden exacto de la asignación especial frente a la ventana de opcionados que se solapa. |
 
 ## Diseño técnico propuesto, sujeto a gates

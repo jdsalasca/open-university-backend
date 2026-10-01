@@ -48,7 +48,7 @@ Si una validación o persistencia falla, no se publica una versión parcial. El 
 
 ## Pregrado presencial y gate de descubrimiento
 
-El alcance de descubrimiento priorizado es pregrado presencial. El catálogo público de trámites del estudiante (registro de asignaturas, renovación, aplazamiento, cancelación, reingreso, transferencia y grado) sigue siendo un inventario, no una secuencia universal. Para admisiones se localizó la cadena pública Acuerdo 130/1998 → Acuerdo 053/2008 (dos opciones y pruebas adicionales) → Resoluciones 19 y 28/2014 (Saber 11, ponderación, equivalencias y llamados), junto con Acuerdo 015/2021, Resolución 2941/2021 y modificación 5362/2025 para cupos especiales. El Acuerdo 031/2021 deroga el artículo 17 del Acuerdo 130; el Acuerdo 015/2021 deroga expresamente los Acuerdos 017/2001 y 120/2006. El proceso técnico permanece futuro hasta que ACRA, Jurídica y Secretaría General validen la matriz consolidada, operación, contratos y datos.
+El alcance de descubrimiento priorizado es pregrado presencial. El catálogo público de trámites del estudiante (registro de asignaturas, renovación, aplazamiento, cancelación, reingreso, transferencia y grado) sigue siendo un inventario, no una secuencia universal. Para admisiones se localizó la cadena pública Acuerdo 130/1998 → Acuerdo 053/2008 (dos opciones y pruebas adicionales) → Resoluciones 19 y 28/2014 (Saber 11, ponderación, equivalencias y llamados), junto con Acuerdo 015/2021, Resolución 2941/2021 y modificación 5362/2025 para cupos especiales. El Acuerdo 031/2021 deroga el artículo 17 del Acuerdo 130; el Acuerdo 015/2021 deroga expresamente los Acuerdos 017/2001 y 120/2006. Boletines UPTC de enero y mayo de 2025 describen una actualización SIRA con migración de datos y alcance en PAE, planes, oferta y horarios; no establecen qué quedó desplegado en 2026. DTIC y Vicerrectoría Académica deben confirmar esos productos, fuentes maestras y la división entre dueño funcional y custodio técnico antes de diseñar sustitución o integración. El proceso técnico permanece futuro hasta que ACRA, Jurídica, Secretaría General, Registro Académico y DTIC validen la matriz consolidada, operación, contratos y datos.
 
 ```mermaid
 flowchart LR
@@ -97,7 +97,7 @@ flowchart LR
   Aptitude[Prueba adicional/aptitud<br/>según programa y convocatoria]
   Support[Examen médico/discapacidad<br/>y lengua de señas<br/>según calendario]
   Correction[Revisar errores y actuaciones<br/>hasta 10 nov]
-  SIRA[Proceso de admisión SIRA<br/>11–12 nov]
+  SIRA[Proceso de admisión SIRA<br/>11–12 nov; estado actual por validar]
   Rank[Aplicar ponderación Saber 11<br/>y reglas/cupos versionados;<br/>aprobar prueba adicional si aplica]
   First[Selección de primera opción]
   RegularSecond[Lista de opcionados a segunda opción<br/>si no admitido en primera y hay cupo]
@@ -123,6 +123,8 @@ flowchart LR
   Register -. vía diferenciada publicada .-> Normalista
   Normalista -. no integrar a selección ordinaria sin validación .-> Gate
   Gate -. define antes de automatizar .-> SIRA
+  Renewal[Actualización SIRA reportada por UPTC en 2025<br/>productos y estado actuales por confirmar]
+  Renewal -. alinear antes de sustituir .-> Gate
 ```
 
 El [Acuerdo 053 de 2008](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/11) resuelve la antigua diferencia del artículo 14 sin modificar: permite primera y segunda opción. El [simulador y tabla que ACRA enlaza actualmente](https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pas/asp_simpunt.html) se basan en Saber 11; las [Resoluciones 19 y 28 de 2014](https://www.uptc.edu.co/secretaria_general/consejo_academico/resoluciones_2014/index.html) también describen pruebas adicionales, empates, equivalencias y tres llamados. La relación exacta de esos llamados con el calendario 2027-I se confirma con ACRA.

@@ -4,7 +4,7 @@
 **Propósito:** recopilar decisiones, normas, fuentes de datos, permisos y criterios de aceptación antes de implementar admisión, matrícula o expediente estudiantil.<br>
 **Datos:** no copiar documentos, nombres, identificadores ni expedientes reales a este archivo o al entorno de desarrollo.
 
-**Áreas propuestas por el patrocinador (30 de septiembre de 2026):** ACRA y Registro Académico para validar la fuente maestra y los campos del expediente estudiantil. No hay designación nominativa, reparto formal de autoridad ni sistema fuente confirmado.
+**Áreas funcionales sugeridas por el patrocinador (1 de octubre de 2026):** ACRA y Registro Académico para validar el proceso, la fuente funcional y los campos del expediente estudiantil. La sugerencia no es una designación institucional: no hay reparto formal de autoridad ni sistema fuente confirmado. DTIC y Vicerrectoría Académica deben validar los productos y estado actual de la actualización SIRA; los boletines públicos de 2025 describen trabajo curricular, pero no confirman su despliegue en 2026. Ver [fuentes y límites](student-lifecycle-baseline.md#sira-y-gobierno-de-los-sistemas).
 
 La ruta priorizada es pregrado presencial. Las páginas públicas de ACRA ayudan a preparar la mesa, pero no prueban la secuencia interna de procesos ni sustituyen una decisión de la autoridad normativa. Ver [descubrimiento y fuentes públicas](student-lifecycle-baseline.md).
 
@@ -15,8 +15,9 @@ La ruta priorizada es pregrado presencial. Las páginas públicas de ACRA ayudan
 | Patrocinador institucional |  |  |  |  |
 | Dueño del proceso ACRA |  |  |  |  |
 | Autoridad normativa |  |  |  |  |
-| Dueño de los datos de aspirantes/estudiantes | ACRA y Registro Académico (propuestos conjuntamente por el patrocinador; reparto por validar) | Validar fuente maestra y campos mínimos; no constituye autorización de tratamiento | Respuesta del patrocinador, 30 sep. 2026; designación institucional pendiente | 30 sep. 2026 |
-| Responsable del sistema fuente | Por confirmar con ACRA, Registro Académico y DTIC | Identificar la aplicación autoritativa por entidad y contrato, incluida la función actual de SIRA | Pendiente de validación institucional | 30 sep. 2026 |
+| Dueños funcionales/datos de aspirantes y estudiantes | ACRA y Registro Académico (sugeridos por el patrocinador; reparto por validar) | Validar proceso, fuente funcional y campos mínimos; no constituye autorización de tratamiento | Respuesta del patrocinador, 1 oct. 2026; designación institucional pendiente | 1 oct. 2026 |
+| Custodio técnico del sistema fuente | DTIC; alcance y roles actuales por confirmar con Vicerrectoría Académica, ACRA y Registro Académico | Inventariar sistema, entidad, interfaz, contrato y estado vigente; confirmar qué productos de actualización SIRA están desplegados | Pendiente de validación institucional; boletines UPTC de enero y mayo de 2025 documentan trabajo planificado/en curso | 1 oct. 2026 |
+| Oficial de Protección de Datos Personales | Designación/competencia por confirmar | Validar finalidad, campos, tratamiento de menores, intercambio, retención y derechos del titular | Resoluciones publicadas por DTIC; aplicación al proyecto y vigencia por validar | 1 oct. 2026 |
 | Seguridad e identidad institucional |  |  |  |  |
 | Gestión documental y retención |  |  |  |  |
 | Programa/facultad piloto |  |  |  |  |
