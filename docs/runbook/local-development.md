@@ -86,6 +86,10 @@ $response.Dispose(); $content.Dispose(); $form.Dispose(); $http.Dispose()
 
 La plantilla solo declara el contrato de columnas; no contiene oferta académica. Una solicitud autenticada con `academic:catalog:write` sigue requiriendo datos completos válidos y nunca convierte este entorno en un sistema institucional autorizado. Las variables de importación `ACADEMIC_CATALOG_IMPORT_MAX_FILE_BYTES` y `ACADEMIC_CATALOG_IMPORT_MAX_ROWS`, definidas en `.env`, pueden ajustar límites hacia abajo, sin superar los máximos del dominio (2 MiB/10 000 filas); el arranque valida estos topes.
 
+### Carga por pantalla React
+
+`npm run build` muestra tamaño bruto y gzip por artefacto. El entry de Vite y el CSS compartido se descargan con la SPA; cada pantalla carga su propio JS/CSS al abrir la ruta correspondiente. En el build local del 30 de septiembre de 2026, el recorrido frío de `/#programas` compone 357,81 kB JS y 41,46 kB CSS sin comprimir (gzip informado por Vite: 104,40 kB JS y 9,87 kB CSS, sumando cada archivo descargado). El bundle único previo medía 401.132 B JS y 72.365 B CSS brutos, una reducción combinada de 15,7 % para esa ruta. Los archivos por pantalla pesan: catálogo 29,58 kB JS/22,18 kB CSS; estructura y periodos 21,67/14,26 kB; centro de identidad 24,81/17,17 kB. Estas cifras describen artefactos locales, no tiempos del navegador, transferencia real del servidor, LCP ni un SLO institucional.
+
 ### Contrato y perfil MySQL de paginación curricular
 
 Desde la raíz del repositorio backend puedes repetir el perfil local:
