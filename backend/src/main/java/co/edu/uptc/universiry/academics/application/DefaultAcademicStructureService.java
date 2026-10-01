@@ -107,6 +107,14 @@ public class DefaultAcademicStructureService implements AcademicStructureService
     }
 
     @Override
+    public void closeProgramAffiliation(UUID programId, UUID affiliationId,
+                                        AcademicStructureRelationCloseCommand command, String actorSub) {
+        String actor = AcademicCatalogActorSub.require(actorSub);
+        repository.closeProgramAffiliation(programId, affiliationId, command, actor,
+                requiredReference(command.sourceReference()));
+    }
+
+    @Override
     public void changeOrganizationUnitOrder(UUID unitId, AcademicDisplayOrderCommand command, String actorSub) {
         repository.changeOrganizationUnitOrder(unitId, command, AcademicCatalogActorSub.require(actorSub));
     }

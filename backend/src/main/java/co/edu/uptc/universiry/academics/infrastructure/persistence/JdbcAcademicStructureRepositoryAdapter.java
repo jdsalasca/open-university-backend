@@ -251,6 +251,14 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
         closeRelation(RelationKind.SITE, parentId, childId, command, actorSub, sourceReference);
     }
 
+    @Override
+    @Transactional
+    public void closeProgramAffiliation(UUID programId, UUID affiliationId,
+                                       AcademicStructureRelationCloseCommand command,
+                                       String actorSub, String sourceReference) {
+        closeRelation(RelationKind.PROGRAM_AFFILIATION, programId, affiliationId, command, actorSub, sourceReference);
+    }
+
     private void closeRelation(RelationKind kind, UUID parentId, UUID childId,
                                AcademicStructureRelationCloseCommand command,
                                String actorSub, String sourceReference) {
@@ -597,7 +605,9 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
         ORGANIZATION("academic_organization_relation", "parent_unit_id", "child_unit_id", "UNIT_RELATION_CLOSED",
                 "Organization unit relation"),
         SITE("academic_site_relation", "parent_site_id", "child_site_id", "SITE_RELATION_CLOSED",
-                "Academic site relation");
+                "Academic site relation"),
+        PROGRAM_AFFILIATION("academic_program_affiliation", "program_id", "affiliation_id",
+                "PROGRAM_AFFILIATION_CLOSED", "Academic program affiliation");
 
         private final String table;
         private final String parentColumn;

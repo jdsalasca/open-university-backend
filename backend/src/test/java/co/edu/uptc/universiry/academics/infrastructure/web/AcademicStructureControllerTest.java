@@ -805,6 +805,110 @@ class AcademicStructureControllerTest {
     }
 
     @Test
+    void authorized_operator_can_close_one_dated_program_affiliation_without_deleting_its_records() throws Exception {
+        // Arrange
+        UUID unitId = createUnit("FAC-CLOSE-AFFILIATION", "FACULTY", "Facultad de cierre", 1);
+        UUID siteId = createSite("SITE-CLOSE-AFFILIATION", "REGIONAL", "Sede de cierre", 1);
+        UUID programId = UUID.randomUUID();
+        jdbcTemplate.update("""
+                INSERT INTO academic_program
+                    (program_id, program_code, academic_level, study_modality, campus_code, created_at)
+                VALUES (?, 'PROG-CLOSE-AFFILIATION', 'PREGRADO', 'PRESENCIAL', 'SITE-CLOSE-AFFILIATION', CURRENT_TIMESTAMP)
+                """, programId.toString());
+        mockMvc.perform(post("/api/v1/admin/academic-structure/programs/{programId}/affiliations", programId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"organizationUnitId\":\"" + unitId + "\",\"siteId\":\"" + siteId
+                                + "\",\"displayOrder\":3,\"validFrom\":\"2027-01-01\",\"validThrough\":null,"
+                                + "\"sourceReference\":\"Resolución de adscripción simulada\"}"))
+                .andExpect(status().isCreated());
+        UUID affiliationId = UUID.fromString(jdbcTemplate.queryForObject(
+                "SELECT affiliation_id FROM academic_program_affiliation WHERE program_id = ?",
+                String.class, programId.toString()));
+        String reference = "Acta simulada de cierre de adscripción";
+        String request = "{\"validFrom\":\"2027-01-01\",\"effectiveThrough\":\"2027-06-30\","
+                + "\"sourceReference\":\"" + reference + "\"}";
+
+        // Act
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/close",
+                        programId, affiliationId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/close",
+                        programId, affiliationId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNoContent());
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_program_affiliation
+                WHERE affiliation_id = ? AND program_id = ? AND organization_unit_id = ? AND site_id = ?
+                  AND valid_from = '2027-01-01' AND valid_through = '2027-06-30'
+                """, Integer.class, affiliationId.toString(), programId.toString(), unitId.toString(), siteId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program WHERE program_id = ?", Integer.class, programId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = 'PROGRAM_AFFILIATION_CLOSED'
+                  AND actor_sub = 'structure.operator' AND source_reference = ?
+                """, Integer.class, affiliationId.toString(), reference));
+        mockMvc.perform(get("/api/v1/admin/academic-structure")
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.programAffiliations[0].id").value(affiliationId.toString()))
+                .andExpect(jsonPath("$.programAffiliations[0].validThrough").value("2027-06-30"));
+    }
+
+    @Test
+    void program_affiliation_close_cannot_extend_a_finite_interval_or_create_partial_audit() throws Exception {
+        // Arrange
+        UUID unitId = createUnit("FAC-CLOSE-AFF-EXT", "FACULTY", "Facultad para extensión", 1);
+        UUID siteId = createSite("SITE-CLOSE-AFF-EXT", "REGIONAL", "Sede para extensión", 1);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-CLOSE-AFF-EXT", unitId, siteId,
+                "2027-01-01", "2027-06-30");
+        String reference = "Referencia de extensión de adscripción";
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/close",
+                        programId, affiliationId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"validFrom\":\"2027-01-01\",\"effectiveThrough\":\"2027-12-31\","
+                                + "\"sourceReference\":\"" + reference + "\"}"))
+                .andExpect(status().isConflict());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_program_affiliation
+                WHERE affiliation_id = ? AND valid_through = '2027-06-30'
+                """, Integer.class, affiliationId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE source_reference = ? AND action_key = 'PROGRAM_AFFILIATION_CLOSED'
+                """, Integer.class, reference));
+    }
+
+    @Test
+    void program_affiliation_close_requires_structure_write_permission() throws Exception {
+        // Arrange
+        UUID unitId = createUnit("FAC-CLOSE-AFF-READ", "FACULTY", "Facultad solo lectura", 1);
+        UUID siteId = createSite("SITE-CLOSE-AFF-READ", "REGIONAL", "Sede solo lectura", 1);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-CLOSE-AFF-READ", unitId, siteId,
+                "2027-01-01", null);
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/close",
+                        programId, affiliationId)
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"validFrom\":\"2027-01-01\",\"effectiveThrough\":\"2027-06-30\","
+                                + "\"sourceReference\":\"Referencia de solo lectura\"}"))
+                .andExpect(status().isForbidden());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_program_affiliation
+                WHERE affiliation_id = ? AND valid_through IS NULL
+                """, Integer.class, affiliationId.toString()));
+    }
+
+    @Test
     void organization_edges_with_disjoint_effective_dates_do_not_form_a_cycle() throws Exception {
         // Arrange
         UUID first = createUnit("UNIT-HIST-A", "ACADEMIC_UNIT", "Unidad histórica A", 1);
@@ -884,6 +988,26 @@ class AcademicStructureControllerTest {
                         .content("{\"validFrom\":\"2027-01-01\",\"validThrough\":null,"
                                 + "\"sourceReference\":\"Acuerdo\"}"))
                 .andExpect(status().isNotFound());
+    }
+
+    private UUID createProgramAffiliation(UUID programId, String programCode, UUID unitId, UUID siteId,
+                                          String validFrom, String validThrough) throws Exception {
+        jdbcTemplate.update("""
+                INSERT INTO academic_program
+                    (program_id, program_code, academic_level, study_modality, campus_code, created_at)
+                VALUES (?, ?, 'PREGRADO', 'PRESENCIAL', 'SYNTHETIC-CAMPUS', CURRENT_TIMESTAMP)
+                """, programId.toString(), programCode);
+        String through = validThrough == null ? "null" : "\"" + validThrough + "\"";
+        mockMvc.perform(post("/api/v1/admin/academic-structure/programs/{programId}/affiliations", programId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"organizationUnitId\":\"" + unitId + "\",\"siteId\":\"" + siteId
+                                + "\",\"displayOrder\":3,\"validFrom\":\"" + validFrom
+                                + "\",\"validThrough\":" + through
+                                + ",\"sourceReference\":\"Synthetic affiliation\"}"))
+                .andExpect(status().isCreated());
+        return UUID.fromString(jdbcTemplate.queryForObject(
+                "SELECT affiliation_id FROM academic_program_affiliation WHERE program_id = ?",
+                String.class, programId.toString()));
     }
 
     private UUID createUnit(String code, String type, String name, int order) throws Exception {

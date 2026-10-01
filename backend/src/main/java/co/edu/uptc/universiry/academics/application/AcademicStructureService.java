@@ -30,6 +30,9 @@ public interface AcademicStructureService {
 
     void affiliateProgram(UUID programId, AcademicProgramAffiliationCommand command, String actorSub);
 
+    void closeProgramAffiliation(UUID programId, UUID affiliationId,
+                                 AcademicStructureRelationCloseCommand command, String actorSub);
+
     void changeOrganizationUnitOrder(UUID unitId, AcademicDisplayOrderCommand command, String actorSub);
 
     void changeSiteOrder(UUID siteId, AcademicDisplayOrderCommand command, String actorSub);
