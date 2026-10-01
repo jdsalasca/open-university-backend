@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-30-oidc-administration-design.md`
 
+> **Seguimiento de seguridad:** la implementación original guardaba el usuario OIDC en `sessionStorage`. [ADR-0003](../../architecture/decisions/ADR-0003-oidc-user-memory-only.md) reemplaza esa decisión: el usuario y los tokens viven en memoria, mientras que `sessionStorage` conserva solamente el estado transaccional de retorno. Tras una recarga se requiere iniciar sesión de nuevo.
+
 ## Restricciones globales
 
 - No configurar valores, grupos, permisos, scopes o credenciales UPTC no confirmados.

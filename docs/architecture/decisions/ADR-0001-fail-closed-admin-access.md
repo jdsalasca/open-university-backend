@@ -17,7 +17,7 @@ La plataforma crece por capacidades. Una regla amplia sobre `/api/v1/admin/**` p
 - Cada método y ruta administrativa se autoriza por su permiso de capacidad. Toda ruta bajo `/api/v1/admin/**` que no esté registrada se deniega.
 - `GET /api/v1/me` devuelve solo subject y permisos internos resueltos en servidor y lleva `Cache-Control: no-store`. No replica claims de perfil.
 - React usa Authorization Code con PKCE y consulta `/api/v1/me`; no decodifica claims para decidir permisos. La visibilidad de controles es una ayuda de interfaz; el backend aplica la autorización final.
-- El navegador mantiene estado y sesión solo para la pestaña. No usa `localStorage`, `offline_access`, renovación silenciosa ni almacena refresh tokens; el usuario guardado reduce los claims del perfil a `sub`.
+- El navegador conserva en `sessionStorage` únicamente el estado transaccional necesario para completar el callback; el usuario OIDC y sus tokens viven en memoria. No usa `localStorage`, `offline_access`, renovación silenciosa ni refresh tokens. Una recarga exige iniciar sesión de nuevo. El cambio desde el almacenamiento por pestaña queda registrado en [ADR-0003](ADR-0003-oidc-user-memory-only.md).
 - Sin configuración OIDC válida, React mantiene el inicio de sesión inactivo y las capacidades administrativas cerradas.
 
 ## Consecuencias

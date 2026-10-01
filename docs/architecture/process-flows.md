@@ -683,7 +683,7 @@ sequenceDiagram
   IdP-->>UI: callback local con code y state
   UI->>IdP: canjea code con PKCE verifier
   IdP-->>UI: access token
-  UI->>UI: elimina code/state de la URL y conserva sesión en la pestaña
+  UI->>UI: elimina code/state de la URL y conserva usuario y tokens solo en memoria
   UI->>API: GET /api/v1/me con Authorization Bearer
   API->>Auth: valida firma, issuer y audience; resuelve mapa exacto de permisos
   Auth-->>API: subject + permisos internos (vacío si no hay mapeo)
@@ -691,7 +691,7 @@ sequenceDiagram
   UI->>UI: presenta controles según permisos del backend
 ```
 
-La respuesta no reproduce claims de perfil ni datos de otras personas. Sin issuer/audience configurados, el backend responde 401; con autenticación válida y sin rol mapeado, `/api/v1/me` devuelve permisos vacíos y las mutaciones responden 403. React no interpreta grupos ni claims. El callback acepta solo hashes locales conocidos, limpia `code`/`state` de la URL y elimina refresh tokens y claims de perfil no usados antes de persistir la sesión por pestaña. Compose y `.env.example` no incluyen una cuenta, grupo, token o proveedor de demostración.
+La respuesta no reproduce claims de perfil ni datos de otras personas. Sin issuer/audience configurados, el backend responde 401; con autenticación válida y sin rol mapeado, `/api/v1/me` devuelve permisos vacíos y las mutaciones responden 403. React no interpreta grupos ni claims. El callback acepta solo hashes locales conocidos, limpia `code`/`state` de la URL y elimina refresh tokens y claims de perfil no usados. El estado OIDC necesario durante la redirección permanece en `sessionStorage`, pero el usuario y sus tokens se guardan solo en memoria; una recarga exige iniciar sesión otra vez. Antes de habilitar expedientes personales reales deben aprobarse la arquitectura de sesión de producción y los headers/CSP de su punto de entrada. Compose y `.env.example` no incluyen una cuenta, grupo, token o proveedor de demostración.
 
 ## Desarrollo local y selección de idioma
 
