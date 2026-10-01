@@ -670,18 +670,30 @@ sequenceDiagram
   participant Auth as Spring Security
   participant Period as Servicio de periodo
   participant DB as MySQL
-  Operator->>API: crea periodo REGULAR o INTERSEMESTRAL
+  Operator->>UI: ingresa tipo, código y rango de instrucción
+  UI->>API: POST /api/v1/admin/academic-periods
   API->>Auth: exige academic:period:write
   API->>Period: crea borrador con fechas y actor
   Period->>DB: periodo DRAFT + PERIOD_CREATED
-  Operator->>API: crea y publica revisión del calendario con referencia
+  API-->>UI: periodo DRAFT
+  Operator->>UI: crea revisión con referencia y actividades
+  UI->>API: POST /{periodId}/calendars
+  API->>Auth: exige academic:period:write
   API->>Period: valida fechas propias de las actividades; ventanas independientes del rango lectivo
-  Period->>DB: revisión publicada inmutable + auditoría
-  Operator->>API: POST /{periodId}/approve con revisión y acto aprobatorio
+  Period->>DB: nueva revisión DRAFT + auditoría
+  Operator->>UI: confirma publicar la revisión
+  UI->>API: POST /{periodId}/calendars/{revisionId}/publish
+  API->>Auth: exige academic:period:write
+  Period->>DB: revisión PUBLISHED inmutable + auditoría
+  Operator->>UI: selecciona revisión publicada e ingresa acto aprobatorio
+  UI->>API: POST /{periodId}/approve con revisión y referencia
+  API->>Auth: exige academic:period:write
   Period->>DB: DRAFT → APPROVED + actor/instante/referencia
-  Operator->>API: POST /{periodId}/open
+  Operator->>UI: solicita abrir y confirma explícitamente
+  UI->>API: POST /{periodId}/open
+  API->>Auth: exige academic:period:write
   Period->>DB: APPROVED → OPEN + auditoría atómica
-  API-->>Operator: periodo abierto
+  API-->>UI: periodo abierto
   API->>DB: GET público consulta solo OPEN con calendario publicado
   Operator->>UI: abre el control de periodos con permiso de lectura
   UI->>API: GET /api/v1/admin/academic-periods con Bearer
@@ -692,8 +704,8 @@ sequenceDiagram
   API->>Auth: exige academic:period:read
   API-->>UI: revisiones, actividades y eventos auditados
   Note over UI: Carga bajo demanda; se cancela y oculta al cerrar o perder lectura
-  Operator->>UI: solicita abrir/cerrar y confirma explícitamente
-  UI->>API: POST /{periodId}/open o /close con Bearer
+  Operator->>UI: solicita cerrar el periodo OPEN y confirma explícitamente
+  UI->>API: POST /{periodId}/close con Bearer
   API->>Auth: exige academic:period:write
   API->>Period: valida el estado actual y la transición solicitada
   Period->>DB: actualiza estado + actor + instante + auditoría
@@ -701,7 +713,7 @@ sequenceDiagram
   Note over UI,DB: La transición solo cambia estado; no publica oferta ni abre matrícula
 ```
 
-El permiso administrativo se valida en Spring Security por ruta. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo y comparan la revisión de calendario observada; si otra solicitud la cambia antes de la transición, la solicitud antigua recibe conflicto sin revertir la enmienda ni escribir auditoría parcial. Ante `409`, React vuelve a consultar los periodos dentro del alcance autorizado, descarta la confirmación antigua y pide revisar el estado antes de intentar otra vez; ante `401/403`, revalida `/api/v1/me` y suspende el token rechazado para escritura. El historial con todas las revisiones, actividades y eventos se consulta bajo demanda mediante una ruta administrativa de solo lectura protegida por `academic:period:read`; cerrar el panel cancela la consulta y perder lectura oculta la vista. React solo ofrece abrir para estados `APPROVED` y cerrar para `OPEN`, pide confirmación y conserva denegadas ambas acciones si falta el permiso de escritura. Sin permiso de lectura, solo muestra periodos públicamente abiertos; el backend sigue siendo la autoridad final.
+El permiso administrativo se valida en Spring Security por ruta. React habilita la creación, edición de borradores de calendario, publicación y aprobación solo con `academic:period:read` y `academic:period:write`; una revisión publicada requiere confirmación explícita y queda inmutable. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo y comparan la revisión de calendario observada; si otra solicitud la cambia antes de la transición, la solicitud antigua recibe conflicto sin revertir la enmienda ni escribir auditoría parcial. Ante `409`, React vuelve a consultar los periodos dentro del alcance autorizado, descarta la confirmación antigua y pide revisar el estado antes de intentar otra vez; ante `401/403`, revalida `/api/v1/me` y suspende el token rechazado para escritura. El historial con todas las revisiones, actividades y eventos se consulta bajo demanda mediante una ruta administrativa de solo lectura protegida por `academic:period:read`; cerrar el panel cancela la consulta y perder lectura oculta la vista. React solo ofrece abrir para estados `APPROVED` y cerrar para `OPEN`, pide confirmación y conserva denegadas ambas acciones si falta el permiso de escritura. Sin permiso de lectura, solo muestra periodos públicamente abiertos; el backend sigue siendo la autoridad final.
 
 ```mermaid
 flowchart LR
