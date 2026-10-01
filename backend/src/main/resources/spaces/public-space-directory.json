@@ -1,5 +1,67 @@
 {
   "officialOfficeDirectoryUrl": "https://www.uptc.edu.co/sitio/portal/sitios/directorio/",
+  "requestPathways": [
+    {
+      "id": "auditoriums-admin-spaces",
+      "kind": "AUDITORIUM_OR_ACADEMIC_SPACE",
+      "title": "Auditorios y espacios académicos o administrativos",
+      "audience": "Dependencias y solicitantes según la unidad UPTC responsable",
+      "summary": "Presenta la solicitud a la unidad responsable; esta revisa disponibilidad, viabilidad técnica y requisitos. El eventual alquiler depende del espacio y los servicios requeridos.",
+      "availabilityNote": "Esta guía no recibe solicitudes ni confirma aforo, disponibilidad o tarifa. Consulta la vigencia y las condiciones con la unidad responsable.",
+      "sources": [
+        { "label": "Servicios Docente Asistenciales UPTC", "url": "https://dsp.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/sd_asistenciales/index.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": null },
+        { "label": "Resolución 7181 de 2017", "url": "https://www.uptc.edu.co/export/sites/default/secretaria_general/rectoria/resoluciones_2017/Resolucion_7181_2017.pdf", "checkedAt": "2026-10-01", "sourceUpdatedAt": null }
+      ]
+    },
+    {
+      "id": "sports-venues",
+      "kind": "SPORTS_VENUE",
+      "title": "Escenarios deportivos",
+      "audience": "Solicitantes bajo las condiciones y aprobación de Bienestar Universitario",
+      "summary": "La Resolución 7189 de 2017 dirige las solicitudes de préstamo o alquiler de escenarios deportivos a Bienestar Universitario. Los requisitos y la autorización dependen de la modalidad de uso.",
+      "availabilityNote": "Acto publicado en 2017: confirma vigencia, aforo, anticipación, tarifa y canal actual con Bienestar. La guía no confirma reservas.",
+      "sources": [
+        { "label": "Resolución 7189 de 2017", "url": "https://www.uptc.edu.co/export/sites/default/secretaria_general/rectoria/resoluciones_2017/Resolucion_7189_2017.pdf", "checkedAt": "2026-10-01", "sourceUpdatedAt": null },
+        { "label": "Resoluciones Rectoría UPTC 2017", "url": "https://www.uptc.edu.co/secretaria_general/rectoria/resoluciones_2017/index.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": null }
+      ]
+    },
+    {
+      "id": "library-rooms",
+      "kind": "LIBRARY_ROOM",
+      "title": "Salas y espacios de biblioteca",
+      "audience": "Comunidad UPTC según las condiciones publicadas para cada sala",
+      "summary": "Consulta los términos, la disponibilidad y el canal de reserva de la biblioteca y seccional correspondiente; las reglas dependen del espacio.",
+      "availabilityNote": "Los aforos publicados son referenciales, no disponibilidad. Para La Saleta, la página informa 24 personas y el PDF de condiciones informa 25; confirma el aforo con biblioteca.",
+      "sources": [
+        { "label": "Préstamo de salas, Biblioteca Presencial UPTC", "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/bibl/4_bpd/blbl_pres.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": null },
+        { "label": "Servicios de Biblioteca Jorge Palacios Preciado", "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/bibl/7secc/01jpp/serv.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": null },
+        { "label": "Condiciones de uso de salas de colectividad (PDF)", "url": "https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/vic_aca/bibl/.content/doc/2022/cond_uso_salas_blb.pdf", "checkedAt": "2026-10-01", "sourceUpdatedAt": null }
+      ]
+    },
+    {
+      "id": "computer-classrooms",
+      "kind": "COMPUTER_CLASSROOM",
+      "title": "Aulas de informática",
+      "audience": "Docentes y dependencias académicas",
+      "summary": "DTIC distingue la asignación semestral de aula para clase de las solicitudes extra-clase para una fecha específica, canalizadas por Mesa de Servicio.",
+      "availabilityNote": "Consulta programación y disponibilidad en los canales oficiales de DTIC; esta guía no asigna aulas.",
+      "sources": [
+        { "label": "Servicio de Aulas de Informática DTIC", "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/04_catserv/aulas.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2025-08-14" },
+        { "label": "Mesa de Servicio UPTC", "url": "https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/05_mesa_servi.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2024-12-02" }
+      ]
+    },
+    {
+      "id": "staff-break-room",
+      "kind": "INTERNAL_STAFF_SPACE",
+      "title": "Break Room para personal administrativo",
+      "audience": "Uso interno del personal administrativo UPTC",
+      "summary": "El comunicado institucional indica que las solicitudes anticipadas se coordinan con Talento Humano y las áreas responsables; se aplican condiciones internas de ingreso y uso.",
+      "availabilityNote": "No es un servicio de alquiler público. Confirma el canal, horario y autorización interna vigentes con Talento Humano.",
+      "sources": [
+        { "label": "Comunicado institucional sobre el Break Room", "url": "https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-invierte-en-comodidad-y-productividad-para-sus-funcionarios-con-el-nuevo-Break-Room/", "checkedAt": "2026-10-01", "sourceUpdatedAt": null }
+      ]
+    }
+  ],
   "locations": [
     {
       "id": "site-central-tunja",

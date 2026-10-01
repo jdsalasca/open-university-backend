@@ -8,7 +8,9 @@
 
 UPTC publica varios procesos para ocupar espacios. Los auditorios/espacios académicos y administrativos, los escenarios deportivos y las salas de biblioteca tienen responsables, reglas de anticipación, elegibilidad y aprobación diferentes. El producto futuro necesita inventario y políticas por recurso/servicio; una única regla global de “reservar salón” no refleja lo publicado.
 
-La [guía pública de espacios de esta plataforma](../../README.md) es un directorio de ubicaciones y servicios (6 sedes, 11 CREAD y 4 puntos de servicio), no un inventario físico de aulas. No contiene una base vigente de capacidad, disponibilidad, dotación, responsable de aprobación ni tarifa y no habilita reserva ni alquiler. La revisión de fuentes también localizó espacios de Música anunciados en marzo de 2026 que todavía requieren conciliación con una página de biblioteca que conserva otra ubicación.
+La [guía pública de espacios de esta plataforma](../../README.md) combina el directorio de ubicaciones (6 sedes, 11 CREAD y 4 puntos de servicio) con cinco rutas informativas hacia fuentes oficiales: préstamo/alquiler académico o administrativo, escenarios deportivos, salas de biblioteca, asignación de aulas de informática y uso interno del Break Room. No contiene inventario físico vigente, disponibilidad, dotación, responsables completos ni tarifas; no recibe solicitudes ni habilita reservas o alquiler. La revisión de fuentes también localizó espacios de Música anunciados en marzo de 2026 que todavía requieren conciliación con una página de biblioteca que conserva otra ubicación.
+
+La vista enlaza únicamente a los canales y normas publicados y explica que la vigencia y la disponibilidad deben confirmarse con la unidad responsable. La discrepancia del aforo de La Saleta (24 en la página de servicio y 25 en el PDF de condiciones) aparece como advertencia, no como dato resuelto. Ningún formulario ni endpoint de escritura se añade para estos trámites.
 
 ## Evidencia institucional localizada
 

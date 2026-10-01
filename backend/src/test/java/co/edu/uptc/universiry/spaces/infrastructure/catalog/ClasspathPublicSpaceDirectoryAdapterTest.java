@@ -22,6 +22,7 @@ class ClasspathPublicSpaceDirectoryAdapterTest {
 
         assertNotNull(snapshot);
         assertEquals(21, snapshot.locations().size());
+        assertEquals(5, snapshot.requestPathways().size());
         assertEquals("Sede Central Tunja", snapshot.locations().getFirst().name());
         assertEquals("https://www.uptc.edu.co/sitio/portal/sitios/directorio/",
                 snapshot.officialOfficeDirectoryUrl());

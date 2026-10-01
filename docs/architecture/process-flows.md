@@ -872,7 +872,7 @@ flowchart LR
 
 ## Consulta de la guía pública de espacios
 
-La pantalla combina búsqueda local con una instantánea de ubicaciones versionada en la aplicación. No se consulta el sitio UPTC en tiempo de ejecución, no se guardan espacios en MySQL y no se solicita ubicación del navegador.
+La pantalla combina búsqueda local con una instantánea versionada de ubicaciones y rutas de orientación. No se consulta el sitio UPTC en tiempo de ejecución, no se guardan espacios en MySQL y no se solicita ubicación del navegador. La guía ofrece enlaces a canales institucionales; no recibe solicitudes ni confirma disponibilidad.
 
 ```mermaid
 sequenceDiagram
@@ -886,11 +886,11 @@ sequenceDiagram
   Visitor->>React: abre la guía pública
   React->>API: GET anónimo con Accept: application/json
   API->>Catalog: consulta PublicSpaceDirectory.snapshot()
-  Catalog-->>API: sedes, CREAD y servicios con su fuente
+  Catalog-->>API: 21 ubicaciones y 5 rutas oficiales con sus fuentes
   API-->>React: instantánea de solo lectura
-  React->>React: busca texto sin tildes y aplica filtro de tipo
-  React-->>Visitor: resultados con ubicación publicada y fechas de procedencia
-  Visitor->>Source: activa enlace de la fuente UPTC
+  React->>React: busca texto sin tildes y aplica filtro a las ubicaciones
+  React-->>Visitor: ubicaciones publicadas y tarjetas de rutas institucionales
+  Visitor->>Source: activa enlace de una fuente UPTC
   Source-->>Visitor: confirma ubicación y detalles actuales
   opt La entrada incluye dirección postal publicada
     Visitor->>React: activa búsqueda de mapa
@@ -898,4 +898,4 @@ sequenceDiagram
   end
 ```
 
-El primer corte enumera 6 sedes, 11 CREAD y 4 puntos de servicio de las páginas oficiales consultadas; es un catálogo parcial. Departamento y fecha de actualización quedan nulos cuando la fuente no los declara. En Rondón, la fuente describe un segundo piso dentro de la biblioteca municipal, pero no publica dirección postal: la ficha muestra esa referencia y omite el enlace cartográfico. Branding `spaces.available/visible` controla la navegación lateral, no la lectura pública directa. Los errores de API ofrecen reintento, el catálogo vacío informa que no hay coincidencias y una búsqueda sin resultado permite limpiar los filtros. La lista de fuentes y sus fechas están en [la especificación](../superpowers/specs/2026-10-01-space-guide-design.md).
+El primer corte enumera 6 sedes, 11 CREAD y 4 puntos de servicio, además de cinco rutas de orientación pública respaldadas por páginas y actos oficiales; es un catálogo parcial. Las tarjetas enlazan a fuentes distintas para préstamo/alquiler académico, deporte, bibliotecas, aulas de informática y Break Room de personal. No se consolidan reglas incompatibles ni se presentan cupos o reservas. Departamento y fecha de actualización quedan nulos cuando la fuente no los declara. En Rondón, la fuente describe un segundo piso dentro de la biblioteca municipal, pero no publica dirección postal: la ficha muestra esa referencia y omite el enlace cartográfico. Branding `spaces.available/visible` controla la navegación lateral, no la lectura pública directa. Los errores de API ofrecen reintento, el catálogo vacío informa que no hay coincidencias y una búsqueda sin resultado permite limpiar los filtros. La lista de fuentes y sus fechas están en [la especificación](../superpowers/specs/2026-10-01-space-guide-design.md).

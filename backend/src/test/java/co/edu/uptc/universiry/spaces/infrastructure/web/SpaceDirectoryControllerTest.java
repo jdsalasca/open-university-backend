@@ -27,6 +27,8 @@ class SpaceDirectoryControllerTest {
         mockMvc.perform(get("/api/v1/spaces"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.locations.length()").value(21))
+                .andExpect(jsonPath("$.requestPathways.length()").value(5))
+                .andExpect(jsonPath("$.requestPathways[0].id").value("auditoriums-admin-spaces"))
                 .andExpect(jsonPath("$.locations[0].id").value("site-central-tunja"))
                 .andExpect(jsonPath("$.locations[0].source.url").value(
                         "https://uptc.edu.co/sitio/portal/sitios/localizacion/"))

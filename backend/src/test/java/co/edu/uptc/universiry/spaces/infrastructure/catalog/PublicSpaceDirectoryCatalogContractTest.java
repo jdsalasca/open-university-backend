@@ -70,6 +70,33 @@ class PublicSpaceDirectoryCatalogContractTest {
         assertFalse(rondonCread.path("locationDetail").asText().isBlank());
     }
 
+    @Test
+    void publishes_distinct_sourced_request_pathways_without_claiming_live_availability() throws IOException {
+        JsonNode snapshot = readSnapshot();
+        JsonNode pathways = snapshot.path("requestPathways");
+
+        assertEquals(5, pathways.size());
+
+        Set<String> ids = new HashSet<>();
+        Set<String> kinds = new HashSet<>();
+        for (JsonNode pathway : pathways) {
+            assertTrue(ids.add(pathway.path("id").asText()), "each pathway id must be unique");
+            assertFalse(pathway.path("title").asText().isBlank());
+            assertFalse(pathway.path("audience").asText().isBlank());
+            assertFalse(pathway.path("summary").asText().isBlank());
+            assertFalse(pathway.path("availabilityNote").asText().isBlank());
+            assertTrue(pathway.path("sources").size() > 0);
+            for (JsonNode source : pathway.path("sources")) {
+                assertTrue(source.path("url").asText().startsWith("https://"));
+                assertEquals("2026-10-01", source.path("checkedAt").asText());
+            }
+            kinds.add(pathway.path("kind").asText());
+        }
+
+        assertEquals(Set.of("AUDITORIUM_OR_ACADEMIC_SPACE", "SPORTS_VENUE", "LIBRARY_ROOM",
+                "COMPUTER_CLASSROOM", "INTERNAL_STAFF_SPACE"), kinds);
+    }
+
     private JsonNode readSnapshot() throws IOException {
         ClassPathResource resource = new ClassPathResource("spaces/public-space-directory.json");
         assertTrue(resource.exists(), "the sourced public space directory must be packaged with the application");

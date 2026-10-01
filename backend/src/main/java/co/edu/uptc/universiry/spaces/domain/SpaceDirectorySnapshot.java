@@ -4,7 +4,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public record SpaceDirectorySnapshot(List<SpaceLocation> locations, String officialOfficeDirectoryUrl) {
+public record SpaceDirectorySnapshot(
+        List<SpaceLocation> locations,
+        List<SpaceUsePathway> requestPathways,
+        String officialOfficeDirectoryUrl
+) {
 
     public SpaceDirectorySnapshot {
         if (locations == null || locations.isEmpty()) {
@@ -15,6 +19,16 @@ public record SpaceDirectorySnapshot(List<SpaceLocation> locations, String offic
         for (SpaceLocation location : locations) {
             if (location == null || !ids.add(location.id())) {
                 throw new IllegalArgumentException("Space directory location ids must be unique and non-null.");
+            }
+        }
+        if (requestPathways == null || requestPathways.isEmpty()) {
+            throw new IllegalArgumentException("Space request pathways must contain at least one entry.");
+        }
+        requestPathways = List.copyOf(requestPathways);
+        Set<String> pathwayIds = new HashSet<>();
+        for (SpaceUsePathway pathway : requestPathways) {
+            if (pathway == null || !pathwayIds.add(pathway.id())) {
+                throw new IllegalArgumentException("Space request pathway ids must be unique and non-null.");
             }
         }
         if (!SpaceSource.isHttpsUrl(officialOfficeDirectoryUrl)) {

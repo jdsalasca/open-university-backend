@@ -6,7 +6,7 @@
 
 ## Propósito
 
-Ayudar a estudiantes y visitantes a encontrar sedes, centros regionales y algunos servicios universitarios usando referencias que la UPTC publica. La primera versión debe permitir buscar y filtrar lugares, mostrar su dirección o referencia física con procedencia y abrir una búsqueda voluntaria en un mapa externo.
+Ayudar a estudiantes, docentes, personal y visitantes a encontrar sedes, centros regionales y algunos servicios universitarios usando referencias que la UPTC publica. La primera versión también orienta hacia canales institucionales distintos para consultar préstamo, asignación o alquiler de determinados espacios, sin recibir solicitudes ni afirmar disponibilidad.
 
 ## Evidencia y alcance de datos
 
@@ -19,7 +19,7 @@ Ayudar a estudiantes y visitantes a encontrar sedes, centros regionales y alguno
 
 Se implementa una capacidad de lectura pública en el monolito Spring Boot y una página React. El backend sirve una instantánea JSON versionada en el classpath mediante una interfaz de consulta (`PublicSpaceDirectory`); la fuente se puede sustituir posteriormente por un adaptador de persistencia sin cambiar la respuesta HTTP ni la interfaz React. El primer corte no crea tablas MySQL: falta designar al responsable del inventario y aprobar un flujo administrativo de actualización.
 
-La respuesta de `GET /api/v1/spaces` incluye una lista de lugares y, por registro, identidad estable, tipo, nombre, municipio/departamento cuando la fuente los especifica, dirección postal, detalle del edificio/oficina cuando aplica, referencia de búsqueda cartográfica y URL/fecha de la fuente. La fecha de consulta es `2026-10-01`; la fecha de actualización original se conserva solo cuando la página oficial la declara. Si la fuente solo describe una ubicación interior —como el CREAD Rondón, en el segundo piso de la biblioteca municipal— `address` y `mapQuery` son nulos: se conserva el detalle pero se evita generar una búsqueda cartográfica ambigua.
+La respuesta de `GET /api/v1/spaces` incluye `locations` y `requestPathways`. Cada ubicación conserva identidad estable, tipo, nombre, municipio/departamento cuando la fuente los especifica, dirección postal, detalle del edificio/oficina cuando aplica, referencia de búsqueda cartográfica y URL/fecha de la fuente. Cada una de las cinco rutas de uso de espacios presenta tipo de servicio, audiencia descrita por la fuente, resumen, nota de disponibilidad y una o más fuentes oficiales con fecha de consulta. La fecha de consulta es `2026-10-01`; la fecha de actualización original se conserva solo cuando la página oficial la declara. Si la fuente solo describe una ubicación interior —como el CREAD Rondón, en el segundo piso de la biblioteca municipal— `address` y `mapQuery` son nulos: se conserva el detalle pero se evita generar una búsqueda cartográfica ambigua.
 
 El navegador carga el catálogo una vez y filtra localmente por texto y tipo. La búsqueda ignora mayúsculas y diacríticos. «Abrir mapa» construye un enlace de búsqueda de OpenStreetMap con la dirección publicada y solo navega fuera del sistema después de que la persona lo activa; si falta una dirección no hay enlace. No hay geolocalización ni mapa incrustado. Una nota pide verificar los detalles con la fuente oficial.
 
@@ -27,11 +27,11 @@ Se añade `spaces` al catálogo del Centro de Identidad Visual para que su nombr
 
 ## Interfaz y errores
 
-La ruta `/#espacios` ofrece selector por tipo, campo de búsqueda, contador de resultados, fichas y estados de carga, error con reintento y búsqueda sin resultados. Cada ficha diferencia sedes universitarias, CREAD y servicios; presenta dirección/fuente/fecha sin afirmar que la lista sea completa. La pantalla es de lectura pública, adaptable y operable por teclado.
+La ruta `/#espacios` ofrece selector por tipo, campo de búsqueda, contador de resultados, fichas y estados de carga, error con reintento y búsqueda sin resultados. Cada ficha diferencia sedes universitarias, CREAD y servicios; presenta dirección/fuente/fecha sin afirmar que la lista sea completa. La sección «Préstamo, asignación y alquiler» separa auditorios/espacios académicos, escenarios deportivos, salas de biblioteca, aulas de informática y Break Room de personal. Cada tarjeta enlaza a sus fuentes, advierte que no hay disponibilidad en tiempo real y conserva reglas o diferencias de aforo como motivos para consultar a la unidad responsable. La pantalla es de lectura pública, adaptable y operable por teclado.
 
 ## Fuera del primer corte
 
-Edición de inventario, importación del directorio, coordenadas propias, ubicación del usuario, navegación edificio-a-edificio, salones, horarios en vivo y afirmaciones sobre accesibilidad física. Estas funciones requieren inventario cartográfico vigente, responsable institucional, validación de campos y proceso de actualización. No se modelan personas ni se procesan datos personales.
+Edición de inventario, importación del directorio, coordenadas propias, ubicación del usuario, navegación edificio-a-edificio, salones, horarios en vivo, búsqueda de cupos, envío de solicitudes, reserva, aprobación, tarifa y afirmaciones sobre accesibilidad física. Las rutas de orientación abren las páginas oficiales en otra pestaña; no escriben en esos sistemas ni sustituyen sus procesos. Las funciones de operación requieren inventario vigente, responsable institucional, validación de campos y procesos aprobados. No se modelan personas ni se procesan datos personales.
 
 ## Verificación
 
