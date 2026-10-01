@@ -6,11 +6,14 @@ import co.edu.uptc.universiry.identity.domain.RoleAssignment;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RoleAssignmentRepository {
 
     List<RoleAssignment> findAssignments(AuthenticatedPrincipal target);
+
+    Optional<RoleAssignment> findAssignment(UUID assignmentId);
 
     List<RoleAssignment> findActiveAssignments(AuthenticatedPrincipal target, LocalDate institutionalDate);
 

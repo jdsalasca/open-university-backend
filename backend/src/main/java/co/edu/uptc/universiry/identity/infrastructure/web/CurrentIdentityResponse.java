@@ -1,24 +1,17 @@
 package co.edu.uptc.universiry.identity.infrastructure.web;
 
-import co.edu.uptc.universiry.security.ApplicationPermission;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Arrays;
+import co.edu.uptc.universiry.identity.application.CurrentIdentitySnapshot;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-public record CurrentIdentityResponse(String subject, List<String> permissions) {
+public record CurrentIdentityResponse(
+        String subject,
+        List<String> permissions,
+        List<CurrentRoleAssignmentResponse> assignments) {
 
-    static CurrentIdentityResponse from(Authentication authentication) {
-        Set<String> granted = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toUnmodifiableSet());
-        var permissions = Arrays.stream(ApplicationPermission.values())
-                .map(ApplicationPermission::authority)
-                .filter(granted::contains)
+    static CurrentIdentityResponse from(CurrentIdentitySnapshot snapshot) {
+        var roleAssignments = snapshot.assignments().stream()
+                .map(CurrentRoleAssignmentResponse::from)
                 .toList();
-        return new CurrentIdentityResponse(authentication.getName(), permissions);
+        return new CurrentIdentityResponse(snapshot.subject(), snapshot.permissions(), roleAssignments);
     }
 }

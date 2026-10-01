@@ -1,6 +1,7 @@
 package co.edu.uptc.universiry.security;
 
 import co.edu.uptc.universiry.platform.i18n.application.MessageCatalog;
+import co.edu.uptc.universiry.identity.application.RoleAssignmentRepository;
 import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.List;
 import java.util.Locale;
 
@@ -98,6 +100,11 @@ public class SecurityConfiguration {
                                 .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_READ.authority())
                         .requestMatchers(GET, "/api/v1/admin/academic-structure")
                         .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_READ.authority())
+                        .requestMatchers(GET,
+                                "/api/v1/admin/access/role-profiles",
+                                "/api/v1/admin/access/identities",
+                                "/api/v1/admin/access/assignments")
+                        .hasAuthority(ApplicationPermission.IDENTITY_ROLES_READ.authority())
                         .requestMatchers(POST,
                                 "/api/v1/admin/academic-periods",
                                 "/api/v1/admin/academic-periods/*/calendars",
@@ -126,6 +133,10 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/academic-structure/sites/*/children/*/close",
                                 "/api/v1/admin/academic-structure/programs/*/affiliations/*/close")
                         .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_WRITE.authority())
+                        .requestMatchers(POST, "/api/v1/admin/access/assignments")
+                        .hasAuthority(ApplicationPermission.IDENTITY_ROLES_WRITE.authority())
+                        .requestMatchers(PATCH, "/api/v1/admin/access/assignments/*/revoke")
+                        .hasAuthority(ApplicationPermission.IDENTITY_ROLES_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()
                         .anyRequest().denyAll()
                 )
@@ -145,11 +156,14 @@ public class SecurityConfiguration {
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter(
             @Value("${UPTC_OIDC_AUTHORITIES_CLAIM:authorities}") String authoritiesClaim,
-            @Value("${UPTC_OIDC_ROLE_PERMISSION_MAPPING:}") String rolePermissionMapping
+            @Value("${UPTC_OIDC_ROLE_PERMISSION_MAPPING:}") String rolePermissionMapping,
+            RoleAssignmentRepository assignments,
+            Clock clock
     ) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(
-                new ApplicationAuthoritiesConverter(authoritiesClaim, rolePermissionMapping));
+                new EffectiveAuthoritiesConverter(
+                        new ApplicationAuthoritiesConverter(authoritiesClaim, rolePermissionMapping), assignments, clock));
         return converter;
     }
 

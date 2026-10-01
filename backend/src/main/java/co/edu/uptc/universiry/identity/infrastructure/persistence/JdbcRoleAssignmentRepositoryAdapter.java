@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -73,6 +74,15 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
         }
         Map<UUID, Set<AssignmentScope>> scopes = findScopes(rows.stream().map(AssignmentRow::id).toList());
         return rows.stream().map(row -> row.toDomain(scopes.getOrDefault(row.id(), Set.of()))).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<RoleAssignment> findAssignment(UUID assignmentId) {
+        if (assignmentId == null) {
+            throw new IllegalArgumentException("assignment id is required");
+        }
+        return findById(assignmentId);
     }
 
     @Override
@@ -124,10 +134,10 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
         }
         validateSuccessfulRevokeEvent(expectedVersion, auditEvent);
         appendAuditEvent(auditEvent);
-        return findById(assignmentId);
+        return findById(assignmentId).orElseThrow(RoleAssignmentNotFoundException::new);
     }
 
-    private RoleAssignment findById(UUID assignmentId) {
+    private Optional<RoleAssignment> findById(UUID assignmentId) {
         List<AssignmentRow> rows = jdbcTemplate.query("""
                 SELECT a.assignment_id, a.profile_key, a.status, a.valid_from, a.valid_through,
                        a.source_reference, a.created_at, a.version,
@@ -138,8 +148,11 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
                 JOIN institutional_identity grantor ON grantor.identity_id = a.granted_by_identity_id
                 WHERE a.assignment_id = ?
                 """, ASSIGNMENT_ROW_MAPPER, assignmentId.toString());
-        AssignmentRow row = rows.stream().findFirst().orElseThrow(RoleAssignmentNotFoundException::new);
-        return row.toDomain(findScopes(List.of(assignmentId)).getOrDefault(assignmentId, Set.of()));
+        if (rows.isEmpty()) {
+            return Optional.empty();
+        }
+        AssignmentRow row = rows.getFirst();
+        return Optional.of(row.toDomain(findScopes(List.of(assignmentId)).getOrDefault(assignmentId, Set.of())));
     }
 
     private Map<UUID, Set<AssignmentScope>> findScopes(List<UUID> assignmentIds) {

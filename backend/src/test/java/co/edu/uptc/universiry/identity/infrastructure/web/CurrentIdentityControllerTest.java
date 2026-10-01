@@ -36,6 +36,7 @@ class CurrentIdentityControllerTest {
         mockMvc.perform(get("/api/v1/me")
                         .with(jwt()
                                 .jwt(jwt -> jwt
+                                        .issuer("https://identity.example.edu")
                                         .subject("synthetic-subject-42")
                                         .claim("email", "private@example.test"))
                                 .authorities(
@@ -46,6 +47,7 @@ class CurrentIdentityControllerTest {
                 .andExpect(jsonPath("$.subject").value("synthetic-subject-42"))
                 .andExpect(jsonPath("$.permissions.length()").value(1))
                 .andExpect(jsonPath("$.permissions[0]").value("branding:read"))
+                .andExpect(jsonPath("$.assignments").isArray())
                 .andExpect(jsonPath("$.email").doesNotExist())
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")));
     }
