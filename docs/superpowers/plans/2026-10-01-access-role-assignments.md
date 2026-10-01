@@ -51,40 +51,45 @@
 - Create tests in `backend/src/test/java/co/edu/uptc/universiry/identity/domain/`.
 
 **Interfaces:**
-- `AuthenticatedPrincipal(String issuer, String subject)` validates both bounded opaque values and compares both exactly.
+- `AuthenticatedPrincipal(String issuer, String subject)` preserves the pair exactly, requires an HTTPS issuer URL without query/fragment and an ASCII, case-sensitive subject of at most 255 characters, following [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html).
 - `RoleProfile` exposes `key()`, `displayName()`, `manuallyAssignable()`, `allowedScopeKinds()`, and `permissions()` from one immutable allowlisted catalog. Only `ADMINISTRATOR` currently adds `identity:roles:read/write`; all other profiles remain permission-neutral until their action matrices are approved.
 - `AssignmentScope(ScopeKind kind, String stableReference)` represents `UNIVERSITY`, `SITE`, `FACULTY`, `PROGRAM`, or `JOB_APPOINTMENT`; `UNIVERSITY` has no reference and all other kinds require one.
+- A single assignment has at most one reference per scope kind; different scope kinds intersect, while separate assignments combine.
 - `RoleAssignment` contains UUID, target principal, profile, scopes, inclusive validity, status, grantor principal, typed institutional reference, created time, and optimistic-lock version.
 - `ResourceDescriptor` contains normalized references for the resource's applicable site, faculty, program, and appointment scopes; it does not resolve institutional hierarchy by labels.
 - `AccessAuditEvent` contains the actor, institutional reference, event time, assignment identity, action, and a single monotonic version transition.
 - `RoleAssignment.matches(ResourceDescriptor, LocalDate)` requires every scope in one assignment to match; union across assignments is handled by the policy service.
 
-- [ ] **Step 1: Write AAA tests** for exact issuer/subject identity, eight allowlisted profiles, nonassignable lifecycle profiles, required university scope for administrator, typed scope validation, AND matching, expired assignment, and OR across separate assignments.
-- [ ] **Step 2: Run tests and confirm RED** because the domain types and rules do not exist.
-- [ ] **Step 3: Implement the smallest immutable records/enums and validation rules**; do not add an editable permission catalogue.
-- [ ] **Step 4: Run the domain tests and confirm GREEN**, then run all backend tests.
-- [ ] **Step 5: Commit** the domain contracts and tests.
+- [x] **Step 1: Write AAA tests** for exact issuer/subject identity, eight allowlisted profiles, nonassignable lifecycle profiles, required university scope for administrator, typed scope validation, AND matching, expired assignment, and OR across separate assignments.
+- [x] **Step 2: Run tests and confirm RED** because the domain types and rules do not exist.
+- [x] **Step 3: Implement the smallest immutable records/enums and validation rules**; do not add an editable permission catalogue.
+- [x] **Step 4: Run the domain tests and confirm GREEN**, then run all backend tests.
+- [x] **Step 5: Commit** the domain contracts and tests.
 
 ### Task 2: MySQL persistence and atomic audit
 
 **Files:**
 - Create: `backend/src/main/resources/db/migration/V17__identity_role_assignments.sql`
+- Create: `backend/src/main/resources/db/migration/V18__restrict_manual_identity_role_assignments.sql`
 - Create: `backend/src/main/java/co/edu/uptc/universiry/identity/application/IdentityDirectory.java`
+- Create: `backend/src/main/java/co/edu/uptc/universiry/identity/domain/RegisteredIdentity.java`
 - Create: `backend/src/main/java/co/edu/uptc/universiry/identity/application/RoleAssignmentRepository.java`
+- Create: `backend/src/main/java/co/edu/uptc/universiry/identity/application/IdentityNotRegisteredException.java`
+- Create: `backend/src/main/java/co/edu/uptc/universiry/identity/application/RoleAssignmentVersionConflictException.java`
 - Create: `backend/src/main/java/co/edu/uptc/universiry/identity/infrastructure/persistence/JdbcIdentityDirectoryAdapter.java`
 - Create: `backend/src/main/java/co/edu/uptc/universiry/identity/infrastructure/persistence/JdbcRoleAssignmentRepositoryAdapter.java`
 - Create schema and adapter tests in `backend/src/test/java/co/edu/uptc/universiry/identity/infrastructure/persistence/`.
 
 **Interfaces:**
-- `IdentityDirectory.registerIfAbsent(AuthenticatedPrincipal, Instant)` stores only issuer, subject, and first-seen timestamp.
-- `RoleAssignmentRepository.findIdentitiesBySubjectPrefix(String, int)`, `findAssignments(AuthenticatedPrincipal, LocalDate)`, `create(RoleAssignment, AccessAuditEvent)`, and `revoke(UUID, long expectedVersion, AccessAuditEvent)` provide the application port.
-- The schema uses foreign keys to `academic_site`, `academic_organization_unit`, and `academic_program`; `JOB_APPOINTMENT` stores only an opaque external stable identifier because no local HR master is approved.
+- `IdentityDirectory.registerIfAbsent(AuthenticatedPrincipal, Instant)` returns a `RegisteredIdentity` containing only an opaque UUID, issuer, subject and first-seen timestamp; `findBySubjectPrefix(String, int)` searches only already-authenticated identities.
+- `RoleAssignmentRepository.findAssignments(AuthenticatedPrincipal)`, `findActiveAssignments(AuthenticatedPrincipal, LocalDate)`, `create(RoleAssignment, AccessAuditEvent)`, and `revoke(UUID, long expectedVersion, AccessAuditEvent)` provide the application port.
+- The schema uses foreign keys to `academic_site`, `academic_organization_unit`, and `academic_program`; `JOB_APPOINTMENT` stores only an opaque external stable identifier because no local HR master is approved. It permits only the five manually assignable management profiles; APPLICANT/ADMITTED/STUDENT must come from a verified lifecycle source in a later domain integration.
 
-- [ ] **Step 1: Write schema/adapter AAA tests** for identity uniqueness by `(issuer, subject)`, scope foreign keys, exact eight-role check constraint, no seeded identity/assignment, append-only audit, optimistic version conflict, and assignment-plus-audit rollback.
-- [ ] **Step 2: Run tests and confirm RED** because migration and adapters are absent.
-- [ ] **Step 3: Add migration V17 and JDBC adapters** using prepared statements and transaction boundaries; no SQL access outside the repository adapter.
-- [ ] **Step 4: Run adapter/schema tests on H2 and the MySQL 8.4 contract suite**, confirm GREEN, then run all backend tests.
-- [ ] **Step 5: Commit** the schema, ports, adapters, and tests.
+- [x] **Step 1: Write schema/adapter AAA tests** for identity uniqueness by `(issuer, subject)`, subject-prefix bounds, scope foreign keys, allowed profile check and lifecycle-role rejection, no seeded identity/assignment, append-only audit, optimistic version conflict, and assignment-plus-audit rollback.
+- [x] **Step 2: Run tests and confirm RED** because migration and adapters are absent.
+- [x] **Step 3: Add migrations V17 and V18 and JDBC adapters** using prepared statements and transaction boundaries; no SQL access outside the repository adapter.
+- [x] **Step 4: Run adapter/schema tests on H2 and the MySQL 8.4 identity contract test**, confirm GREEN, then run all backend tests.
+- [x] **Step 5: Commit** the schema, ports, adapters, and tests.
 
 ### Task 3: Assignment use cases, `/api/v1/me`, and protected API
 

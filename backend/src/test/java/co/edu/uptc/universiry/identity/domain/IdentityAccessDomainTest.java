@@ -31,12 +31,15 @@ class IdentityAccessDomainTest {
                 "https://identity.example.edu", "opaque-subject-7f29");
         AuthenticatedPrincipal otherIssuer = new AuthenticatedPrincipal(
                 "https://other.example.edu", "opaque-subject-7f29");
+        AuthenticatedPrincipal differentIssuerCase = new AuthenticatedPrincipal(
+                "https://Identity.example.edu", "opaque-subject-7f29");
         AuthenticatedPrincipal otherSubject = new AuthenticatedPrincipal(
                 "https://identity.example.edu", "opaque-subject-7F29");
 
         // Act + Assert
         assertEquals(TARGET, samePair);
         assertNotEquals(TARGET, otherIssuer);
+        assertNotEquals(TARGET, differentIssuerCase);
         assertNotEquals(TARGET, otherSubject);
     }
 
@@ -50,6 +53,37 @@ class IdentityAccessDomainTest {
         assertThrows(IllegalArgumentException.class, () -> new AuthenticatedPrincipal("issuer", "\tsub"));
         assertThrows(IllegalArgumentException.class, () -> new AuthenticatedPrincipal("issuer\nvalue", "sub"));
         assertThrows(IllegalArgumentException.class, () -> new AuthenticatedPrincipal("issuer", oversized));
+    }
+
+    @Test
+    void subject_obeys_the_case_sensitive_ascii_oidc_limit() {
+        // Arrange
+        String oversizedSubject = "s".repeat(256);
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new AuthenticatedPrincipal("https://identity.example.edu", oversizedSubject));
+        assertThrows(IllegalArgumentException.class,
+                () -> new AuthenticatedPrincipal("https://identity.example.edu", "sübject"));
+        assertNotEquals(
+                new AuthenticatedPrincipal("https://identity.example.edu", "CaseSensitive"),
+                new AuthenticatedPrincipal("https://identity.example.edu", "casesensitive"));
+    }
+
+    @Test
+    void issuer_is_an_exact_https_url_without_query_or_fragment() {
+        // Arrange
+        String subject = "opaque-subject-7f29";
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class, () -> new AuthenticatedPrincipal("not-an-issuer", subject));
+        assertThrows(IllegalArgumentException.class, () -> new AuthenticatedPrincipal("http://id.example.edu", subject));
+        assertThrows(IllegalArgumentException.class,
+                () -> new AuthenticatedPrincipal("https://id.example.edu?tenant=one", subject));
+        assertThrows(IllegalArgumentException.class,
+                () -> new AuthenticatedPrincipal("https://id.example.edu/#issuer", subject));
+        assertEquals("https://Identity.example.edu/path", new AuthenticatedPrincipal(
+                "https://Identity.example.edu/path", subject).issuer());
     }
 
     @Test
@@ -97,6 +131,18 @@ class IdentityAccessDomainTest {
         assertThrows(IllegalArgumentException.class,
                 () -> assignment(RoleProfile.ADMINISTRATOR, Set.of(university, faculty), AssignmentStatus.ACTIVE));
         assertEquals(Set.of(ScopeKind.UNIVERSITY), RoleProfile.ADMINISTRATOR.allowedScopeKinds());
+    }
+
+    @Test
+    void one_assignment_cannot_repeat_a_scope_kind_with_conflicting_references() {
+        // Arrange
+        Set<AssignmentScope> conflictingProgramScopes = Set.of(
+                new AssignmentScope(ScopeKind.PROGRAM, "program-23"),
+                new AssignmentScope(ScopeKind.PROGRAM, "program-24"));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> assignment(RoleProfile.TEACHER, conflictingProgramScopes, AssignmentStatus.ACTIVE));
     }
 
     @Test

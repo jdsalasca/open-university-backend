@@ -33,6 +33,9 @@ public record RoleAssignment(
             throw new IllegalArgumentException("at least one scope is required");
         }
         scopes = Set.copyOf(scopes);
+        if (scopes.stream().map(AssignmentScope::kind).distinct().count() != scopes.size()) {
+            throw new IllegalArgumentException("a role assignment cannot repeat a scope kind");
+        }
         if (!profile.manuallyAssignable()) {
             throw new IllegalArgumentException("lifecycle profiles are derived from their verified source");
         }
@@ -45,12 +48,16 @@ public record RoleAssignment(
     }
 
     public boolean matches(ResourceDescriptor resource, LocalDate institutionalDate) {
-        if (resource == null || institutionalDate == null || status != AssignmentStatus.ACTIVE
-                || institutionalDate.isBefore(validFrom)
-                || (validThrough != null && institutionalDate.isAfter(validThrough))) {
+        if (resource == null || !isActiveOn(institutionalDate)) {
             return false;
         }
         return scopes.stream().allMatch(resource::matches);
+    }
+
+    public boolean isActiveOn(LocalDate institutionalDate) {
+        return institutionalDate != null && status == AssignmentStatus.ACTIVE
+                && !institutionalDate.isBefore(validFrom)
+                && (validThrough == null || !institutionalDate.isAfter(validThrough));
     }
 
 }
