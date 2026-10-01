@@ -4,7 +4,7 @@
 **Propósito:** recopilar decisiones, normas, fuentes de datos, permisos y criterios de aceptación antes de implementar admisión, matrícula o expediente estudiantil.<br>
 **Datos:** no copiar documentos, nombres, identificadores ni expedientes reales a este archivo o al entorno de desarrollo.
 
-**Áreas funcionales sugeridas por el patrocinador (1 de octubre de 2026):** ACRA y Registro Académico para validar el proceso, la fuente funcional y los campos del expediente estudiantil. La sugerencia no es una designación institucional: no hay reparto formal de autoridad ni sistema fuente confirmado. DTIC, Vicerrectoría Académica y la instancia responsable del nuevo sistema deben validar qué productos de SIRA/Fase III están activos y cómo se relaciona esta plataforma con esa iniciativa. Ver [fuentes y límites](student-lifecycle-baseline.md) y [control de solapamiento](uptc-new-academic-system-phase-iii.md).
+**Áreas funcionales sugeridas por el patrocinador (1 de octubre de 2026):** ACRA y Registro Académico para validar el proceso, la fuente funcional y los campos del expediente estudiantil. La sugerencia no es una designación institucional: no hay reparto formal de autoridad ni sistema fuente confirmado. DTIC, Vicerrectoría Académica y la instancia responsable del nuevo sistema deben validar qué productos de SIRA/Fase III están activos, cómo se relaciona «Inscríbete» (anunciado para 2026-II) con SIRA y qué sistema lleva la convocatoria 2027-I. Ver [fuentes y límites](student-lifecycle-baseline.md), [control de solapamiento de Fase III](uptc-new-academic-system-phase-iii.md) y [hallazgo de Inscríbete](uptc-inscribete-2026.md).
 
 La ruta priorizada es pregrado presencial. Las páginas públicas de ACRA ayudan a preparar la mesa, pero no prueban la secuencia interna de procesos ni sustituyen una decisión de la autoridad normativa. Ver [descubrimiento y fuentes públicas](student-lifecycle-baseline.md).
 
@@ -17,6 +17,7 @@ La ruta priorizada es pregrado presencial. Las páginas públicas de ACRA ayudan
 | Autoridad normativa |  |  |  |  |
 | Dueños funcionales/datos de aspirantes y estudiantes | ACRA y Registro Académico (sugeridos por el patrocinador; reparto por validar) | Validar proceso, fuente funcional y campos mínimos; no constituye autorización de tratamiento | Respuesta del patrocinador, 1 oct. 2026; designación institucional pendiente | 1 oct. 2026 |
 | Relación con el nuevo sistema académico UPTC alternativo a SIRA |  | Definir si esta plataforma es la misma iniciativa, reutiliza el alcance de Fase III, la complementa o tiene un mandato distinto | Informe UPTC 2025 reporta Fase III formulada al 100 % y 50 % de avance frente a la meta de ejecutar el 90 % de las fases de desarrollo; estado posterior y relación pendientes. Ver [control de solapamiento](uptc-new-academic-system-phase-iii.md) | 1 oct. 2026 |
+| Sistema «Inscríbete» anunciado para 2026-II y portal efectivo de admisiones 2027-I |  | Identificar relación con SIRA/Fase III, continuidad, sistema fuente por entidad e interfaces autorizadas; definir estrategia para PIN, identidad y documentos sin doble captura | Comunicado UPTC n.º 105 de 5 may. 2026 confirma el anuncio 2026-II; no identifica relación o portal 2027-I. Ver [hallazgo y preguntas pendientes](uptc-inscribete-2026.md) | 1 oct. 2026 |
 | Custodio técnico del sistema fuente | DTIC; alcance y roles actuales por confirmar con Vicerrectoría Académica, ACRA y Registro Académico | Inventariar sistema, entidad, interfaz, contrato y estado vigente; confirmar qué productos de actualización SIRA/nuevo sistema están desplegados | Pendiente de validación institucional; boletines UPTC de 2025 y rendición de cuentas reportan trabajos, no inventario operativo actual | 1 oct. 2026 |
 | Oficial de Protección de Datos Personales | Designación/competencia por confirmar | Validar finalidad, campos, tratamiento de menores, intercambio, retención y derechos del titular | Resoluciones publicadas por DTIC; aplicación al proyecto y vigencia por validar | 1 oct. 2026 |
 | Seguridad e identidad institucional |  |  |  |  |
@@ -36,6 +37,7 @@ Los nombres siguientes provienen del inventario público de ACRA y son temas por
 | Aplicación a UPTC/convocatoria de la Ley 2367/2024 y el Decreto 0617/2026: beneficio de inscripción, reglamento operativo MEN, recursos, grupos elegibles y relación con venta de PIN |  |  |  |
 | Procesos que seguirán operando en el sistema actual |  |  |  |
 | Relación de la plataforma con el nuevo sistema académico de Fase III: misma iniciativa, reutilización, complemento o alcance separado |  |  |  |
+| Relación de «Inscríbete» 2026-II con SIRA/Fase III y sistema/portal operativo para 2027-I; flujos a reutilizar o retirar |  |  |  |
 | Fuente de verdad durante el piloto y dueño de escritura |  |  |  |
 | Autoridad para aceptar resultados y autorizar un eventual corte |  |  |  |
 
