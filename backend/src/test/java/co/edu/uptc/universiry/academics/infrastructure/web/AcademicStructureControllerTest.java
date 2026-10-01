@@ -1,6 +1,8 @@
 package co.edu.uptc.universiry.academics.infrastructure.web;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -9,6 +11,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -805,6 +809,337 @@ class AcademicStructureControllerTest {
     }
 
     @Test
+    void authorized_operator_can_reassign_program_affiliation_from_effective_date_without_duplicate_program()
+            throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-REASSIGN-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-REASSIGN-TARGET", "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-REASSIGN-SOURCE", "CAMPUS", "Lugar origen", 1);
+        UUID targetSiteId = createSite("SITE-REASSIGN-TARGET", "REGIONAL", "Lugar destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID sourceAffiliationId = createProgramAffiliation(programId, "PROG-REASSIGN-001",
+                sourceUnitId, sourceSiteId, "2027-01-01", null);
+        String request = """
+                {"expectedValidFrom":"2027-01-01","expectedValidThrough":null,
+                 "effectiveFrom":"2027-06-01","organizationUnitId":"%s","siteId":"%s",
+                 "displayOrder":4,"sourceReference":"Acta de reasignación"}
+                """.formatted(targetUnitId, targetSiteId);
+
+        // Act
+        MvcResult result = mockMvc.perform(post(
+                        "/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/reassign",
+                        programId, sourceAffiliationId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andReturn();
+        UUID reassignedAffiliationId = responseUuid(result, "id");
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertNotEquals(sourceAffiliationId, reassignedAffiliationId);
+        org.junit.jupiter.api.Assertions.assertEquals("2027-05-31", jdbcTemplate.queryForObject(
+                "SELECT valid_through FROM academic_program_affiliation WHERE affiliation_id = ?",
+                String.class, sourceAffiliationId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_program_affiliation
+                WHERE affiliation_id = ? AND program_id = ? AND organization_unit_id = ? AND site_id = ?
+                  AND display_order = 4 AND valid_from = '2027-06-01' AND valid_through IS NULL
+                  AND source_reference = 'Acta de reasignación'
+                """, Integer.class, reassignedAffiliationId.toString(), programId.toString(),
+                targetUnitId.toString(), targetSiteId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program WHERE program_id = ?", Integer.class, programId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = 'PROGRAM_AFFILIATION_REASSIGNED'
+                  AND actor_sub = 'structure.operator' AND source_reference = ?
+                """, Integer.class, reassignedAffiliationId.toString(), "Acta de reasignación"));
+    }
+
+    @ParameterizedTest
+    @EnumSource(ProgramMove.class)
+    void program_affiliation_can_move_only_its_unit_or_only_its_site(ProgramMove move) throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-MOVE-SOURCE-" + move, "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-MOVE-TARGET-" + move, "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-MOVE-SOURCE-" + move, "CAMPUS", "Sede origen", 1);
+        UUID targetSiteId = createSite("SITE-MOVE-TARGET-" + move, "REGIONAL", "Sede destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID sourceAffiliationId = createProgramAffiliation(programId, "PROG-MOVE-" + move,
+                sourceUnitId, sourceSiteId, "2027-01-01", null);
+        UUID nextUnitId = move == ProgramMove.UNIT_ONLY ? targetUnitId : sourceUnitId;
+        UUID nextSiteId = move == ProgramMove.SITE_ONLY ? targetSiteId : sourceSiteId;
+        String request = reassignmentRequest("2027-01-01", "null", "2027-06-01", nextUnitId, nextSiteId,
+                5, "Acta de movimiento " + move);
+
+        // Act
+        MvcResult result = mockMvc.perform(post(reassignmentPath(), programId, sourceAffiliationId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isCreated())
+                .andReturn();
+        UUID nextAffiliationId = responseUuid(result, "id");
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_program_affiliation
+                WHERE affiliation_id = ? AND program_id = ? AND organization_unit_id = ? AND site_id = ?
+                  AND valid_from = '2027-06-01'
+                """, Integer.class, nextAffiliationId.toString(), programId.toString(),
+                nextUnitId.toString(), nextSiteId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals("2027-05-31", jdbcTemplate.queryForObject(
+                "SELECT valid_through FROM academic_program_affiliation WHERE affiliation_id = ?",
+                String.class, sourceAffiliationId.toString()));
+    }
+
+    @Test
+    void stale_expected_dates_and_an_omitted_nullable_end_are_rejected_without_changes() throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-STALE-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-STALE-TARGET", "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-STALE-SOURCE", "CAMPUS", "Sede origen", 1);
+        UUID targetSiteId = createSite("SITE-STALE-TARGET", "REGIONAL", "Sede destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-STALE", sourceUnitId, sourceSiteId,
+                "2027-01-01", null);
+        String stale = reassignmentRequest("2027-01-02", "null", "2027-06-01", targetUnitId, targetSiteId,
+                4, "Referencia obsoleta");
+        String missingEnd = """
+                {"expectedValidFrom":"2027-01-01","effectiveFrom":"2027-06-01",
+                 "organizationUnitId":"%s","siteId":"%s","displayOrder":4,
+                 "sourceReference":"Falta declarar el final esperado"}
+                """.formatted(targetUnitId, targetSiteId);
+
+        // Act + Assert
+        mockMvc.perform(post(reassignmentPath(), programId, affiliationId).with(writer())
+                        .contentType(MediaType.APPLICATION_JSON).content(stale))
+                .andExpect(status().isConflict());
+        mockMvc.perform(post(reassignmentPath(), programId, affiliationId).with(writer())
+                        .contentType(MediaType.APPLICATION_JSON).content(missingEnd))
+                .andExpect(status().isBadRequest());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program_affiliation WHERE program_id = ?", Integer.class,
+                programId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE action_key = 'PROGRAM_AFFILIATION_REASSIGNED'
+                  AND source_reference IN ('Referencia obsoleta', 'Falta declarar el final esperado')
+                """, Integer.class));
+    }
+
+    @Test
+    void invalid_cutover_dates_and_unchanged_destination_are_conflicts_without_partial_writes() throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-DATES-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-DATES-TARGET", "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-DATES-SOURCE", "CAMPUS", "Sede origen", 1);
+        UUID targetSiteId = createSite("SITE-DATES-TARGET", "REGIONAL", "Sede destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-DATES", sourceUnitId, sourceSiteId,
+                "2027-01-01", "2027-12-31");
+        String startsOnSource = reassignmentRequest("2027-01-01", "2027-12-31", "2027-01-01",
+                targetUnitId, targetSiteId, 4, "Fecha igual al origen");
+        String afterEnd = reassignmentRequest("2027-01-01", "2027-12-31", "2028-01-01",
+                targetUnitId, targetSiteId, 4, "Fecha posterior al final");
+        String orderOnly = reassignmentRequest("2027-01-01", "2027-12-31", "2027-06-01",
+                sourceUnitId, sourceSiteId, 99, "Solo cambia el orden");
+
+        // Act + Assert
+        for (String invalidRequest : new String[]{startsOnSource, afterEnd, orderOnly}) {
+            mockMvc.perform(post(reassignmentPath(), programId, affiliationId).with(writer())
+                            .contentType(MediaType.APPLICATION_JSON).content(invalidRequest))
+                    .andExpect(status().isConflict());
+        }
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program_affiliation WHERE program_id = ?", Integer.class,
+                programId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(java.sql.Date.valueOf("2027-12-31"), jdbcTemplate.queryForObject(
+                "SELECT valid_through FROM academic_program_affiliation WHERE affiliation_id = ?",
+                java.sql.Date.class, affiliationId.toString()));
+    }
+
+    @Test
+    void missing_program_affiliation_and_destination_are_not_found() throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-MISSING-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-MISSING-TARGET", "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-MISSING-SOURCE", "CAMPUS", "Sede origen", 1);
+        UUID targetSiteId = createSite("SITE-MISSING-TARGET", "REGIONAL", "Sede destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-MISSING", sourceUnitId, sourceSiteId,
+                "2027-01-01", null);
+        String request = reassignmentRequest("2027-01-01", "null", "2027-06-01", targetUnitId, targetSiteId,
+                4, "Referencia de destino inexistente");
+
+        // Act + Assert
+        mockMvc.perform(post(reassignmentPath(), programId, UUID.randomUUID()).with(writer())
+                        .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(post(reassignmentPath(), UUID.randomUUID(), affiliationId).with(writer())
+                        .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNotFound());
+        String missingTarget = reassignmentRequest("2027-01-01", "null", "2027-06-01", UUID.randomUUID(),
+                targetSiteId, 4, "Destino inexistente");
+        mockMvc.perform(post(reassignmentPath(), programId, affiliationId).with(writer())
+                        .contentType(MediaType.APPLICATION_JSON).content(missingTarget))
+                .andExpect(status().isNotFound());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program_affiliation WHERE program_id = ?", Integer.class,
+                programId.toString()));
+    }
+
+    @Test
+    void inactive_or_short_lived_destination_cannot_receive_the_program() throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-TARGET-RULE-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID sourceSiteId = createSite("SITE-TARGET-RULE-SOURCE", "CAMPUS", "Sede origen", 1);
+        UUID inactiveUnitId = createUnit("FAC-TARGET-INACTIVE", "FACULTY", "Facultad inactiva", 2);
+        jdbcTemplate.update("UPDATE academic_organization_unit SET status = 'INACTIVE' WHERE organization_unit_id = ?",
+                inactiveUnitId.toString());
+        UUID activeUnitId = createUnit("FAC-TARGET-SHORT", "FACULTY", "Facultad de vigencia corta", 3,
+                "2027-01-01", "2027-11-30");
+        UUID shortSiteId = createSite("SITE-TARGET-SHORT", "REGIONAL", "Sede de vigencia corta", 2,
+                "2027-07-01", null);
+        UUID normalSiteId = createSite("SITE-TARGET-NORMAL", "REGIONAL", "Sede vigente", 3);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-TARGET-RULE", sourceUnitId, sourceSiteId,
+                "2027-01-01", "2027-12-31");
+        String inactiveTarget = reassignmentRequest("2027-01-01", "2027-12-31", "2027-06-01",
+                inactiveUnitId, normalSiteId, 4, "Destino inactivo");
+        String insufficientUnit = reassignmentRequest("2027-01-01", "2027-12-31", "2027-06-01",
+                activeUnitId, normalSiteId, 4, "Unidad sin vigencia completa");
+        String insufficientSite = reassignmentRequest("2027-01-01", "2027-12-31", "2027-06-01",
+                activeUnitId, shortSiteId, 4, "Sede sin vigencia completa");
+
+        // Act + Assert
+        for (String invalidRequest : new String[]{inactiveTarget, insufficientUnit, insufficientSite}) {
+            mockMvc.perform(post(reassignmentPath(), programId, affiliationId).with(writer())
+                            .contentType(MediaType.APPLICATION_JSON).content(invalidRequest))
+                    .andExpect(status().isConflict());
+        }
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program_affiliation WHERE program_id = ?", Integer.class,
+                programId.toString()));
+    }
+
+    @Test
+    void reassignment_detects_overlap_with_an_affiliation_other_than_the_source() throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-OVERLAP-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-OVERLAP-TARGET", "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-OVERLAP-SOURCE", "CAMPUS", "Sede origen", 1);
+        UUID targetSiteId = createSite("SITE-OVERLAP-TARGET", "REGIONAL", "Sede destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID sourceAffiliationId = createProgramAffiliation(programId, "PROG-OVERLAP", sourceUnitId, sourceSiteId,
+                "2027-01-01", "2027-12-31");
+        UUID otherAffiliationId = UUID.randomUUID();
+        jdbcTemplate.update("""
+                INSERT INTO academic_program_affiliation
+                    (affiliation_id, program_id, organization_unit_id, site_id, display_order, valid_from,
+                     valid_through, source_reference, created_by, created_at)
+                VALUES (?, ?, ?, ?, 8, '2027-10-01', '2027-11-30', 'Legacy overlap fixture',
+                        'test.operator', CURRENT_TIMESTAMP)
+                """, otherAffiliationId.toString(), programId.toString(), targetUnitId.toString(), targetSiteId.toString());
+        String request = reassignmentRequest("2027-01-01", "2027-12-31", "2027-06-01", targetUnitId,
+                targetSiteId, 4, "Reasignación con cruce");
+
+        // Act + Assert
+        mockMvc.perform(post(reassignmentPath(), programId, sourceAffiliationId).with(writer())
+                        .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isConflict());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program_affiliation WHERE affiliation_id = ? AND valid_through = ?",
+                Integer.class, sourceAffiliationId.toString(), java.sql.Date.valueOf("2027-12-31")));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program_affiliation WHERE affiliation_id = ?",
+                Integer.class, otherAffiliationId.toString()));
+    }
+
+    @Test
+    void reassignment_requires_write_permission_and_valid_request_fields() throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-AUTH-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-AUTH-TARGET", "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-AUTH-SOURCE", "CAMPUS", "Sede origen", 1);
+        UUID targetSiteId = createSite("SITE-AUTH-TARGET", "REGIONAL", "Sede destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-AUTH", sourceUnitId, sourceSiteId,
+                "2027-01-01", null);
+        String valid = reassignmentRequest("2027-01-01", "null", "2027-06-01", targetUnitId, targetSiteId,
+                4, "Referencia válida");
+        String invalidOrder = reassignmentRequest("2027-01-01", "null", "2027-06-01", targetUnitId, targetSiteId,
+                -1, "Orden inválido");
+        String blankReference = reassignmentRequest("2027-01-01", "null", "2027-06-01", targetUnitId, targetSiteId,
+                4, " ");
+
+        // Act + Assert
+        mockMvc.perform(post(reassignmentPath(), programId, affiliationId).contentType(MediaType.APPLICATION_JSON)
+                        .content(valid))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post(reassignmentPath(), programId, affiliationId)
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ)))
+                        .contentType(MediaType.APPLICATION_JSON).content(valid))
+                .andExpect(status().isForbidden());
+        for (String invalidRequest : new String[]{invalidOrder, blankReference}) {
+            mockMvc.perform(post(reassignmentPath(), programId, affiliationId).with(writer())
+                            .contentType(MediaType.APPLICATION_JSON).content(invalidRequest))
+                    .andExpect(status().isBadRequest());
+        }
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_program_affiliation WHERE program_id = ?", Integer.class,
+                programId.toString()));
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void failure_to_write_reassignment_audit_rolls_back_both_affiliation_rows() throws Exception {
+        // Arrange
+        UUID sourceUnitId = createUnit("FAC-AUDIT-ROLLBACK-SOURCE", "FACULTY", "Facultad origen", 1);
+        UUID targetUnitId = createUnit("FAC-AUDIT-ROLLBACK-TARGET", "FACULTY", "Facultad destino", 2);
+        UUID sourceSiteId = createSite("SITE-AUDIT-ROLLBACK-SOURCE", "CAMPUS", "Sede origen", 1);
+        UUID targetSiteId = createSite("SITE-AUDIT-ROLLBACK-TARGET", "REGIONAL", "Sede destino", 2);
+        UUID programId = UUID.randomUUID();
+        UUID affiliationId = createProgramAffiliation(programId, "PROG-AUDIT-ROLLBACK", sourceUnitId, sourceSiteId,
+                "2027-01-01", null);
+        String request = reassignmentRequest("2027-01-01", "null", "2027-06-01", targetUnitId, targetSiteId,
+                4, "La auditoría debe revertir todo");
+
+        jdbcTemplate.execute("""
+                ALTER TABLE academic_structure_audit_event
+                ADD CONSTRAINT ck_test_fail_program_reassignment
+                CHECK (action_key <> 'PROGRAM_AFFILIATION_REASSIGNED')
+                """);
+        try {
+            // Act + Assert
+            mockMvc.perform(post(reassignmentPath(), programId, affiliationId).with(writer())
+                            .contentType(MediaType.APPLICATION_JSON).content(request))
+                    .andExpect(status().isConflict());
+            org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM academic_program_affiliation WHERE program_id = ?", Integer.class,
+                    programId.toString()));
+            org.junit.jupiter.api.Assertions.assertNull(jdbcTemplate.queryForObject(
+                    "SELECT valid_through FROM academic_program_affiliation WHERE affiliation_id = ?",
+                    java.sql.Date.class, affiliationId.toString()));
+            org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject("""
+                    SELECT COUNT(*) FROM academic_structure_audit_event
+                    WHERE action_key = 'PROGRAM_AFFILIATION_REASSIGNED'
+                    """, Integer.class));
+        } finally {
+            jdbcTemplate.execute("ALTER TABLE academic_structure_audit_event "
+                    + "DROP CONSTRAINT ck_test_fail_program_reassignment");
+            jdbcTemplate.update("DELETE FROM academic_structure_audit_event WHERE entity_id IN (?, ?, ?, ?)",
+                    sourceUnitId.toString(), targetUnitId.toString(), sourceSiteId.toString(), targetSiteId.toString());
+            jdbcTemplate.update("DELETE FROM academic_program_affiliation WHERE program_id = ?", programId.toString());
+            jdbcTemplate.update("DELETE FROM academic_structure_audit_event WHERE source_reference = ?",
+                    "La auditoría debe revertir todo");
+            jdbcTemplate.update("DELETE FROM academic_program WHERE program_id = ?", programId.toString());
+            jdbcTemplate.update("DELETE FROM academic_organization_unit WHERE organization_unit_id IN (?, ?)",
+                    sourceUnitId.toString(), targetUnitId.toString());
+            jdbcTemplate.update("DELETE FROM academic_site WHERE site_id IN (?, ?)",
+                    sourceSiteId.toString(), targetSiteId.toString());
+        }
+    }
+
+    @Test
     void authorized_operator_can_close_one_dated_program_affiliation_without_deleting_its_records() throws Exception {
         // Arrange
         UUID unitId = createUnit("FAC-CLOSE-AFFILIATION", "FACULTY", "Facultad de cierre", 1);
@@ -1010,6 +1345,20 @@ class AcademicStructureControllerTest {
                 String.class, programId.toString()));
     }
 
+    private static String reassignmentPath() {
+        return "/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/reassign";
+    }
+
+    private static String reassignmentRequest(String expectedFrom, String expectedThroughJson, String effectiveFrom,
+                                              UUID unitId, UUID siteId, int displayOrder, String reference) {
+        String expectedThrough = "null".equals(expectedThroughJson)
+                ? "null" : "\"" + expectedThroughJson + "\"";
+        return """
+                {"expectedValidFrom":"%s","expectedValidThrough":%s,"effectiveFrom":"%s",
+                 "organizationUnitId":"%s","siteId":"%s","displayOrder":%d,"sourceReference":"%s"}
+                """.formatted(expectedFrom, expectedThrough, effectiveFrom, unitId, siteId, displayOrder, reference);
+    }
+
     private UUID createUnit(String code, String type, String name, int order) throws Exception {
         return createUnit(code, type, name, order, "2026-01-01", null);
     }
@@ -1093,5 +1442,10 @@ class AcademicStructureControllerTest {
     private static org.springframework.test.web.servlet.request.RequestPostProcessor writer() {
         return jwt().jwt(token -> token.subject("structure.operator"))
                 .authorities(new SimpleGrantedAuthority(WRITE));
+    }
+
+    private enum ProgramMove {
+        UNIT_ONLY,
+        SITE_ONLY
     }
 }

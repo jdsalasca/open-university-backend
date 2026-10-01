@@ -2,6 +2,7 @@ package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
 import co.edu.uptc.universiry.academics.application.AcademicStructureConflictException;
 import co.edu.uptc.universiry.academics.application.AcademicDisplayOrderCommand;
+import co.edu.uptc.universiry.academics.application.AcademicProgramAffiliationReassignmentCommand;
 import co.edu.uptc.universiry.academics.application.AcademicStructureRelationCloseCommand;
 import co.edu.uptc.universiry.academics.application.AcademicStructureNotFoundException;
 import co.edu.uptc.universiry.academics.application.AcademicStructureRepository;
@@ -27,6 +28,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Repository
@@ -343,6 +345,79 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
 
     @Override
     @Transactional
+    public void reassignProgramAffiliation(UUID programId, UUID affiliationId,
+                                           AcademicProgramAffiliationReassignmentCommand command,
+                                           UUID newAffiliationId, String actorSub) {
+        lockStructure();
+        if (!exists("SELECT COUNT(*) FROM academic_program WHERE program_id = ?", programId)) {
+            throw new AcademicStructureNotFoundException();
+        }
+
+        List<ProgramAffiliationState> sourceRows = jdbcTemplate.query("""
+                SELECT organization_unit_id, site_id, valid_from, valid_through
+                FROM academic_program_affiliation
+                WHERE program_id = ? AND affiliation_id = ?
+                """, (rs, row) -> new ProgramAffiliationState(uuid(rs.getString("organization_unit_id")),
+                uuid(rs.getString("site_id")), localDate(rs, "valid_from"),
+                nullableDate(rs, "valid_through")), programId.toString(), affiliationId.toString());
+        if (sourceRows.isEmpty()) throw new AcademicStructureNotFoundException();
+
+        ProgramAffiliationState source = sourceRows.getFirst();
+        if (!Objects.equals(source.validFrom(), command.expectedValidFrom())
+                || !Objects.equals(source.validThrough(), command.expectedValidThrough())) {
+            throw new AcademicStructureConflictException();
+        }
+        if (!command.effectiveFrom().isAfter(source.validFrom())
+                || source.validThrough() != null && command.effectiveFrom().isAfter(source.validThrough())) {
+            throw new AcademicStructureConflictException();
+        }
+        if (source.organizationUnitId().equals(command.organizationUnitId())
+                && source.siteId().equals(command.siteId())) {
+            throw new AcademicStructureConflictException();
+        }
+
+        Validity unit = requireActiveUnit(command.organizationUnitId());
+        Validity site = requireActiveSite(command.siteId());
+        requireContained(command.effectiveFrom(), source.validThrough(), unit);
+        requireContained(command.effectiveFrom(), source.validThrough(), site);
+
+        List<ExistingRelation> otherAffiliations = jdbcTemplate.query("""
+                SELECT affiliation_id AS child_id, valid_from, valid_through
+                FROM academic_program_affiliation
+                WHERE program_id = ? AND affiliation_id <> ?
+                """, (rs, row) -> new ExistingRelation(uuid(rs.getString("child_id")),
+                localDate(rs, "valid_from"), nullableDate(rs, "valid_through")),
+                programId.toString(), affiliationId.toString());
+        if (otherAffiliations.stream().anyMatch(existing -> AcademicStructureRules.overlaps(
+                command.effectiveFrom(), source.validThrough(), existing.validFrom(), existing.validThrough()))) {
+            throw new AcademicStructureConflictException();
+        }
+
+        LocalDate sourceEnd = command.effectiveFrom().minusDays(1);
+        int changed = jdbcTemplate.update("""
+                UPDATE academic_program_affiliation SET valid_through = ?
+                WHERE program_id = ? AND affiliation_id = ? AND valid_from = ?
+                  AND ((valid_through = ?) OR (valid_through IS NULL AND ? IS NULL))
+                """, sourceEnd, programId.toString(), affiliationId.toString(), command.expectedValidFrom(),
+                command.expectedValidThrough(), command.expectedValidThrough());
+        if (changed != 1) throw new AcademicStructureConflictException();
+
+        Instant now = clock.instant();
+        jdbcTemplate.update("""
+                INSERT INTO academic_program_affiliation
+                    (affiliation_id, program_id, organization_unit_id, site_id, display_order, valid_from,
+                     valid_through, source_reference, created_by, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, newAffiliationId.toString(), programId.toString(), command.organizationUnitId().toString(),
+                command.siteId().toString(), command.displayOrder(), command.effectiveFrom(),
+                source.validThrough(), command.sourceReference(), actorSub, timestamp(now));
+        audit(newAffiliationId, "PROGRAM_AFFILIATION_REASSIGNED", actorSub, command.sourceReference(),
+                "Program " + programId + " affiliation " + affiliationId + " reassigned as "
+                        + newAffiliationId + " from " + command.effectiveFrom());
+    }
+
+    @Override
+    @Transactional
     public void changeOrganizationUnitOrder(UUID unitId, AcademicDisplayOrderCommand command, String actorSub) {
         lockStructure();
         LocalDate today = LocalDate.now(clock);
@@ -599,6 +674,10 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
     }
 
     private record RelationValidity(LocalDate validFrom, LocalDate validThrough) {
+    }
+
+    private record ProgramAffiliationState(UUID organizationUnitId, UUID siteId,
+                                           LocalDate validFrom, LocalDate validThrough) {
     }
 
     private enum RelationKind {

@@ -34,6 +34,10 @@ public interface AcademicStructureRepository {
 
     void affiliateProgram(AcademicProgramAffiliation affiliation, String actorSub);
 
+    void reassignProgramAffiliation(UUID programId, UUID affiliationId,
+                                    AcademicProgramAffiliationReassignmentCommand command,
+                                    UUID newAffiliationId, String actorSub);
+
     void closeProgramAffiliation(UUID programId, UUID affiliationId,
                                  AcademicStructureRelationCloseCommand command, String actorSub, String sourceReference);
 

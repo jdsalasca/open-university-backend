@@ -107,6 +107,19 @@ public class DefaultAcademicStructureService implements AcademicStructureService
     }
 
     @Override
+    public UUID reassignProgramAffiliation(UUID programId, UUID affiliationId,
+                                           AcademicProgramAffiliationReassignmentCommand command, String actorSub) {
+        String actor = AcademicCatalogActorSub.require(actorSub);
+        String reference = requiredReference(command.sourceReference());
+        AcademicProgramAffiliationReassignmentCommand normalized = new AcademicProgramAffiliationReassignmentCommand(
+                command.expectedValidFrom(), command.expectedValidThrough(), command.effectiveFrom(),
+                command.organizationUnitId(), command.siteId(), command.displayOrder(), reference);
+        UUID newAffiliationId = UUID.randomUUID();
+        repository.reassignProgramAffiliation(programId, affiliationId, normalized, newAffiliationId, actor);
+        return newAffiliationId;
+    }
+
+    @Override
     public void closeProgramAffiliation(UUID programId, UUID affiliationId,
                                         AcademicStructureRelationCloseCommand command, String actorSub) {
         String actor = AcademicCatalogActorSub.require(actorSub);

@@ -117,6 +117,19 @@ public class AcademicStructureController {
         return ResponseEntity.status(CREATED).body(new AcademicStructureMutationResponse(programId));
     }
 
+    @PostMapping("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/reassign")
+    public ResponseEntity<AcademicStructureMutationResponse> reassignProgramAffiliation(
+            @PathVariable UUID programId,
+            @PathVariable UUID affiliationId,
+            @Valid @RequestBody ReassignAcademicProgramAffiliationRequest request,
+            Authentication authentication
+    ) {
+        UUID reassignedAffiliationId = service.reassignProgramAffiliation(
+                programId, affiliationId, request.toCommand(), authentication.getName());
+        return ResponseEntity.status(CREATED)
+                .body(new AcademicStructureMutationResponse(reassignedAffiliationId));
+    }
+
     @PatchMapping("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/close")
     public ResponseEntity<Void> closeProgramAffiliation(
             @PathVariable UUID programId,
