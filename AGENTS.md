@@ -21,6 +21,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - No crear datos seed de estructura ni periodos oficiales sin un maestro y una referencia validados por el dueño institucional. Intersemestral es un tipo operativo del modelo actual; confirmar reglas específicas antes de publicar cursos o automatizar límites de matrícula.
 - SDKMAN es el gestor de Java del proyecto en el equipo principal. El `.sdkmanrc` debe fijar la distribución y versión exactas; no cambiar variables globales de Windows sin verificar que Git Bash, PowerShell, Maven e IDE seleccionan el mismo JDK.
 - El desarrollo local coordinado usa Docker Compose con MySQL aislado, proxy API y Compose Watch; las aplicaciones siguen siendo monolitos independientes.
+- El Compose y los Dockerfiles actuales son solo para preview de desarrollo. Antes de publicar React hay que cerrar el gate de cabeceras, CSP, TLS, orígenes API/OIDC y prueba del callback definido en `docs/security/frontend-production-gate.md`; no inferir controles productivos desde localhost.
 
 ## Método obligatorio
 
