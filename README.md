@@ -53,3 +53,7 @@ java -version
 ```
 
 Consulta [desarrollo local](docs/runbook/local-development.md) y [el cronograma](docs/ROADMAP.md) antes de integrar cambios.
+
+## Latencia de desarrollo
+
+La [línea base local](docs/performance-baseline.md) registra promedio, mediana, P95 y máximo de rutas públicas con el snapshot vacío. Repite la lectura con `powershell -NoProfile -File .\tools\measure-api-latency.ps1`; no representa carga institucional ni un SLA de producción.
