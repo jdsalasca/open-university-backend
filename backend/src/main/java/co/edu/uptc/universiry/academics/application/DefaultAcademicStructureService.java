@@ -75,9 +75,17 @@ public class DefaultAcademicStructureService implements AcademicStructureService
 
     @Override
     public void closeOrganizationRelation(UUID parentId, UUID childId,
-                                          AcademicOrganizationRelationCloseCommand command, String actorSub) {
+                                          AcademicStructureRelationCloseCommand command, String actorSub) {
         String actor = AcademicCatalogActorSub.require(actorSub);
         repository.closeOrganizationRelation(parentId, childId, command, actor,
+                requiredReference(command.sourceReference()));
+    }
+
+    @Override
+    public void closeSiteRelation(UUID parentId, UUID childId,
+                                  AcademicStructureRelationCloseCommand command, String actorSub) {
+        String actor = AcademicCatalogActorSub.require(actorSub);
+        repository.closeSiteRelation(parentId, childId, command, actor,
                 requiredReference(command.sourceReference()));
     }
 

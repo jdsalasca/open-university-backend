@@ -78,10 +78,21 @@ public class AcademicStructureController {
     public ResponseEntity<Void> closeOrganizationRelation(
             @PathVariable UUID parentId,
             @PathVariable UUID childId,
-            @Valid @RequestBody CloseAcademicOrganizationRelationRequest request,
+            @Valid @RequestBody CloseAcademicStructureRelationRequest request,
             Authentication authentication
     ) {
         service.closeOrganizationRelation(parentId, childId, request.toCommand(), authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/close")
+    public ResponseEntity<Void> closeSiteRelation(
+            @PathVariable UUID parentId,
+            @PathVariable UUID childId,
+            @Valid @RequestBody CloseAcademicStructureRelationRequest request,
+            Authentication authentication
+    ) {
+        service.closeSiteRelation(parentId, childId, request.toCommand(), authentication.getName());
         return ResponseEntity.noContent().build();
     }
 

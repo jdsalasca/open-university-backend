@@ -20,8 +20,11 @@ public interface AcademicStructureService {
 
     void relateUnits(UUID parentId, UUID childId, AcademicStructureRelationCommand command, String actorSub);
 
-    void closeOrganizationRelation(UUID parentId, UUID childId, AcademicOrganizationRelationCloseCommand command,
+    void closeOrganizationRelation(UUID parentId, UUID childId, AcademicStructureRelationCloseCommand command,
                                    String actorSub);
+
+    void closeSiteRelation(UUID parentId, UUID childId, AcademicStructureRelationCloseCommand command,
+                           String actorSub);
 
     void relateSites(UUID parentId, UUID childId, AcademicStructureRelationCommand command, String actorSub);
 

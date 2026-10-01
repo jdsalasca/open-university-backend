@@ -573,7 +573,7 @@ sequenceDiagram
 
 La interfaz no modifica el árbol de forma optimista. Un fallo al releer después de 204 se informa como escritura aceptada con vista pendiente de recarga; sin permiso de escritura las acciones no aparecen. La recarga del conflicto no repite el comando ni reemplaza la prioridad por una estimación local. Un 401/403 oculta las acciones de inmediato y requiere una sesión nueva para volver a habilitarlas con el mismo token.
 
-### Cerrar una relación organizacional fechada
+### Cerrar una relación fechada de unidades o sedes
 
 ```mermaid
 sequenceDiagram
@@ -586,7 +586,7 @@ sequenceDiagram
   Operator->>UI: selecciona vínculo, fecha final inclusiva y referencia
   UI->>UI: muestra vista previa; solicita confirmación explícita
   Operator->>UI: confirma el cierre
-  UI->>API: PATCH /units/{parentId}/children/{childId}/close con validFrom
+  UI->>API: PATCH /units/.../close o /sites/.../close con validFrom
   API->>API: exige academic:structure:write; valida intervalo y referencia
   API->>Structure: cierra únicamente la versión identificada por padre, hijo e inicio
   Structure->>DB: bloquea cambios de estructura; lee vigencia actual
@@ -597,7 +597,7 @@ sequenceDiagram
   else fecha ya aplicada
     DB-->>API: 204 idempotente sin evento duplicado
   else cierre válido
-    Structure->>DB: actualiza valid_through + UNIT_RELATION_CLOSED + actor/referencia
+    Structure->>DB: actualiza valid_through + UNIT_RELATION_CLOSED o SITE_RELATION_CLOSED + actor/referencia
     DB-->>Structure: commit atómico
     API-->>UI: 204
   end
@@ -612,7 +612,7 @@ sequenceDiagram
   end
 ```
 
-El control solo aparece con lectura y escritura de estructura. El selector React limita la operación a vínculos actuales o futuros cuyo intervalo pueda acortarse; la fecha final no puede preceder `validFrom` ni ampliar un finito existente. El endpoint acepta una referencia institucional y registra el actor, el instante y `UNIT_RELATION_CLOSED` en la misma transacción que actualiza `valid_through`. La misma fecha es idempotente, un intervalo finito nunca se extiende y las unidades no se borran. Ante `409`, React descarta la confirmación y actualiza ambas vistas sin reintentar; los vínculos vencidos no se ofrecen desde este formulario. El cierre de afiliaciones y relaciones de sedes y la reasignación compuesta siguen pendientes. Esta capacidad local no habilita OIDC ni valida reglas o maestros oficiales de UPTC.
+El formulario compartido solo aparece con lectura y escritura de estructura. El selector React limita la operación a vínculos actuales o futuros cuyo intervalo pueda acortarse; la fecha final no puede preceder `validFrom` ni ampliar un finito existente. Los endpoints `/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/close` y `/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/close` aceptan una referencia institucional y registran actor, instante y `UNIT_RELATION_CLOSED` o `SITE_RELATION_CLOSED` en la misma transacción que actualiza `valid_through`. La misma fecha es idempotente, un intervalo finito nunca se extiende y los extremos no se borran. Ante `409`, React descarta la confirmación y actualiza ambas vistas sin reintentar; los vínculos vencidos no se ofrecen desde este formulario. El cierre de afiliaciones y la reasignación compuesta siguen pendientes. Esta capacidad local no habilita OIDC ni valida reglas o maestros oficiales de UPTC.
 
 ```mermaid
 sequenceDiagram

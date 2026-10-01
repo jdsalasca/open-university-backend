@@ -24,8 +24,11 @@ public interface AcademicStructureRepository {
 
     void relateOrganizationUnits(AcademicOrganizationRelation relation, String actorSub, String sourceReference);
 
-    void closeOrganizationRelation(UUID parentId, UUID childId, AcademicOrganizationRelationCloseCommand command,
+    void closeOrganizationRelation(UUID parentId, UUID childId, AcademicStructureRelationCloseCommand command,
                                    String actorSub, String sourceReference);
+
+    void closeSiteRelation(UUID parentId, UUID childId, AcademicStructureRelationCloseCommand command,
+                          String actorSub, String sourceReference);
 
     void relateSites(AcademicSiteRelation relation, String actorSub, String sourceReference);
 

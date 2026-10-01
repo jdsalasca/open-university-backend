@@ -313,6 +313,91 @@ class AcademicStructureControllerTest {
     }
 
     @Test
+    void authorized_operator_can_close_one_dated_site_relation_without_deleting_its_sites() throws Exception {
+        // Arrange
+        UUID parentId = createSite("SITE-CLOSE-PARENT", "CENTRAL", "Sede principal cierre", 1,
+                "2025-01-01", null);
+        UUID childId = createSite("SITE-CLOSE-CHILD", "REGIONAL", "Seccional cierre", 2,
+                "2025-01-01", null);
+        createSiteEdge(parentId, childId, 1, "2025-01-01", null);
+        String reference = "Acta de organización territorial 2026";
+        String request = "{\"validFrom\":\"2025-01-01\",\"effectiveThrough\":\"2026-06-30\","
+                + "\"sourceReference\":\"" + reference + "\"}";
+
+        // Act
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/close",
+                        parentId, childId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNoContent());
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_site_relation
+                WHERE parent_site_id = ? AND child_site_id = ? AND valid_from = '2025-01-01'
+                  AND valid_through = '2026-06-30'
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(2, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_site
+                WHERE site_id IN (?, ?)
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = 'SITE_RELATION_CLOSED'
+                  AND actor_sub = 'structure.operator' AND source_reference = ?
+                """, Integer.class, childId.toString(), reference));
+    }
+
+    @Test
+    void site_relation_close_cannot_extend_a_finite_interval_or_create_partial_audit() throws Exception {
+        // Arrange
+        UUID parentId = createSite("SITE-CLOSE-EXTEND-PARENT", "CENTRAL", "Sede principal", 1,
+                "2025-01-01", null);
+        UUID childId = createSite("SITE-CLOSE-EXTEND-CHILD", "REGIONAL", "Sede regional", 2,
+                "2025-01-01", null);
+        createSiteEdge(parentId, childId, 1, "2025-01-01", "2026-06-30");
+        String reference = "Referencia de extensión territorial no permitida";
+        String request = "{\"validFrom\":\"2025-01-01\",\"effectiveThrough\":\"2026-12-31\","
+                + "\"sourceReference\":\"" + reference + "\"}";
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/close",
+                        parentId, childId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isConflict());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_site_relation
+                WHERE parent_site_id = ? AND child_site_id = ? AND valid_through = '2026-06-30'
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE source_reference = ? AND action_key = 'SITE_RELATION_CLOSED'
+                """, Integer.class, reference));
+    }
+
+    @Test
+    void site_relation_close_requires_structure_write_permission() throws Exception {
+        // Arrange
+        UUID parentId = createSite("SITE-CLOSE-READ-PARENT", "CENTRAL", "Sede solo lectura", 1,
+                "2025-01-01", null);
+        UUID childId = createSite("SITE-CLOSE-READ-CHILD", "REGIONAL", "Sede regional solo lectura", 2,
+                "2025-01-01", null);
+        createSiteEdge(parentId, childId, 1, "2025-01-01", null);
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/close",
+                        parentId, childId)
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"validFrom\":\"2025-01-01\",\"effectiveThrough\":\"2026-10-31\","
+                                + "\"sourceReference\":\"Referencia de solo lectura\"}"))
+                .andExpect(status().isForbidden());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_site_relation
+                WHERE parent_site_id = ? AND child_site_id = ? AND valid_through IS NULL
+                """, Integer.class, parentId.toString(), childId.toString()));
+    }
+
+    @Test
     void missing_relationship_order_defaults_to_zero_for_existing_clients() throws Exception {
         // Arrange
         UUID parent = createUnit("FAC-DEFAULT-ORDER", "FACULTY", "Facultad orden base", 1);
