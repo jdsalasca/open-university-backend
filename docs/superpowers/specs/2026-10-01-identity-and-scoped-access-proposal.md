@@ -1,6 +1,7 @@
 # Identidad y permisos por ámbito — propuesta de diseño
 
 **Estado:** borrador para aprobación del patrocinador; una base técnica de consola, API, persistencia y auditoría está implementada en `develop`, pero no autoriza configuración institucional ni acceso a datos reales.<br>
+**Nota de alcance:** este borrador precede a la aclaración posterior del patrocinador de que debe existir un solo `user_id` canónico para aspirantes, estudiantes, docentes, administrativos y egresados. No se debe usar este modelo como contrato final del registro de usuarios hasta reconciliarlo con `docs/discovery/sponsor-university-platform-scope-2026-10.md` y aprobar el diseño actualizado.<br>
 **Fecha:** 1 de octubre de 2026<br>
 **Primera capacidad:** asignación administrativa de permisos a identidades ya autenticadas, con alcance explícito y auditoría.<br>
 **Fuentes de autenticación:** proveedor OIDC institucional, pendiente de configuración y validación por DTIC.<br>

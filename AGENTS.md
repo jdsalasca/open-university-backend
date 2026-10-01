@@ -12,6 +12,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - MySQL es la base relacional objetivo. Flyway versiona el esquema; la aplicación nunca crea ni actualiza el esquema en producción.
 - Los módulos se comunican mediante contratos internos explícitos. Las reglas de negocio viven en el backend; el frontend solo ofrece validación temprana de experiencia.
 - En el dominio académico, facultades/escuelas/unidades y lugares de desarrollo son dimensiones distintas. Afiliar un programa reutiliza su identidad existente; las relaciones y su vigencia no se duplican en campos de texto.
+- La persona conserva un único `user_id` canónico e inmutable en su ciclo institucional. SSO, aspiración, admisión, matrícula, docencia, empleo y egreso se enlazan a ese ID; no crear tablas paralelas de cuentas/usuarios por perfil. Los datos de cada proceso sí pueden tener entidades normalizadas propias con FK a `user_id`; las concesiones de permisos siguen auditadas y separadas de los estados académicos.
 - Una fila curricular usa el número de semestre para ubicar una asignatura dentro del plan. Un periodo regular o intersemestral es otra entidad fechada y auditable; nunca inferir calendario, cupos ni apertura desde el año o el plan curricular.
 - Un plan de transición entre versiones curriculares no equivale a un rango de cohorte ni a una homologación implícita. No inferir equivalencias, aplicar una conversión masiva ni cambiar el plan de un estudiante sin matriz de correspondencia y reglas aprobadas por la autoridad curricular, con referencia normativa trazable.
 - La estructura organizacional, lugares y programas tiene prioridad explícita de visualización; una afiliación vigente, no los textos legados, define facultad/escuela/sede de un programa. Las actividades del calendario pueden abrir antes de las fechas lectivas y se validan por su propio intervalo.
@@ -54,6 +55,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 ## Documentación y continuidad
 
 - Leer esta guía y `docs/PROJECT.md` antes de cambiar el diseño.
+- Leer `docs/discovery/sponsor-university-platform-scope-2026-10.md` para el alcance funcional ampliado, sus dependencias y los criterios para no convertir prototipos en fuentes institucionales.
 - En cambios del frontend, leer también `frontend/AGENTS.md` y ejecutar validaciones desde el submódulo frontend.
 - Mantener `docs/architecture/` (C4, datos y procesos), `docs/ROADMAP.md`, decisiones ADR y planes de `docs/superpowers/plans/` sincronizados con el código.
 - Actualizar los diagramas cuando cambie una frontera, integración, fuente oficial de datos o flujo de corte.
