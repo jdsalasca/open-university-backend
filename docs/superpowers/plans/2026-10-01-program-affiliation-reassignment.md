@@ -112,6 +112,6 @@
 **Files:**
 - Modify root Git submodule pointer: `frontend/`
 
-- [ ] **Step 1: Integrate the frontend and backend task commits into each repository's `develop` branch.** Preserve the separately coordinated repositories and update the backend's frontend submodule pointer only after the frontend `develop` commit exists.
-- [ ] **Step 2: Run root Compose verification.** Run `docker compose ps`, request `http://localhost:5173/` and `http://localhost:8080/actuator/health`, and inspect browser-visible `/#academia` behavior. Expected: frontend 200, backend UP, MySQL healthy, and the gated control remains hidden without institutional authorization.
+- [x] **Step 1: Integrate the frontend and backend task commits into each repository's `develop` branch.** Preserve the separately coordinated repositories and update the backend's frontend submodule pointer only after the frontend `develop` commit exists.
+- [x] **Step 2: Run root Compose verification.** Run `docker compose ps`, request `http://localhost:5173/` and `http://localhost:8080/actuator/health`, and inspect browser-visible `/#academia` behavior. Expected: frontend 200, backend UP, MySQL healthy, and the gated control remains hidden without institutional authorization.
 - [ ] **Step 3: Check repository status and commit the submodule pointer.** Confirm both repos are on `develop` with intended changes only, then commit the pointer as `chore: update frontend submodule` and push the authorized milestone commits to their existing `origin/develop` remotes.
