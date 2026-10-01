@@ -12,6 +12,10 @@ El texto presenta la formulación como insumo para planear etapas posteriores y 
 
 Los boletines de Vicerrectoría Académica de [enero](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/vic_aca/vic_acad/inf/doc/2025/001_bolvicacad_2025.pdf) y [mayo de 2025](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/vic_aca/vic_acad/inf/doc/2025/005_bolvicaca_2025.pdf) describen, en paralelo, actualización de SIRA con migración de datos y funcionalidades para PAE, planes de estudio, prerrequisitos, créditos de libre elección, oferta/programación de cursos, horarios y selección de cursos. Estos boletines y el informe anual tienen alcances y cortes de reporte distintos; juntos muestran una dependencia institucional relevante, pero no un inventario operativo de 2026 ni un contrato de integración.
 
+El [Plan de Acción Institucional 2024](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/taip/06_plan/planes/infavance/05_2024_infavacp.pdf) reportó 75 % de avance validado frente al 100 % programado para formular la Fase III, y 85 % frente al 100 % programado para la meta de ejecutar el 50 % de las fases de desarrollo. La [rendición de cuentas UPTC de 2024](https://www.uptc.edu.co/sitio/export/sites/default/portal/sitios/universidad/rectoria/planeacion/rdc/.content/doc/2025/audpubl/inf_rdc_2024_1.pdf) presentó una ruta de diseño curricular que incluye, entre otros temas, capacidades de ingreso, caracterización socioeconómica, admitidos, riesgo de deserción/retención y diseño/seguimiento curricular. Son metas y temas reportados para 2024, no evidencia de campos aprobados ni de módulos actualmente desplegados.
+
+Los indicadores publicados en 2024 y 2025 utilizan metas y cortes distintos; no se deben comparar como un porcentaje acumulado de terminación del producto. El detalle funcional/técnico y la arquitectura propuesta siguen requiriendo el artefacto de Fase III y el inventario operativo vigente para conocer su alcance implementable.
+
 ## Implicación para esta plataforma
 
 La plataforma local mantiene sus módulos académicos como prototipos técnicos sin datos oficiales. Antes de ampliar el catálogo, desarrollar admisiones, expediente estudiantil, oferta, carga de cursos o registro de asignaturas, el patrocinador y las autoridades institucionales deben dejar por escrito si este desarrollo:
@@ -21,7 +25,7 @@ La plataforma local mantiene sus módulos académicos como prototipos técnicos 
 3. se integra como capacidad complementaria; o
 4. tiene un alcance institucional distinto y una frontera explícita.
 
-La decisión debe identificar el patrocinio y mandato aplicables, los artefactos reutilizables, módulos dentro y fuera de alcance, arquitectura e interfaces aprobadas, sistema maestro por entidad, custodia técnica, criterios de aceptación y transición. No se debe iniciar una segunda fuente institucional ni migrar, conciliar o sustituir datos de SIRA sin esa decisión.
+La decisión debe identificar el patrocinio y mandato aplicables, los artefactos reutilizables, módulos dentro y fuera de alcance, arquitectura e interfaces aprobadas, sistema maestro por entidad, custodia técnica, criterios de aceptación y transición. La mención pública de caracterización socioeconómica, admisión o riesgo/retención no aprueba la captura de esos datos ni define finalidad, base legal o perfil de acceso. No se debe iniciar una segunda fuente institucional ni migrar, conciliar o sustituir datos de SIRA sin esa decisión.
 
 El patrocinador sugiere **ACRA y Registro Académico** para validar proceso, fuente funcional y campos del ciclo del estudiante. Esta sugerencia no es una designación institucional ni determina cuál de esas áreas gobierna cada dominio. Debe confirmarse junto con Vicerrectoría Académica, DTIC y la instancia que dirige el nuevo sistema; la responsabilidad técnica, el estado de los productos y las reglas de acceso también están por confirmar.
 
