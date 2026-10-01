@@ -251,7 +251,7 @@ sequenceDiagram
   DB-->>API: raíces por orden de nodo; hijos por orden de relación; programas por orden de afiliación
 ```
 
-Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo; no crea una jerarquía ni carga datos oficiales. Tanto el formulario como los editores requieren autorización de escritura. Las operaciones envían una referencia institucional; el backend audita cada cambio y, tras un alta, la pantalla vuelve a consultar el árbol.
+Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo o un lugar raíz tras elegir explícitamente su tipo; ninguno crea una jerarquía, una afiliación ni carga datos oficiales. Tanto los formularios como los editores requieren autorización de escritura. Las operaciones envían una referencia institucional; el backend audita cada alta/cambio y, tras un alta, la pantalla vuelve a consultar el árbol.
 
 ### Alta protegida de una facultad raíz
 
@@ -304,6 +304,51 @@ sequenceDiagram
 ```
 
 La interfaz muestra el formulario solo con el permiso recibido de `/api/v1/me`, pero el servidor aplica la regla final en cada `POST`. Un fallo al releer tras `201` se informa como alta aceptada con vista pendiente de recarga; no se repite el comando automáticamente. La forma no permite crear escuelas, hijos, relaciones de sede ni afiliaciones de programas.
+
+### Alta protegida de un lugar raíz
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia
+  participant Identity as API de identidad
+  participant API as Spring Boot: Academic Structure API
+  participant Auth as Spring Security
+  participant Service as AcademicStructureService
+  participant DB as MySQL
+
+  Operator->>UI: elige tipo de lugar e ingresa código, nombre, prioridad, vigencia y referencia
+  UI->>Identity: GET /api/v1/me
+  Identity-->>UI: permiso academic:structure:write
+  UI->>API: POST /api/v1/admin/academic-structure/sites con Bearer
+  API->>Auth: autentica y exige academic:structure:write
+  alt sesión o permiso rechazado
+    API-->>UI: 401 o 403
+    UI->>Identity: revalida GET /api/v1/me y suspende este token para escritura
+    UI-->>Operator: oculta controles administrativos hasta revalidar acceso
+  else permiso autorizado
+    Auth-->>API: sujeto y permiso autorizados
+    API->>Service: solicita crear lugar con tipo explícito
+    Service->>Service: valida datos y referencia; el comando no contiene padre
+    alt datos inválidos o código en conflicto
+      Service-->>API: error de validación o integridad
+      API-->>UI: 400 o 409; no se confirma el alta
+      UI-->>Operator: conserva el formulario e informa el error
+    else alta válida
+      Service->>DB: inserta academic_site y evento SITE_CREATED en una transacción
+      DB-->>Service: commit atómico
+      Service-->>API: identidad creada
+      API-->>UI: 201 con id de lugar
+      UI->>API: GET /api/v1/academic-structure
+      API->>DB: consulta estructura vigente ordenada
+      DB-->>API: árbol actualizado
+      API-->>UI: estructura autoritativa
+      UI-->>Operator: muestra el lugar raíz después de releer el árbol
+    end
+  end
+```
+
+El tipo elegido se valida contra los seis valores del contrato (`CENTRAL`, `SECCIONAL`, `REGIONAL`, `CREAD`, `CAMPUS`, `OTHER`); son categorías técnicas, no un catálogo oficial de sedes aprobado por UPTC. La creación no establece padre ni vincula programas. Un fallo al releer después de `201` se comunica como alta aceptada con actualización visual pendiente; no se repite el comando automáticamente.
 
 ### Corrección de prioridad organizacional
 
