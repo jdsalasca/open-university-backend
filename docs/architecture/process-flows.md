@@ -641,6 +641,11 @@ sequenceDiagram
   UI->>API: GET /api/v1/admin/academic-periods con Bearer
   API->>Auth: exige academic:period:read
   API-->>UI: REGULAR e INTERSEMESTRAL con estados actuales
+  Operator->>UI: solicita consultar calendario y auditoría de un periodo
+  UI->>API: GET /api/v1/admin/academic-periods/{periodId}/history con Bearer
+  API->>Auth: exige academic:period:read
+  API-->>UI: revisiones, actividades y eventos auditados
+  Note over UI: Carga bajo demanda; se cancela y oculta al cerrar o perder lectura
   Operator->>UI: solicita abrir/cerrar y confirma explícitamente
   UI->>API: POST /{periodId}/open o /close con Bearer
   API->>Auth: exige academic:period:write
@@ -650,7 +655,7 @@ sequenceDiagram
   Note over UI,DB: La transición solo cambia estado; no publica oferta ni abre matrícula
 ```
 
-El permiso administrativo se valida en Spring Security por ruta. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo y comparan la revisión de calendario observada; si otra solicitud la cambia antes de la transición, la solicitud antigua recibe conflicto sin revertir la enmienda ni escribir auditoría parcial. Ante `409`, React vuelve a consultar los periodos dentro del alcance autorizado, descarta la confirmación antigua y pide revisar el estado antes de intentar otra vez; ante `401/403`, revalida `/api/v1/me` y suspende el token rechazado para escritura. El historial con todas las revisiones, actividades y eventos se consulta mediante una ruta administrativa de solo lectura. React solo ofrece abrir para estados `APPROVED` y cerrar para `OPEN`, pide confirmación y conserva denegadas ambas acciones si falta el permiso de escritura. Sin permiso de lectura, solo muestra periodos públicamente abiertos; el backend sigue siendo la autoridad final.
+El permiso administrativo se valida en Spring Security por ruta. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo y comparan la revisión de calendario observada; si otra solicitud la cambia antes de la transición, la solicitud antigua recibe conflicto sin revertir la enmienda ni escribir auditoría parcial. Ante `409`, React vuelve a consultar los periodos dentro del alcance autorizado, descarta la confirmación antigua y pide revisar el estado antes de intentar otra vez; ante `401/403`, revalida `/api/v1/me` y suspende el token rechazado para escritura. El historial con todas las revisiones, actividades y eventos se consulta bajo demanda mediante una ruta administrativa de solo lectura protegida por `academic:period:read`; cerrar el panel cancela la consulta y perder lectura oculta la vista. React solo ofrece abrir para estados `APPROVED` y cerrar para `OPEN`, pide confirmación y conserva denegadas ambas acciones si falta el permiso de escritura. Sin permiso de lectura, solo muestra periodos públicamente abiertos; el backend sigue siendo la autoridad final.
 
 ```mermaid
 flowchart LR
