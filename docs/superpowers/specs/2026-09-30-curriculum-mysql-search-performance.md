@@ -25,14 +25,14 @@ Search remains a literal substring query over code or name, case/accent-insensit
 - The observed mean of each scenario is below 50 ms on the local single-concurrency synthetic setup. This is a local regression budget, not a production SLA certification.
 - The normal test suite does not require Docker or run the performance probe unless its explicit system properties are enabled.
 
-## Final local measurement — 2026-09-30
+## Latest local measurement — 2026-09-30 19:44 (UTC-5)
 
-The repeatable runner `tools/verify-mysql-curriculum.ps1` passed all six MySQL contract tests, including the UTC-session and cursor-publication contracts, on 10,000-row fixtures, with 10 warmups, 50 samples, page size 100 for curriculum entries and 25 for the draft queue, and concurrency 1:
+The repeatable runner `tools/verify-mysql-curriculum.ps1` selected SDKMAN Java 25.0.4, created an isolated MySQL 8.4 container, and passed all six MySQL contract tests, including the UTC-session and cursor-publication contracts. The performance cases used 10,000-row fixtures, 10 warmups, 50 samples, page size 100 for curriculum entries and 25 for the draft queue, and concurrency 1:
 
 | Query | Average | p50 | p95 | p99 |
 |---|---:|---:|---:|---:|
-| First page, no filter | 15.830 ms | 15.405 ms | 19.006 ms | 22.649 ms |
-| First page, substring filter | 39.612 ms | 33.528 ms | 108.218 ms | 126.693 ms |
-| Draft review queue | 16.923 ms | 16.144 ms | 22.699 ms | 26.847 ms |
+| First page, no filter | 11.786 ms | 11.300 ms | 12.284 ms | 29.555 ms |
+| First page, substring filter | 18.205 ms | 17.996 ms | 19.781 ms | 20.891 ms |
+| Draft review queue | 12.698 ms | 12.628 ms | 13.447 ms | 13.552 ms |
 
-All three averages pass the local `<50 ms` regression gate. Earlier runs observed substring p99 values of 27.199, 40.694 and 52.894 ms; the latest run shows a higher search tail, so percentiles remain diagnostic and visible. `EXPLAIN ANALYZE` for the draft queue shows MySQL reading the first 26 rows directly from `ix_academic_curriculum_drafts` in reverse order before joining program metadata. The filtered catalogue page showed one matching row and only the corresponding subject/revision lookups after the indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA.
+All three averages and all observed p95/p99 values in this run are below 50 ms. Earlier runs measured higher search tails, including p99 values of 108.218 and 126.693 ms; the latest result does not erase that variability. `EXPLAIN ANALYZE` for the draft queue shows MySQL reading the first 26 rows directly from `ix_academic_curriculum_drafts` in reverse order before joining program metadata. The filtered catalogue page showed one matching row and only the corresponding subject/revision lookups after the indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA.

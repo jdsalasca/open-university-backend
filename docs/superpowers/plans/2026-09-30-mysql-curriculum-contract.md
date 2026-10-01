@@ -50,7 +50,7 @@
 - [x] Add characterization/schema tests and a MySQL 8.4 performance budget for accent/case-insensitive search, literal `%`/`_`/`!`, and 10,000-row page/count reads with 10 warmups and 50 measured samples.
 - [x] Observe RED: H2 shows the search columns/index are absent; MySQL 8.4 shows the filtered mean is 128 ms against the 50 ms budget.
 - [x] Add migration/backfill and update the write/query adapter while preserving public API and literal substring semantics.
-- [x] Run focused H2 catalog tests and the opt-in MySQL probe; inspect correctness, plans, and average/p50/p95/p99 output. H2: 33 tests passed. MySQL 8.4: 4 contract tests passed; final means 22.062 ms unfiltered and 33.807 ms substring. Search p99 was 40.694 ms in the latest run and 52.894 ms in one prior run; the requested average gate passed in each.
+- [x] Run focused H2 catalog tests and the opt-in MySQL probe; inspect correctness, plans, and average/p50/p95/p99 output. H2: 33 tests passed. In the initial MySQL 8.4 runs, the filtered mean fell from 128 ms to 33.807 ms; later runs recorded a high search tail up to p95/p99 108.218/126.693 ms.
 - [x] Keep test fixtures in the test transaction; confirm rollback and 10,000-row results.
 
 ### Task 2: Ephemeral runner and project documentation
@@ -65,3 +65,8 @@
 - [x] Add a PowerShell runner that creates a uniquely named, loopback-only MySQL 8.4 container without a volume, waits for readiness, runs Task 1 using the SDKMAN-selected Java 25 and Maven Wrapper, and removes only that container in `finally`.
 - [x] Document the verification command, local synthetic metrics and their limits in the runbook, roadmap, data model, ADR and pagination design.
 - [x] Run the backend suite with `mvnw verify`, recheck Compose health and repository status, commit to `develop`, push the backend repository, and verify the remote SHA (`10e3fd7a7fb8eb25bdabde55b69adfe0c1bea46a`).
+
+### Revalidation — 2026-09-30
+
+- [x] Rerun `tools/verify-mysql-curriculum.ps1` against a uniquely named, temporary MySQL 8.4 container; SDKMAN selected Java 25.0.4; all 6 MySQL contract tests passed.
+- [x] Record 10,000-row, concurrency-1 means/p50/p95/p99: unfiltered 11.786/11.300/12.284/29.555 ms; substring 18.205/17.996/19.781/20.891 ms; draft queue 12.698/12.628/13.447/13.552 ms. The runner removed the temporary container; the persistent Compose services remained running.
