@@ -740,6 +740,28 @@ sequenceDiagram
 
 El encabezado `Accept-Language` elige el bundle del backend; sin preferencia, se usa `es-CO`. Compose Watch y la base persistente son exclusivamente locales de desarrollo.
 
+## Verificación continua por repositorio
+
+```mermaid
+flowchart TD
+  Dev[Push o pull request a develop]
+  Dev --> FrontRepo[Repositorio Universiry-frontend]
+  Dev --> BackRepo[Repositorio Universiry-backend]
+  FrontRepo --> CheckoutFront[Checkout de solo lectura]
+  CheckoutFront --> Node[Node 24 y npm ci]
+  Node --> FrontTests[npm test]
+  FrontTests --> FrontBuild[npm run build y presupuestos]
+  FrontBuild --> FrontLint[npm run lint]
+  BackRepo --> CheckoutBack[Checkout de solo lectura]
+  CheckoutBack --> Java[Java 25 desde .sdkmanrc]
+  Java --> MySQL[Servicio MySQL 8.4 efímero]
+  MySQL --> Maven[Maven verify y contratos MySQL sintéticos]
+  FrontLint --> FrontResult[Resultado del workflow frontend]
+  Maven --> BackResult[Resultado del workflow backend]
+```
+
+Las workflows usan acciones fijadas por SHA, permisos `contents: read` y no consumen secretos de producción. MySQL existe solo durante la ejecución del job. El perfil de latencia `<50 ms` queda fuera de esta señal: se mide con el protocolo reproducible descrito en el runbook y no se presenta como SLA institucional.
+
 ## Reemplazo y corte de un dominio
 
 ```mermaid

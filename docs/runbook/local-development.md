@@ -7,6 +7,12 @@
 - Para compilar Java directamente en el host: SDKMAN con la versión declarada en `.sdkmanrc` (`25.0.4-tem`). El flujo Docker usa una imagen Maven basada en JDK 25.
 - Para pruebas del frontend en el host: Node.js 24 y npm.
 
+## Integración continua
+
+Cada `push` a `develop`, `pull_request` dirigido a `develop` y ejecución manual verifica el repositorio correspondiente. `Universiry-frontend/.github/workflows/ci.yml` instala el lockfile con Node 24 y ejecuta `npm test`, `npm run build` y `npm run lint`. `.github/workflows/ci.yml` de backend toma Java 25 desde `.sdkmanrc`, ejecuta Maven `verify` y activa los contratos MySQL contra un servicio efímero MySQL 8.4 del runner. Los datos de prueba son sintéticos, la base no usa volumen persistente y el pipeline no recibe secretos de producción ni conecta al Compose local.
+
+El perfil MySQL de latencia se ejecuta aparte con la carga, muestras y concurrencia definidas en la sección [contrato y perfil MySQL de paginación curricular](#contrato-y-perfil-mysql-de-paginación-curricular). Sus promedios locales no certifican el SLO institucional ni se comparan directamente con un runner hospedado.
+
 El helper `tools/use-sdkman-java.ps1` lee la versión exacta de `.sdkmanrc`; no depende de `sdk current` y solo cambia el entorno de la sesión actual. Prueba esa selección con `Invoke-Pester -Script .\tools\use-sdkman-java.Tests.ps1` desde la raíz del repositorio.
 
 ## Preparar el checkout
@@ -90,7 +96,7 @@ La plantilla solo declara el contrato de columnas; no contiene oferta académica
 
 ### Carga por pantalla React
 
-`npm run build` genera el manifiesto y falla si se superan los presupuestos: entry hasta 280.000 B JS/21.000 B CSS; ruta `/#programas` hasta 325.000 B JS/48.000 B CSS; chunk OIDC diferido hasta 75.000 B JS, incluidas sus dependencias estáticas. El build local del 1 de octubre de 2026 midió 263.041 B JS y 19.281 B CSS en el entry; `/#programas` suma 292.621 B JS y 41.470 B CSS, mientras que OIDC diferido ocupa 68.680 B JS. En unidades redondeadas, el entry mide 263,04 kB JS (gzip 80,65 kB) y 19,28 kB CSS (gzip 4,93 kB); la ruta de programas suma 292,62 kB JS + 41,47 kB CSS, o 334,09 kB en total. Son 29,4 % menos bytes brutos que el bundle único previo de 401.132 B JS + 72.365 B CSS. Los chunks de pantalla pesan: catálogo 29,58/22,18 kB JS/CSS; estructura y periodos 43,18/17,78 kB; centro de identidad 24,81/17,17 kB. El OIDC se solicita después de arrancar el shell y solo al restaurar sesión con configuración activa (17,40 kB gzip). `npm test` cubre el cálculo, límites y separación dinámica con datos sintéticos. Estas cifras y presupuestos verifican tamaños de artefactos, no tiempos del navegador, transferencia real, LCP ni un SLO institucional.
+`npm run build` genera el manifiesto y falla si se superan los presupuestos: entry hasta 280.000 B JS/21.000 B CSS; ruta `/#programas` hasta 325.000 B JS/48.000 B CSS; chunk OIDC diferido hasta 75.000 B JS, incluidas sus dependencias estáticas. El build limpio del 1 de octubre de 2026 tras `npm ci` midió 265.982 B JS y 19.281 B CSS en el entry; `/#programas` suma 295.986 B JS y 41.470 B CSS, mientras que OIDC diferido ocupa 68.637 B JS. En unidades redondeadas, el entry mide 265,98 kB JS (gzip 81,41 kB) y 19,28 kB CSS (gzip 4,93 kB); la ruta de programas suma 295,99 kB JS + 41,47 kB CSS, o 337,46 kB en total. Son 28,7 % menos bytes brutos que el bundle único previo de 401.132 B JS + 72.365 B CSS. Los chunks de pantalla pesan: catálogo 30,00/22,18 kB JS/CSS; estructura y periodos 62,63/21,11 kB; centro de identidad 24,81/17,17 kB. El OIDC se solicita después de arrancar el shell y solo al restaurar sesión con configuración activa (17,41 kB gzip). `npm test` cubre el cálculo, límites y separación dinámica con datos sintéticos. Estas cifras y presupuestos verifican tamaños de artefactos, no tiempos del navegador, transferencia real, LCP ni un SLO institucional.
 
 ### Contrato y perfil MySQL de paginación curricular
 

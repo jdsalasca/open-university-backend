@@ -28,6 +28,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - Diseñar interfaces antes de adaptadores. Mantener alta cohesión, bajo acoplamiento y responsabilidades SOLID sin agregar capas vacías.
 - Antes de agregar entidad, endpoint, token visual o helper, revisar duplicación y reutilizar el modelo/capacidad existente cuando corresponda.
 - Ejecutar las verificaciones indicadas por el plan y reportar únicamente resultados observados.
+- Los cambios del frontend pasan por `frontend/.github/workflows/ci.yml` (`npm test`, `npm run build`, `npm run lint`); los del backend por `.github/workflows/ci.yml` (Java de `.sdkmanrc`, Maven `verify` y contratos MySQL 8.4 sobre servicio desechable). No añadir secretos ni apuntar CI a Compose, producción o datos institucionales. El perfil de latencia `<50 ms` se mide por separado con su volumen, concurrencia y muestras documentados; un runner hospedado no certifica el SLO institucional.
 
 ## Seguridad, datos y operación
 
