@@ -184,6 +184,135 @@ class AcademicStructureControllerTest {
     }
 
     @Test
+    void authorized_operator_can_close_one_dated_hierarchy_relation_without_deleting_its_units() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CLOSE-RELATION", "FACULTY", "Facultad para cerrar", 1,
+                "2025-01-01", null);
+        UUID childId = createUnit("SCHOOL-CLOSE-RELATION", "SCHOOL", "Escuela para cerrar", 2,
+                "2025-01-01", null);
+        createOrganizationEdge(parentId, childId, "2025-01-01", "2025-06-30", 1);
+        createOrganizationEdge(parentId, childId, "2025-07-01", null, 2);
+        String reference = "Acta de reorganización 2026";
+        String request = "{\"validFrom\":\"2025-07-01\",\"effectiveThrough\":\"2026-06-30\","
+                + "\"sourceReference\":\"" + reference + "\"}";
+
+        // Act
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/close",
+                        parentId, childId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNoContent());
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_from = '2025-01-01'
+                  AND valid_through = '2025-06-30'
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_from = '2025-07-01'
+                  AND valid_through = '2026-06-30'
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(2, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_unit
+                WHERE organization_unit_id IN (?, ?)
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = 'UNIT_RELATION_CLOSED'
+                  AND actor_sub = 'structure.operator' AND source_reference = ?
+                """, Integer.class, childId.toString(), reference));
+    }
+
+    @Test
+    void repeated_relation_close_is_idempotent_and_does_not_duplicate_audit() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CLOSE-REPEAT", "FACULTY", "Facultad cierre repetido", 1);
+        UUID childId = createUnit("SCHOOL-CLOSE-REPEAT", "SCHOOL", "Escuela cierre repetido", 2);
+        createOrganizationEdge(parentId, childId, "2026-01-01", null, 2);
+        String request = "{\"validFrom\":\"2026-01-01\",\"effectiveThrough\":\"2026-10-31\","
+                + "\"sourceReference\":\"Acta repetida\"}";
+        var close = patch("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/close",
+                parentId, childId).with(writer()).contentType(MediaType.APPLICATION_JSON).content(request);
+
+        // Act
+        mockMvc.perform(close).andExpect(status().isNoContent());
+        mockMvc.perform(close).andExpect(status().isNoContent());
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = 'UNIT_RELATION_CLOSED' AND source_reference = 'Acta repetida'
+                """, Integer.class, childId.toString()));
+    }
+
+    @Test
+    void relation_close_cannot_extend_a_validity_interval_or_create_partial_audit() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CLOSE-EXTEND", "FACULTY", "Facultad cierre extensión", 1);
+        UUID childId = createUnit("SCHOOL-CLOSE-EXTEND", "SCHOOL", "Escuela cierre extensión", 2);
+        createOrganizationEdge(parentId, childId, "2026-01-01", "2026-06-30", 2);
+        String reference = "Referencia de extensión no permitida";
+        String request = "{\"validFrom\":\"2026-01-01\",\"effectiveThrough\":\"2026-12-31\","
+                + "\"sourceReference\":\"" + reference + "\"}";
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/close",
+                        parentId, childId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isConflict());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_through = '2026-06-30'
+                """, Integer.class, parentId.toString(), childId.toString()));
+        org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE source_reference = ? AND action_key = 'UNIT_RELATION_CLOSED'
+                """, Integer.class, reference));
+    }
+
+    @Test
+    void relation_close_rejects_an_end_before_the_selected_relation_starts() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CLOSE-RANGE", "FACULTY", "Facultad vigencia", 1);
+        UUID childId = createUnit("SCHOOL-CLOSE-RANGE", "SCHOOL", "Escuela vigencia", 2);
+        createOrganizationEdge(parentId, childId, "2026-01-01", null, 2);
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/close",
+                        parentId, childId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"validFrom\":\"2026-01-01\",\"effectiveThrough\":\"2025-12-31\","
+                                + "\"sourceReference\":\"Referencia de rango inválido\"}"))
+                .andExpect(status().isBadRequest());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_through IS NULL
+                """, Integer.class, parentId.toString(), childId.toString()));
+    }
+
+    @Test
+    void relation_close_requires_structure_write_permission() throws Exception {
+        // Arrange
+        UUID parentId = createUnit("FAC-CLOSE-READ", "FACULTY", "Facultad solo lectura", 1);
+        UUID childId = createUnit("SCHOOL-CLOSE-READ", "SCHOOL", "Escuela solo lectura", 2);
+        createOrganizationEdge(parentId, childId, "2026-01-01", null, 2);
+        String request = "{\"validFrom\":\"2026-01-01\",\"effectiveThrough\":\"2026-10-31\","
+                + "\"sourceReference\":\"Referencia de solo lectura\"}";
+
+        // Act + Assert
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/close",
+                        parentId, childId)
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ)))
+                        .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isForbidden());
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_through IS NULL
+                """, Integer.class, parentId.toString(), childId.toString()));
+    }
+
+    @Test
     void missing_relationship_order_defaults_to_zero_for_existing_clients() throws Exception {
         // Arrange
         UUID parent = createUnit("FAC-DEFAULT-ORDER", "FACULTY", "Facultad orden base", 1);

@@ -20,6 +20,9 @@ public interface AcademicStructureService {
 
     void relateUnits(UUID parentId, UUID childId, AcademicStructureRelationCommand command, String actorSub);
 
+    void closeOrganizationRelation(UUID parentId, UUID childId, AcademicOrganizationRelationCloseCommand command,
+                                   String actorSub);
+
     void relateSites(UUID parentId, UUID childId, AcademicStructureRelationCommand command, String actorSub);
 
     void affiliateProgram(UUID programId, AcademicProgramAffiliationCommand command, String actorSub);

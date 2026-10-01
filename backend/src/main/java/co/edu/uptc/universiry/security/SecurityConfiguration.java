@@ -117,7 +117,8 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/academic-structure/sites/*/order",
                                 "/api/v1/admin/academic-structure/units/*/children/*/order",
                                 "/api/v1/admin/academic-structure/sites/*/children/*/order",
-                                "/api/v1/admin/academic-structure/programs/*/affiliations/*/order")
+                                "/api/v1/admin/academic-structure/programs/*/affiliations/*/order",
+                                "/api/v1/admin/academic-structure/units/*/children/*/close")
                         .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()
                         .anyRequest().denyAll()

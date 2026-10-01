@@ -2,6 +2,7 @@ package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
 import co.edu.uptc.universiry.academics.application.AcademicStructureConflictException;
 import co.edu.uptc.universiry.academics.application.AcademicDisplayOrderCommand;
+import co.edu.uptc.universiry.academics.application.AcademicOrganizationRelationCloseCommand;
 import co.edu.uptc.universiry.academics.application.AcademicStructureNotFoundException;
 import co.edu.uptc.universiry.academics.application.AcademicStructureRepository;
 import co.edu.uptc.universiry.academics.domain.AcademicEntityStatus;
@@ -233,6 +234,37 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 relation.displayOrder(), relation.validFrom(), relation.validThrough());
         audit(relation.childUnitId(), "UNIT_RELATED", actorSub, sourceReference,
                 "Organization unit " + relation.childUnitId() + " added under " + relation.parentUnitId());
+    }
+
+    @Override
+    @Transactional
+    public void closeOrganizationRelation(UUID parentId, UUID childId,
+                                          AcademicOrganizationRelationCloseCommand command,
+                                          String actorSub, String sourceReference) {
+        lockStructure();
+        List<RelationValidity> values = jdbcTemplate.query("""
+                SELECT valid_from, valid_through FROM academic_organization_relation
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_from = ?
+                """, (rs, row) -> new RelationValidity(localDate(rs, "valid_from"),
+                nullableDate(rs, "valid_through")), parentId.toString(), childId.toString(), command.validFrom());
+        if (values.isEmpty()) throw new AcademicStructureNotFoundException();
+
+        RelationValidity current = values.getFirst();
+        if (current.validThrough() != null && command.effectiveThrough().isAfter(current.validThrough())) {
+            throw new AcademicStructureConflictException();
+        }
+        if (command.effectiveThrough().equals(current.validThrough())) return;
+
+        int changed = jdbcTemplate.update("""
+                UPDATE academic_organization_relation SET valid_through = ?
+                WHERE parent_unit_id = ? AND child_unit_id = ? AND valid_from = ?
+                  AND (valid_through IS NULL OR valid_through >= ?)
+                """, command.effectiveThrough(), parentId.toString(), childId.toString(), command.validFrom(),
+                command.effectiveThrough());
+        if (changed != 1) throw new AcademicStructureConflictException();
+        audit(childId, "UNIT_RELATION_CLOSED", actorSub, sourceReference,
+                "Organization unit relation " + parentId + "/" + childId + " closed through "
+                        + command.effectiveThrough());
     }
 
     @Override
@@ -544,6 +576,9 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
     }
 
     private record ExistingRelation(UUID childId, LocalDate validFrom, LocalDate validThrough) {
+    }
+
+    private record RelationValidity(LocalDate validFrom, LocalDate validThrough) {
     }
 
     private record OrderState(

@@ -24,6 +24,9 @@ public interface AcademicStructureRepository {
 
     void relateOrganizationUnits(AcademicOrganizationRelation relation, String actorSub, String sourceReference);
 
+    void closeOrganizationRelation(UUID parentId, UUID childId, AcademicOrganizationRelationCloseCommand command,
+                                   String actorSub, String sourceReference);
+
     void relateSites(AcademicSiteRelation relation, String actorSub, String sourceReference);
 
     void affiliateProgram(AcademicProgramAffiliation affiliation, String actorSub);
