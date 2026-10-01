@@ -26,7 +26,7 @@ Antes de desarrollar formularios, cuentas de aspirante, captura de PIN, carga de
 
 1. si «Inscríbete» corresponde a SIRA, a la Fase III, a una solución independiente o a un componente conectado;
 2. qué sistema opera cada paso de la convocatoria 2027-I y las siguientes, y cuál es la fuente maestra por entidad;
-3. dueño funcional, custodia técnica, autoridad de decisión y responsabilidades entre ACRA, Registro Académico, DTIC y la instancia de Fase III; ACRA y Registro Académico son una propuesta del patrocinador, no una designación formal;
+3. dueño funcional, custodia técnica, autoridad de decisión y responsabilidades entre DTIC, la instancia de Fase III y las áreas que UPTC designe; ACRA/Registro Académico es participación funcional sugerida por el patrocinador, y debe aclararse si se refiere a dos equipos o a la dependencia cuyo nombre público integra Control de Registro Académico;
 4. interfaces autorizadas para PIN, identidad, validaciones y documentos; no se presume que exista una API;
 5. finalidades, campos mínimos, tratamiento de aspirantes menores y datos sensibles, permisos, auditoría, retención, eliminación y respuesta a incidentes;
 6. estrategia para reutilizar, integrar, coexistir o retirar componentes existentes sin crear doble captura ni dos registros oficiales.

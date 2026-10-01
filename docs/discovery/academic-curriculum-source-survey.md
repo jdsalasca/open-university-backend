@@ -2,7 +2,7 @@
 
 **Corte de revisión:** 2026-10-01<br>
 **Alcance:** pregrado presencial como primera ruta; las páginas de otras modalidades se usan solo para identificar diferencias de versión y no se trasladan a sus reglas.  
-**Estado:** investigación pública preliminar; requiere validación de ACRA, Registro Académico, comités curriculares, DTIC y responsables de datos.  
+**Estado:** investigación pública preliminar; requiere validación de responsables de catálogo curricular que UPTC designe, comités curriculares, Vicerrectoría Académica, DTIC y responsables de datos. La sugerencia de ACRA/Registro Académico aplica al ciclo del estudiante; no asigna por sí sola titularidad del catálogo/PAE.
 **Datos personales:** no recolectados ni incorporados.
 
 **Límite de esta revisión:** las búsquedas devolvieron extractos de páginas oficiales UPTC, pero al abrir varias páginas completas el navegador de investigación respondió 502, timeout o caché no disponible. Las observaciones siguientes son pistas de fuentes primarias indexadas, no una extracción completa del contenido ni una confirmación de vigencia; antes de mapear o automatizar datos, recuperar y revisar los actos/documentos completos con el responsable institucional.
@@ -34,7 +34,7 @@ El semestre dentro de la malla identifica la ubicación curricular de una activi
 
 ## Validación requerida antes de cargar datos oficiales
 
-1. **Fuente y propiedad:** ACRA y Registro Académico son las áreas sugeridas por el patrocinador para validar la fuente maestra y campos del expediente; confirmar formalmente su mandato. Para catálogo/PAE/oferta, validar además con DTIC y Vicerrectoría Académica qué se desplegó del alcance SIRA 2025, su fuente curricular y contrato. La sugerencia no confirma por sí sola titularidad ni autorización de tratamiento.
+1. **Fuente y propiedad:** ACRA/Registro Académico son la participación sugerida por el patrocinador para validar la fuente maestra y campos del expediente estudiantil; su nomenclatura/alcance debe aclararse y no les asigna automáticamente el catálogo curricular. Para catálogo/PAE/oferta, designar sus responsables y validar con DTIC/Vicerrectoría Académica qué se desplegó del alcance SIRA 2025, su fuente curricular y contrato. La sugerencia no confirma titularidad ni autorización de tratamiento.
 2. **Identidad:** acordar códigos estables y su ámbito para programa, lugar de desarrollo, asignatura y versión, incluyendo programas que aparecen en más de una sede o modalidad.
 3. **Versión/cohorte:** validar el acto y vigencia del plan, cohorte desde/hasta, programas en transición y coexistencia de versiones; definir el proceso humano de revisión y publicación.
 4. **Semántica curricular:** confirmar créditos, espacio, componente, electivas/grupos, prerrequisitos y equivalencias. El CSV actual guarda algunos de estos elementos, pero no ejecuta selección de electivas, homologación ni reglas de matrícula. Validar por separado excepciones de formación complementaria ofrecida por otros programas.
