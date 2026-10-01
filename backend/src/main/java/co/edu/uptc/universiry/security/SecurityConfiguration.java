@@ -62,6 +62,7 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 GET,
                                 "/api/v1/branding",
+                                "/api/v1/spaces",
                                 "/api/v1/academic-catalog/programs",
                                 "/api/v1/academic-structure",
                                 "/api/v1/academic-periods",

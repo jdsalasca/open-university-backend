@@ -12,6 +12,7 @@ public record BrandModule(String key, String label, boolean available, boolean v
                 new BrandModule("curricula", "Mallas curriculares", false, false, 40),
                 new BrandModule("subjects", "Asignaturas", false, false, 50),
                 new BrandModule("academic-load", "Carga académica", false, false, 60),
+                new BrandModule("spaces", "Guía de espacios", true, true, 70),
                 new BrandModule("visual-identity", "Identidad visual", true, true, 90),
                 new BrandModule("admissions", "Admisiones", true, true, 100)
         );

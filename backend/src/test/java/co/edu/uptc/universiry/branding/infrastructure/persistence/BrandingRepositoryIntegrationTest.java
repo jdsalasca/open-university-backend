@@ -40,8 +40,14 @@ class BrandingRepositoryIntegrationTest {
         assertEquals("#FFCC29", configuration.colors().get("primary").hex());
         assertEquals("#1A1A1A", configuration.colors().get("ink").hex());
         assertEquals(List.of(
-                "home", "students", "programs", "curricula", "subjects", "academic-load", "visual-identity", "admissions"
+                "home", "students", "programs", "curricula", "subjects", "academic-load", "spaces", "visual-identity", "admissions"
         ), configuration.modules().stream().map(module -> module.key()).toList());
+
+        Integer revisions = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM institution_branding_revision", Integer.class);
+        Integer spaceLabels = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM institution_module_label WHERE module_key = 'spaces'", Integer.class);
+        assertEquals(revisions, spaceLabels);
     }
 
     @Test

@@ -38,7 +38,7 @@ class BrandingConfigurationTest {
     void default_catalog_has_stable_keys() {
         // Arrange
         List<String> expectedKeys = List.of(
-                "home", "students", "programs", "curricula", "subjects", "academic-load", "visual-identity", "admissions"
+                "home", "students", "programs", "curricula", "subjects", "academic-load", "spaces", "visual-identity", "admissions"
         );
 
         // Act
@@ -50,5 +50,8 @@ class BrandingConfigurationTest {
         assertTrue(BrandModule.defaultCatalog().stream()
                 .filter(module -> module.key().equals("admissions"))
                 .findFirst().orElseThrow().available());
+        assertTrue(BrandModule.defaultCatalog().stream()
+                .filter(module -> module.key().equals("spaces"))
+                .findFirst().orElseThrow().visible());
     }
 }
