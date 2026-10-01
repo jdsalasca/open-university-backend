@@ -822,3 +822,33 @@ flowchart LR
   Accept -->|rechazo| Reject
   Accept -->|aprobado| Shadow --> Cutover --> Stabilize --> Retire
 ```
+
+## Consulta de la guía pública de espacios
+
+La pantalla combina búsqueda local con una instantánea de ubicaciones versionada en la aplicación. No se consulta el sitio UPTC en tiempo de ejecución, no se guardan espacios en MySQL y no se solicita ubicación del navegador.
+
+```mermaid
+sequenceDiagram
+  actor Visitor as Visitante
+  participant React as React: #espacios
+  participant API as Spring Boot: GET /api/v1/spaces
+  participant Catalog as JSON versionado en classpath
+  participant Source as Páginas oficiales UPTC
+  participant OSM as OpenStreetMap
+
+  Visitor->>React: abre la guía pública
+  React->>API: GET anónimo con Accept: application/json
+  API->>Catalog: consulta PublicSpaceDirectory.snapshot()
+  Catalog-->>API: sedes, CREAD y servicios con su fuente
+  API-->>React: instantánea de solo lectura
+  React->>React: busca texto sin tildes y aplica filtro de tipo
+  React-->>Visitor: resultados con ubicación publicada y fechas de procedencia
+  Visitor->>Source: activa enlace de la fuente UPTC
+  Source-->>Visitor: confirma ubicación y detalles actuales
+  opt La entrada incluye dirección postal publicada
+    Visitor->>React: activa búsqueda de mapa
+    React-->>OSM: navega a búsqueda externa con texto de dirección
+  end
+```
+
+El primer corte enumera 6 sedes, 11 CREAD y 4 puntos de servicio de las páginas oficiales consultadas; es un catálogo parcial. Departamento y fecha de actualización quedan nulos cuando la fuente no los declara. En Rondón, la fuente describe un segundo piso dentro de la biblioteca municipal, pero no publica dirección postal: la ficha muestra esa referencia y omite el enlace cartográfico. Branding `spaces.available/visible` controla la navegación lateral, no la lectura pública directa. Los errores de API ofrecen reintento, el catálogo vacío informa que no hay coincidencias y una búsqueda sin resultado permite limpiar los filtros. La lista de fuentes y sus fechas están en [la especificación](../superpowers/specs/2026-10-01-space-guide-design.md).

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Construir por etapas una plataforma institucional que unifique y reemplace los sistemas de la UPTC. La primera línea de trabajo cubre la identidad visual administrable, identidad y permisos, información básica del estudiante y fundamentos del catálogo académico (programas, mallas, currículos y asignaturas). El alcance real de los legados se confirma mediante inventario institucional; los documentos públicos son antecedentes, no una fuente completa de requisitos.
+Construir por etapas una plataforma institucional que unifique y reemplace los sistemas de la UPTC. La primera línea de trabajo cubre la identidad visual administrable, identidad y permisos, información básica del estudiante, fundamentos del catálogo académico (programas, mallas, currículos y asignaturas) y consultas públicas útiles de la vida universitaria. El alcance real de los legados se confirma mediante inventario institucional; los documentos públicos son antecedentes, no una fuente completa de requisitos.
 
 ## Arquitectura acordada
 
@@ -21,6 +21,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - No crear datos seed de estructura ni periodos oficiales sin un maestro y una referencia validados por el dueño institucional. Intersemestral es un tipo operativo del modelo actual; confirmar reglas específicas antes de publicar cursos o automatizar límites de matrícula.
 - SDKMAN es el gestor de Java del proyecto en el equipo principal. El `.sdkmanrc` debe fijar la distribución y versión exactas; no cambiar variables globales de Windows sin verificar que Git Bash, PowerShell, Maven e IDE seleccionan el mismo JDK.
 - El desarrollo local coordinado usa Docker Compose con MySQL aislado, proxy API y Compose Watch; las aplicaciones siguen siendo monolitos independientes.
+- La guía pública `/#espacios` entrega una instantánea JSON versionada por el puerto `PublicSpaceDirectory`; solo presenta datos con fuentes UPTC y no crea tablas MySQL hasta aprobar responsable y proceso de actualización. Un enlace a OpenStreetMap requiere dirección postal publicada y clic de la persona; sin dirección, solo mostrar el detalle publicado. No solicitar geolocalización ni inferir rutas interiores, coordenadas o accesibilidad.
 - El Compose y los Dockerfiles actuales son solo para preview de desarrollo. Antes de publicar React hay que cerrar el gate de cabeceras, CSP, TLS, orígenes API/OIDC y prueba del callback definido en `docs/security/frontend-production-gate.md`; no inferir controles productivos desde localhost.
 
 ## Método obligatorio
@@ -55,6 +56,7 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 - Mantener `docs/architecture/` (C4, datos y procesos), `docs/ROADMAP.md`, decisiones ADR y planes de `docs/superpowers/plans/` sincronizados con el código.
 - Actualizar los diagramas cuando cambie una frontera, integración, fuente oficial de datos o flujo de corte.
 - Para cambios académicos, sincronizar explícitamente los diagramas C4, el modelo de datos, el proceso y `docs/ROADMAP.md`; mantener los gates institucionales visibles hasta que haya evidencia de aceptación.
+- Para `/#espacios`, mantener fuente, fecha de consulta, fecha de actualización cuando exista, alcance parcial de 6 sedes + 11 CREAD + 4 puntos de servicio y el caso CREAD sin dirección trazables en `docs/architecture/`; no presentar el catálogo como exhaustivo.
 - Antes de ampliar catálogo, admisiones, expediente, oferta, carga o registro académico, revisar `docs/discovery/uptc-new-academic-system-phase-iii.md` y `docs/discovery/uptc-inscribete-2026.md`. Exigir una decisión institucional sobre relación, alcance, fuente maestra e interfaces tanto para la Fase III alternativa a SIRA como para «Inscríbete», reportado por UPTC como implementado para 2026-II; no inferir que sean el mismo sistema ni crear una segunda inscripción o repositorio documental.
 - Antes de implementar expediente, carga de archivos o retención estudiantil, revisar también `docs/discovery/uptc-academic-records-management.md`; identificar alcance del SGDEA, funciones locales por seccional, el significado de “SGDA” en la fuente de Sogamoso y la interpretación de la TRD antes de duplicar documentos o automatizar conservación/eliminación.
 - Antes de modelar campos personales, contratos o migraciones del ciclo estudiantil, completar y aprobar institucionalmente `docs/discovery/student-record-validation-template.md`; la participación sugerida de ACRA/Registro no sustituye la designación del dueño de datos, la fuente maestra ni la autorización de interfaces.

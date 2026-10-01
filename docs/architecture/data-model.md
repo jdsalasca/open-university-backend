@@ -23,6 +23,14 @@
 
 La carga guarda metadatos y un evento de auditoría en la misma transacción que los asocia a la revisión vigente; una reversión elimina el archivo creado si la transacción falla. El archivo se almacena fuera de MySQL con una clave aleatoria y nunca con su nombre entregado por el navegador. No se guardan bytes, rutas locales ni nombres originales en la configuración pública. La configuración pública lleva un número de revisión y ETag para caché e invalidación. Volver a una revisión previa crea un nuevo snapshot, no mueve el puntero hacia atrás.
 
+## Guía pública de espacios
+
+`GET /api/v1/spaces` devuelve un `SpaceDirectorySnapshot` leído desde `spaces/public-space-directory.json` por el adaptador `ClasspathPublicSpaceDirectoryAdapter`, a través del puerto `PublicSpaceDirectory`. La instantánea del 1 de octubre de 2026 contiene seis sedes/seccionales/regionales, once CREAD y cuatro puntos de servicio. No hay entidad ni tabla espacial en MySQL: falta designar al dueño del inventario y un proceso institucional para actualizar sus ubicaciones.
+
+Cada lugar conserva identidad estable, tipo, nombre, municipio, departamento solo cuando la fuente lo publica, dirección/detalle y procedencia por página. Las páginas de [Localización y sedes](https://uptc.edu.co/sitio/portal/sitios/localizacion/) y los cuatro puntos de servicio registran fecha de consulta y fecha declarada de actualización cuando existe; una fecha ausente se representa como `null`. El CREAD Rondón publica únicamente que está en el segundo piso de la biblioteca municipal: se muestra ese detalle, pero `address` y `mapQuery` son `null`. El cliente solo crea enlace de búsqueda OpenStreetMap con dirección postal y después de un clic; no usa coordenadas ni geolocalización.
+
+`spaces` se añade al allowlist de `institution_module_label`; `V16__add_public_spaces_module_to_branding.sql` acepta la clave y la agrega a las revisiones de marca ya persistidas. La etiqueta y la visibilidad controlan el enlace lateral, mientras la consulta es pública y la ruta directa no queda bloqueada por branding.
+
 ## Catálogo académico versionado v1
 
 El dominio `academics` es dueño de escritura de estas siete tablas. La migración `V2__academic_catalog.sql` crea el catálogo, `V3__curriculum_search_projection.sql` agrega/backfillea snapshots de lectura, `V4__normalize_curriculum_search_snapshot_defaults.sql` establece sus defaults y `V5__index_curriculum_draft_queue_order.sql` amplía el índice de la cola administrativa; ninguna reutiliza la auditoría de identidad visual, cuyas claves foráneas son propias de branding.

@@ -33,6 +33,10 @@ La vista previa de programas de **pregrado presencial** está en <http://localho
 
 El contrato de columnas está en [academic-curriculum-template.csv](docs/templates/academic-curriculum-template.csv); el archivo solo contiene encabezados. La pantalla ofrece su descarga mediante un endpoint generado desde el esquema Java, para que el navegador no mantenga una copia de los nombres de columna. La API pública devuelve metadata separada de las asignaturas y ofrece páginas de hasta 100 filas con búsqueda por código/nombre y filtro por semestre; solo expone versiones `PUBLISHED` y reutiliza el modelo normalizado. El diseño, las siete tablas y las reglas de cohorte están documentados en [C4](docs/architecture/c4.md), [modelo de datos](docs/architecture/data-model.md) y [flujo de importación/publicación](docs/architecture/process-flows.md). El catálogo no maneja aspirantes ni registros de estudiantes.
 
+## Guía pública de espacios v0
+
+Abre <http://localhost:5173/#espacios> para buscar por nombre, municipio, dirección y tipo dentro de seis sedes, once CREAD y cuatro puntos de servicio publicados por UPTC. La consulta `GET /api/v1/spaces` es pública y de solo lectura. Cada ficha enlaza su fuente; solo ofrece búsqueda en OpenStreetMap tras un clic y cuando la fuente publica una dirección. La lista es parcial: no contiene mapa integrado, geolocalización, rutas interiores ni inventario de accesibilidad. El módulo puede renombrarse y ocultarse de la navegación desde la identidad visual.
+
 ## Estructura
 
 - `backend/`: Java 25 y Spring Boot; `.sdkmanrc` fija `25.0.4-tem` para el entorno host.
