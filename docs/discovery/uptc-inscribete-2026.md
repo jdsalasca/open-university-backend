@@ -1,12 +1,12 @@
-# Sistema de inscripción «Inscríbete» anunciado por UPTC para 2026-II
+# Sistema de inscripción «Inscríbete» reportado como implementado para 2026-II
 
 **Corte de evidencia:** 1 de octubre de 2026
 **Fuente principal:** comunicado institucional UPTC n.º 105, publicado el 5 de mayo de 2026
-**Estado:** sistema de inscripción anunciado para la convocatoria 2026-II; relación con SIRA, la Fase III del nuevo sistema académico y la convocatoria 2027-I pendiente de confirmación.
+**Estado:** UPTC informó que implementó el sistema para la convocatoria 2026-II; identidad técnica, relación con SIRA/Fase III y continuidad para 2027-I pendientes de confirmación.
 
 ## Hechos publicados
 
-En el [comunicado oficial de apertura de inscripciones para pregrado](https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/Abiertas-inscripciones-para-programas-de-pregrado-en-la-UPTC/), UPTC indicó que implementó un nuevo sistema de inscripción para el segundo semestre de 2026. La publicación incluye pregrado presencial, programas a distancia/FESAD, virtuales y posgrados; este proyecto mantiene como alcance prioritario el pregrado presencial.
+En el [comunicado oficial de apertura de inscripciones para pregrado](https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/Abiertas-inscripciones-para-programas-de-pregrado-en-la-UPTC/), publicado el 5 de mayo de 2026, UPTC indicó que implementó un nuevo sistema de inscripción para el segundo semestre de 2026. La publicación incluye pregrado presencial, programas a distancia/FESAD, virtuales y posgrados; este proyecto mantiene como alcance prioritario el pregrado presencial.
 
 El flujo que describe el comunicado es: adquirir un PIN, entrar al módulo «Inscríbete», elegir programa(s) en primera y segunda opción, diligenciar información personal y académica y grupos poblacionales, validar los datos, registrar el PIN para validación en bases de datos institucionales y cargar documentos para formalizar la inscripción. La noticia dice que el sistema integra un repositorio documental.
 
@@ -16,11 +16,11 @@ Las fechas citadas en el comunicado corresponden a 2026-II: venta de PIN presenc
 
 ## Límites de la evidencia
 
-La publicación confirma que UPTC anunció este sistema para 2026-II y describe parte de la experiencia de inscripción. No identifica su producto técnico, URL funcional, contratos, custodio de datos, APIs, base de datos, controles de acceso, retención/eliminación de documentos, conexión con el sistema de pagos/PIN ni fuente maestra por entidad.
+La publicación institucional confirma que UPTC reportó haber implementado este sistema para 2026-II y describe parte de la experiencia de inscripción. No publica artefactos que permitan verificar versiones, disponibilidad efectiva, uso o soporte operativo; tampoco identifica su producto técnico, URL funcional, contratos, custodio de datos, APIs, base de datos, controles de acceso, retención/eliminación de documentos, conexión con el sistema de pagos/PIN ni fuente maestra por entidad.
 
 La [Resolución 111 de 2026 para 2027-I](https://apps3.uptc.edu.co/compilacion-normativa-web/#/compilaciones-normativas/detalle-documento/9906) menciona un proceso de admisión SIRA en su calendario. La fuente sobre «Inscríbete» citada aquí se refiere a 2026-II. No se ha demostrado que ambos nombres describan el mismo producto, que «Inscríbete» sea parte de la Fase III del nuevo sistema académico, ni cuál plataforma ejecutará la inscripción de 2027-I. Tampoco se presume que el canal antiguo publicado en `registro.uptc.edu.co` represente el procedimiento vigente.
 
-La UPTC publica por separado el [Sistema de Gestión de Documentos Electrónicos de Archivo (SGDEA)](https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-promueve-la-implementacion-del-Sistema-de-Gestion-de-Documentos-Electronicos-de-Archivo/). Una fuente contractual de 2024 para Sogamoso menciona historiales y expedientes en “SGDA”; no se ha verificado que esa sigla corresponda al SGDEA ni que cualquiera de ellos sea el repositorio integrado del anuncio de «Inscríbete». Evitar una segunda carga de documentos hasta identificar el sistema y el contrato de integración autorizado; ver [hallazgo de expedientes y gestión documental](uptc-academic-records-management.md).
+La UPTC publica por separado el [Sistema de Gestión de Documentos Electrónicos de Archivo (SGDEA)](https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-promueve-la-implementacion-del-Sistema-de-Gestion-de-Documentos-Electronicos-de-Archivo/). Una fuente contractual de 2024 para Sogamoso menciona historiales y expedientes en “SGDA”; no se ha verificado que esa sigla corresponda al SGDEA ni que cualquiera de ellos sea el repositorio integrado del comunicado sobre la implementación de «Inscríbete». Evitar una segunda carga de documentos hasta identificar el sistema y el contrato de integración autorizado; ver [hallazgo de expedientes y gestión documental](uptc-academic-records-management.md).
 
 ## Gate antes de implementar admisiones
 

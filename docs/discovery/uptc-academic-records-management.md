@@ -27,6 +27,6 @@ La retención de la TRD regula las series archivísticas descritas. No se traduc
 3. Precisar para cada tipo de documento su fuente oficial, finalidad, datos mínimos, clasificación, roles, destinatarios, historial de cambios, transferencias y respuesta a solicitudes del titular.
 4. Obtener de Gestión Documental y del Oficial de Protección de Datos la interpretación aplicable de la TRD, los hitos de inicio, disposición final y reglas para aspirantes no admitidos, copias y conservación electrónica.
 5. Acordar contratos/interfaces autorizados, metadatos, controles de integridad, antivirus, cifrado, límites, auditoría y eliminación segura. No se presume API ni permiso para duplicar expedientes.
-6. Definir alineación con el proyecto UPTC de Fase III y el flujo de documentos anunciado en «Inscríbete»; evitar captura doble o un repositorio paralelo.
+6. Definir alineación con el proyecto UPTC de Fase III y el repositorio documental que el comunicado reporta integrado a «Inscríbete»; evitar captura doble o un repositorio paralelo.
 
 Hasta cerrar estas decisiones, el desarrollo usa datos ficticios y no implementa carga de soportes ni un expediente paralelo. Para la relación con SIRA/Fase III y «Inscríbete», ver [control de solapamiento](uptc-new-academic-system-phase-iii.md), [hallazgo de Inscríbete](uptc-inscribete-2026.md) y [descubrimiento del ciclo estudiantil](student-lifecycle-baseline.md).
