@@ -4,6 +4,8 @@
 **Propósito:** recopilar decisiones, normas, fuentes de datos, permisos y criterios de aceptación antes de implementar admisión, matrícula o expediente estudiantil.<br>
 **Datos:** no copiar documentos, nombres, identificadores ni expedientes reales a este archivo o al entorno de desarrollo.
 
+**Áreas propuestas por el patrocinador (30 de septiembre de 2026):** ACRA y Registro Académico para validar la fuente maestra y los campos del expediente estudiantil. No hay designación nominativa, reparto formal de autoridad ni sistema fuente confirmado.
+
 La ruta priorizada es pregrado presencial. Las páginas públicas de ACRA ayudan a preparar la mesa, pero no prueban la secuencia interna de procesos ni sustituyen una decisión de la autoridad normativa. Ver [descubrimiento y fuentes públicas](student-lifecycle-baseline.md).
 
 ## 1. Participantes y autoridad
@@ -13,8 +15,8 @@ La ruta priorizada es pregrado presencial. Las páginas públicas de ACRA ayudan
 | Patrocinador institucional |  |  |  |  |
 | Dueño del proceso ACRA |  |  |  |  |
 | Autoridad normativa |  |  |  |  |
-| Dueño de los datos de aspirantes/estudiantes |  |  |  |  |
-| Responsable del sistema fuente |  |  |  |  |
+| Dueño de los datos de aspirantes/estudiantes | ACRA y Registro Académico (propuestos conjuntamente por el patrocinador; reparto por validar) | Validar fuente maestra y campos mínimos; no constituye autorización de tratamiento | Respuesta del patrocinador, 30 sep. 2026; designación institucional pendiente | 30 sep. 2026 |
+| Responsable del sistema fuente | Por confirmar con ACRA, Registro Académico y DTIC | Identificar la aplicación autoritativa por entidad y contrato, incluida la función actual de SIRA | Pendiente de validación institucional | 30 sep. 2026 |
 | Seguridad e identidad institucional |  |  |  |  |
 | Gestión documental y retención |  |  |  |  |
 | Programa/facultad piloto |  |  |  |  |
@@ -25,7 +27,7 @@ Los nombres siguientes provienen del inventario público de ACRA y son temas por
 
 | Decisión | Aprobación/respuesta | Responsable | Acta o referencia |
 |---|---|---|---|
-| Proceso que abre el primer corte: inscripción/selección, matrícula inicial, renovación, registro de asignaturas u otro |  |  |  |
+| Proceso que abre el primer corte: inscripción/selección, matrícula inicial, renovación, registro de asignaturas u otro | Inscripción y selección de aspirantes de pregrado presencial (prioridad del patrocinador; alcance formal pendiente) | Patrocinador; dueño funcional UPTC por confirmar | Respuesta del patrocinador; acta institucional pendiente |
 | Sede(s), programa(s), modalidad presencial y cohorte(s) incluidas |  |  |  |
 | Población fuera del primer corte y motivo |  |  |  |
 | Ruta de ingreso normalista: programas/sedes, semestre, convenios vigentes, reconocimiento/evaluación, selección y canal documental, separada de ingreso ordinario y de cupos especiales |  |  |  |
