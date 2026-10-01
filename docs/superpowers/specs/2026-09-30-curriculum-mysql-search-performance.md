@@ -25,14 +25,22 @@ Search remains a literal substring query over code or name, case/accent-insensit
 - The observed mean of each scenario is below 50 ms on the local single-concurrency synthetic setup. This is a local regression budget, not a production SLA certification.
 - The normal test suite does not require Docker or run the performance probe unless its explicit system properties are enabled.
 
-## Latest local measurement — 2026-09-30 19:44 (UTC-5)
+## Repeated local measurements — 2026-09-30 20:11–20:16 (UTC-5)
 
-The repeatable runner `tools/verify-mysql-curriculum.ps1` selected SDKMAN Java 25.0.4, created an isolated MySQL 8.4 container, and passed all six MySQL contract tests, including the UTC-session and cursor-publication contracts. The performance cases used 10,000-row fixtures, 10 warmups, 50 samples, page size 100 for curriculum entries and 25 for the draft queue, and concurrency 1:
+Three consecutive invocations of `tools/verify-mysql-curriculum.ps1` selected SDKMAN Java 25.0.4, created unique isolated MySQL 8.4 containers, and passed all six MySQL contract tests each. Every performance case used 10,000-row fixtures, 10 warmups, 50 measured samples, page size 100 for curriculum entries and 25 for the draft queue, and concurrency 1. The final invocation also enabled valid JVM GC logging.
 
-| Query | Average | p50 | p95 | p99 |
-|---|---:|---:|---:|---:|
-| First page, no filter | 11.786 ms | 11.300 ms | 12.284 ms | 29.555 ms |
-| First page, substring filter | 18.205 ms | 17.996 ms | 19.781 ms | 20.891 ms |
-| Draft review queue | 12.698 ms | 12.628 ms | 13.447 ms | 13.552 ms |
+| Run (UTC-5) | Query | Average | p50 | p95 | p99 |
+|---|---|---:|---:|---:|---:|
+| 20:11 | First page, no filter | 11.026 ms | 10.728 ms | 11.615 ms | 20.755 ms |
+| 20:11 | First page, substring filter | 18.109 ms | 18.021 ms | 18.952 ms | 20.625 ms |
+| 20:11 | Draft review queue | 19.273 ms | 14.355 ms | 32.144 ms | 170.006 ms |
+| 20:13 | First page, no filter | 12.540 ms | 12.424 ms | 13.839 ms | 13.959 ms |
+| 20:13 | First page, substring filter | 25.258 ms | 20.238 ms | 33.792 ms | 175.024 ms |
+| 20:13 | Draft review queue | 13.402 ms | 13.261 ms | 14.767 ms | 19.066 ms |
+| 20:16, GC logging | First page, no filter | 11.382 ms | 11.217 ms | 13.555 ms | 14.814 ms |
+| 20:16, GC logging | First page, substring filter | 18.606 ms | 18.300 ms | 21.680 ms | 23.386 ms |
+| 20:16, GC logging | Draft review queue | 13.064 ms | 12.807 ms | 15.056 ms | 17.291 ms |
 
-All three averages and all observed p95/p99 values in this run are below 50 ms. Earlier runs measured higher search tails, including p99 values of 108.218 and 126.693 ms; the latest result does not erase that variability. `EXPLAIN ANALYZE` for the draft queue shows MySQL reading the first 26 rows directly from `ix_academic_curriculum_drafts` in reverse order before joining program metadata. The filtered catalogue page showed one matching row and only the corresponding subject/revision lookups after the indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA.
+All nine means were below the local `<50 ms` average budget; the maximum was 25.258 ms. The two new tail outliers appeared in different queries and did not recur in the GC-logged run. With 50 samples, the nearest-rank p99 is the maximum sample (`ceil(0.99 × 50) = 50`), so an isolated pause determines this reported percentile. In the diagnostic run, observed G1 pauses were approximately 4.6–7.7 ms and no comparable pause appeared in the GC log. The cause of the isolated latency outliers is not established; this evidence does not justify attributing them to SQL, garbage collection, or a particular host event. Earlier runs also observed search p95/p99 up to 108.218/126.693 ms, preserving evidence of variability.
+
+`EXPLAIN ANALYZE` for the draft queue shows MySQL reading the first 26 rows directly from `ix_academic_curriculum_drafts` in reverse order before joining program metadata. The filtered catalogue page showed only the corresponding subject/revision lookups after its indexed scan. The disposable container and synthetic, single-client workload do not establish UPTC production performance or an institutional SLA; representative hardware, concurrency, workload mix, and acceptance thresholds remain to be agreed with institutional owners.
