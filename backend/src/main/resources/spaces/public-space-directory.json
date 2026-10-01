@@ -1,0 +1,236 @@
+{
+  "officialOfficeDirectoryUrl": "https://www.uptc.edu.co/sitio/portal/sitios/directorio/",
+  "locations": [
+    {
+      "id": "site-central-tunja",
+      "kind": "CAMPUS",
+      "name": "Sede Central Tunja",
+      "municipality": "Tunja",
+      "department": "Boyacá",
+      "address": "Avenida Central del Norte 39-115",
+      "locationDetail": null,
+      "mapQuery": "Avenida Central del Norte 39-115, Tunja, Boyacá, Colombia",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "site-seccional-sogamoso",
+      "kind": "CAMPUS",
+      "name": "Facultad Seccional Sogamoso",
+      "municipality": "Sogamoso",
+      "department": "Boyacá",
+      "address": "Calle 4 A Sur No. 15-134",
+      "locationDetail": null,
+      "mapQuery": "Calle 4 A Sur No. 15-134, Sogamoso, Boyacá, Colombia",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "site-seccional-duitama",
+      "kind": "CAMPUS",
+      "name": "Facultad Seccional Duitama",
+      "municipality": "Duitama",
+      "department": "Boyacá",
+      "address": "Carrera 18 con Calle 22",
+      "locationDetail": null,
+      "mapQuery": "Carrera 18 con Calle 22, Duitama, Boyacá, Colombia",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "site-seccional-chiquinquira",
+      "kind": "CAMPUS",
+      "name": "Facultad Seccional Chiquinquirá",
+      "municipality": "Chiquinquirá",
+      "department": "Boyacá",
+      "address": "Carrera 4 No. 141",
+      "locationDetail": null,
+      "mapQuery": "Carrera 4 No. 141, Chiquinquirá, Boyacá, Colombia",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "site-regional-aguazul",
+      "kind": "REGIONAL_SITE",
+      "name": "Sede Regional Aguazul",
+      "municipality": "Aguazul",
+      "department": "Casanare",
+      "address": "Calle 23 No. 19-127",
+      "locationDetail": null,
+      "mapQuery": "Calle 23 No. 19-127, Aguazul, Casanare, Colombia",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "site-puerto-boyaca",
+      "kind": "REGIONAL_SITE",
+      "name": "Puerto Boyacá",
+      "municipality": "Puerto Boyacá",
+      "department": "Boyacá",
+      "address": "Carrera 6 No. 25-26",
+      "locationDetail": null,
+      "mapQuery": "Carrera 6 No. 25-26, Puerto Boyacá, Boyacá, Colombia",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-acacias",
+      "kind": "CREAD",
+      "name": "CREAD Acacías",
+      "municipality": "Acacías",
+      "department": null,
+      "address": "Avenida 23 No. 41-50",
+      "locationDetail": null,
+      "mapQuery": "Avenida 23 No. 41-50, Acacías",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-aguazul",
+      "kind": "CREAD",
+      "name": "CREAD Aguazul",
+      "municipality": "Aguazul",
+      "department": null,
+      "address": "Parque del Arroz",
+      "locationDetail": null,
+      "mapQuery": "Parque del Arroz, Aguazul",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-bogota",
+      "kind": "CREAD",
+      "name": "CREAD Bogotá",
+      "municipality": "Bogotá",
+      "department": null,
+      "address": "Carrera 13 No. 24-15",
+      "locationDetail": "Instalaciones INCCA",
+      "mapQuery": "Carrera 13 No. 24-15, CREAD UPTC Bogotá",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-chiquinquira",
+      "kind": "CREAD",
+      "name": "CREAD Chiquinquirá",
+      "municipality": "Chiquinquirá",
+      "department": null,
+      "address": "Calle 14 No. 2-37, barrio Sucre",
+      "locationDetail": null,
+      "mapQuery": "Calle 14 No. 2-37, barrio Sucre, Chiquinquirá",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-duitama",
+      "kind": "CREAD",
+      "name": "CREAD Duitama",
+      "municipality": "Duitama",
+      "department": null,
+      "address": "Carrera 18 con Calle 22",
+      "locationDetail": null,
+      "mapQuery": "Carrera 18 con Calle 22, Duitama",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-garagoa",
+      "kind": "CREAD",
+      "name": "CREAD Garagoa",
+      "municipality": "Garagoa",
+      "department": null,
+      "address": "Calle 16 No. 12-18",
+      "locationDetail": null,
+      "mapQuery": "Calle 16 No. 12-18, Garagoa",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-puerto-boyaca",
+      "kind": "CREAD",
+      "name": "CREAD Puerto Boyacá",
+      "municipality": "Puerto Boyacá",
+      "department": null,
+      "address": "Carrera 5 No. 25-52",
+      "locationDetail": null,
+      "mapQuery": "Carrera 5 No. 25-52, Puerto Boyacá",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-rionegro",
+      "kind": "CREAD",
+      "name": "CREAD Rionegro",
+      "municipality": "Rionegro",
+      "department": null,
+      "address": "Calle 48 No. 51-59",
+      "locationDetail": null,
+      "mapQuery": "Calle 48 No. 51-59, CREAD UPTC Rionegro",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-rondon",
+      "kind": "CREAD",
+      "name": "CREAD Rondón",
+      "municipality": "Rondón",
+      "department": null,
+      "address": null,
+      "locationDetail": "Segundo piso de la biblioteca municipal",
+      "mapQuery": null,
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-soata",
+      "kind": "CREAD",
+      "name": "CREAD Soatá",
+      "municipality": "Soatá",
+      "department": null,
+      "address": "Calle 6B No. 3-25, Villa Esperanza",
+      "locationDetail": null,
+      "mapQuery": "Calle 6B No. 3-25, Villa Esperanza, Soatá",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "cread-sogamoso",
+      "kind": "CREAD",
+      "name": "CREAD Sogamoso",
+      "municipality": "Sogamoso",
+      "department": null,
+      "address": "Calle 3 Sur No. 15-131",
+      "locationDetail": null,
+      "mapQuery": "Calle 3 Sur No. 15-131, Sogamoso",
+      "source": { "label": "Localización y sedes UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/localizacion/", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-07-03" }
+    },
+    {
+      "id": "service-acra",
+      "kind": "SERVICE",
+      "name": "Admisiones y Control de Registro Académico (ACRA)",
+      "municipality": "Tunja",
+      "department": "Boyacá",
+      "address": "Sede Central Tunja, Avenida Central del Norte 39-115",
+      "locationDetail": "Edificio de Admisiones, primer piso",
+      "mapQuery": "Edificio de Admisiones UPTC, Avenida Central del Norte 39-115, Tunja, Boyacá",
+      "source": { "label": "Contacto ACRA UPTC", "url": "https://uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/cont.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": null }
+    },
+    {
+      "id": "service-systems-engineering",
+      "kind": "SERVICE",
+      "name": "Escuela de Ingeniería de Sistemas y Computación",
+      "municipality": "Tunja",
+      "department": "Boyacá",
+      "address": "Sede Central Tunja, Avenida Central del Norte 39-115",
+      "locationDetail": "Edificio Central, segundo piso",
+      "mapQuery": "Edificio Central UPTC, Avenida Central del Norte 39-115, Tunja, Boyacá",
+      "source": { "label": "Aspectos misionales, Ingeniería de Sistemas UPTC", "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/facultades/fac_inge/preg/ing_2760_t/06_InfoComplementaria/04_aspmis.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-09-07" }
+    },
+    {
+      "id": "service-language-institute-sogamoso",
+      "kind": "SERVICE",
+      "name": "Instituto Internacional de Idiomas, subcentro Sogamoso",
+      "municipality": "Sogamoso",
+      "department": "Boyacá",
+      "address": "Facultad Seccional Sogamoso, Calle 4 A Sur No. 15-134",
+      "locationDetail": "Edificio de Bienestar Universitario, Plazoleta El Sol",
+      "mapQuery": "Edificio de Bienestar Universitario UPTC, Facultad Seccional Sogamoso, Sogamoso, Boyacá",
+      "source": { "label": "Subcentros del Instituto Internacional de Idiomas UPTC", "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/iii/sedes/sog/index.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": null }
+    },
+    {
+      "id": "service-postgraduate-sciences",
+      "kind": "SERVICE",
+      "name": "Escuela de Posgrados de la Facultad de Ciencias",
+      "municipality": "Tunja",
+      "department": "Boyacá",
+      "address": "Calle 39 No. 6-63",
+      "locationDetail": "Edificio de Posgrados, primer piso, oficina 103",
+      "mapQuery": "Edificio de Posgrados UPTC, Calle 39 No. 6-63, Tunja, Boyacá",
+      "source": { "label": "Normatividad, Escuela de Posgrados de Ciencias UPTC", "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/facultades/fac_ciencias/posg/esp_0145_v/06_InfoComplementaria/01_norm.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-06-01" }
+    }
+  ]
+}
