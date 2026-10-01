@@ -5,6 +5,8 @@
 **Estado:** investigación pública preliminar; requiere validación de ACRA, Registro Académico, comités curriculares, DTIC y responsables de datos.  
 **Datos personales:** no recolectados ni incorporados.
 
+**Límite de esta revisión:** las búsquedas devolvieron extractos de páginas oficiales UPTC, pero al abrir varias páginas completas el navegador de investigación respondió 502, timeout o caché no disponible. Las observaciones siguientes son pistas de fuentes primarias indexadas, no una extracción completa del contenido ni una confirmación de vigencia; antes de mapear o automatizar datos, recuperar y revisar los actos/documentos completos con el responsable institucional.
+
 ## Hallazgos observables
 
 | Fuente oficial | Evidencia pública | Límite para el diseño |
