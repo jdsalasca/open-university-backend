@@ -91,10 +91,10 @@
 
 - [x] Documentar `university_user`, la vinculación OIDC, los roles/auditoría por UUID y el límite explícito: no existe asociación de identidades ni perfiles de estudiante activos.
 - [x] Ejecutar backend `mvnw verify` con `.sdkmanrc` Java 25 y contratos MySQL; frontend 285 pruebas, 4 presupuestos de bundle, lint y build; confirmar estado HTTP 200 de frontend y health del Compose activo.
-- [ ] Después de actualizar el preview en `develop`, confirmar `/api/v1/me` y rutas administrativas sin credenciales respondiendo con denegación, y observar la migración V21 conservando filas en el MySQL local.
+- [x] Después de actualizar el preview en `develop`, confirmar `/api/v1/me` y rutas administrativas sin credenciales respondiendo 401, y verificar V21 en el MySQL local con los conteos previos preservados (cero identidades, asignaciones y eventos); el contrato MySQL desechable valida el backfill de registros sintéticos.
 - [x] Revisar duplicación, `git diff --check`, modelo/diagramas y el submódulo; corregir antes de integrar.
 - [x] Solicitar revisión final del código; corregir con pruebas RED→GREEN el hallazgo de procedencia del actor y repetir verificación completa Java 25/MySQL 8.4.
-- [ ] Crear commits del hito, actualizar el puntero del submódulo, integrar/push a ambos `develop` según la autorización del patrocinador y comprobar remoto y Compose.
+- [x] Crear commits del hito, actualizar el puntero del submódulo, integrar/push a ambos `develop` según la autorización del patrocinador y comprobar remoto y Compose.
 
 ## Interfaces compartidas — preflight
 
