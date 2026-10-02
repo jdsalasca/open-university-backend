@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,7 +45,8 @@ class LocalPreviewSessionControllerTest {
         mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.subject").value("local-preview-developer"))
-                .andExpect(jsonPath("$.permissions.length()").value(12));
+                .andExpect(jsonPath("$.permissions.length()").value(14))
+                .andExpect(jsonPath("$.permissions", hasItems("academic:offerings:read", "academic:offerings:write")));
         mockMvc.perform(get("/api/v1/admin/academic-structure/audit-events")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk());

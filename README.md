@@ -37,6 +37,10 @@ El contrato de columnas está en [academic-curriculum-template.csv](docs/templat
 
 Abre <http://localhost:5173/#espacios> para buscar por nombre, municipio, dirección y tipo dentro de seis sedes, once CREAD y cuatro puntos de servicio publicados por UPTC. La consulta `GET /api/v1/spaces` es pública y de solo lectura. Cada ficha enlaza su fuente; solo ofrece búsqueda en OpenStreetMap tras un clic y cuando la fuente publica una dirección. La lista es parcial: no contiene mapa integrado, geolocalización, rutas interiores ni inventario de accesibilidad. El módulo puede renombrarse y ocultarse de la navegación desde la identidad visual.
 
+## Borradores de oferta académica v0
+
+En `/#academia`, el panel protegido administra grupos en borrador para un periodo regular o intersemestral y una asignatura de currículo publicado. Permite crear, corregir con control de versión y consultar auditoría. La capacidad y las fechas son propuestas; no hay publicación, disponibilidad ni inscripción/matrícula. Requiere `academic:offerings:read` y, para modificar, `academic:offerings:write`. Flyway V23 agrega `academic_offering_draft` y `academic_offering_draft_audit_event`; no crea datos iniciales. El uso real depende de validar responsables, reglas y la frontera con SIRA/Fase III/UPTConecta. Detalles en [C4](docs/architecture/c4.md), [modelo de datos](docs/architecture/data-model.md), [flujo](docs/architecture/process-flows.md) y [cronograma](docs/ROADMAP.md).
+
 ## Estructura
 
 - `backend/`: Java 25 y Spring Boot; `.sdkmanrc` fija `25.0.4-tem` para el entorno host.

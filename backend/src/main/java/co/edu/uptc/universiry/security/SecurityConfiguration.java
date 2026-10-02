@@ -114,6 +114,10 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, "/api/v1/admin/academic-periods/*/history")
                                 .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_READ.authority())
                         .requestMatchers(GET,
+                                "/api/v1/admin/academic-offerings",
+                                "/api/v1/admin/academic-offerings/*/audit-events")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_OFFERINGS_READ.authority())
+                        .requestMatchers(GET,
                                 "/api/v1/admin/admissions/calls",
                                 "/api/v1/admin/admissions/calls/*")
                         .hasAuthority(ApplicationPermission.ADMISSIONS_CALENDAR_READ.authority())
@@ -131,8 +135,12 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/admissions/calls/*/revisions",
                                 "/api/v1/admin/admissions/calls/*/revisions/*/publish")
                         .hasAuthority(ApplicationPermission.ADMISSIONS_CALENDAR_WRITE.authority())
+                        .requestMatchers(POST, "/api/v1/admin/academic-offerings")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_OFFERINGS_WRITE.authority())
                         .requestMatchers(PUT, "/api/v1/admin/admissions/calls/*/revisions/*")
                         .hasAuthority(ApplicationPermission.ADMISSIONS_CALENDAR_WRITE.authority())
+                        .requestMatchers(PUT, "/api/v1/admin/academic-offerings/*")
+                        .hasAuthority(ApplicationPermission.ACADEMIC_OFFERINGS_WRITE.authority())
                         .requestMatchers(POST,
                                 "/api/v1/admin/academic-periods",
                                 "/api/v1/admin/academic-periods/*/calendars",

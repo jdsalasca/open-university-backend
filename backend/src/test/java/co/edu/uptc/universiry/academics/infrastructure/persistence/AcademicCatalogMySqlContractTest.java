@@ -2,6 +2,9 @@ package co.edu.uptc.universiry.academics.infrastructure.persistence;
 
 import co.edu.uptc.universiry.academics.application.AcademicCatalogQueryService;
 import co.edu.uptc.universiry.academics.application.AcademicCatalogRepository;
+import co.edu.uptc.universiry.academics.application.AcademicOfferingDraftCommand;
+import co.edu.uptc.universiry.academics.application.AcademicOfferingDraftService;
+import co.edu.uptc.universiry.academics.application.AcademicOfferingDraftUpdateCommand;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumDraftsPage;
 import co.edu.uptc.universiry.academics.application.AcademicCurriculumEntriesPage;
 import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
@@ -10,6 +13,7 @@ import co.edu.uptc.universiry.academics.application.CurriculumPublishResult;
 import co.edu.uptc.universiry.academics.application.CurriculumPublicationService;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumCsvSchema;
+import co.edu.uptc.universiry.academics.application.AcademicOfferingDraftAuditAction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -26,11 +30,14 @@ import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,11 +66,15 @@ class AcademicCatalogMySqlContractTest {
     private AcademicCatalogRepository catalogRepository;
 
     @Autowired
+    private AcademicOfferingDraftService offeringDraftService;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     private UUID smallCurriculumId;
     private UUID performanceCurriculumId;
     private UUID performanceDraftProgramId;
+    private UUID offeringContractPeriodId;
 
     @DynamicPropertySource
     static void mysqlDatasource(DynamicPropertyRegistry properties) {
@@ -100,6 +111,11 @@ class AcademicCatalogMySqlContractTest {
         }
         if (performanceDraftProgramId != null) {
             assertEquals(0, countPrograms(performanceDraftProgramId));
+        }
+        if (offeringContractPeriodId != null) {
+            assertEquals(0, jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM academic_period WHERE period_id = ?",
+                    Integer.class, offeringContractPeriodId.toString()));
         }
     }
 
@@ -229,6 +245,60 @@ class AcademicCatalogMySqlContractTest {
         // Assert
         assertEquals(remainingDraftId, secondPage.drafts().getFirst().id());
         assertEquals(firstPage.totalItems() - 1, secondPage.totalItems());
+    }
+
+    @Test
+    void mysql_persists_offering_drafts_and_audit_history_with_stable_cursors() {
+        // Arrange
+        offeringContractPeriodId = UUID.randomUUID();
+        jdbcTemplate.update("""
+                INSERT INTO academic_period (period_id, period_code, period_kind, academic_year, sequence_number,
+                    starts_on, ends_on, status, created_by, created_at)
+                VALUES (?, ?, 'INTERSEMESTRAL', 2027, 2, '2027-06-10', '2027-07-30', 'DRAFT', ?, ?)
+                """, offeringContractPeriodId.toString(),
+                "INTERSEM-CONTRACT-" + offeringContractPeriodId.toString().substring(0, 8), ACTOR,
+                Timestamp.from(Instant.parse("2026-10-01T12:00:00Z")));
+        UUID subjectId = UUID.fromString(jdbcTemplate.queryForObject("""
+                SELECT subject_id FROM academic_curriculum_entry
+                WHERE curriculum_id = ? ORDER BY row_order LIMIT 1
+                """, String.class, smallCurriculumId.toString()));
+        AcademicOfferingDraftCommand firstCommand = new AcademicOfferingDraftCommand(
+                offeringContractPeriodId, smallCurriculumId, subjectId, "G-01",
+                LocalDate.of(2027, 6, 10), LocalDate.of(2027, 6, 30), 28, "MySQL contract draft");
+        AcademicOfferingDraftCommand secondCommand = new AcademicOfferingDraftCommand(
+                offeringContractPeriodId, smallCurriculumId, subjectId, "G-02",
+                LocalDate.of(2027, 6, 10), LocalDate.of(2027, 6, 30), 24, "MySQL contract second draft");
+
+        // Act
+        var first = offeringDraftService.create(firstCommand, ACTOR);
+        offeringDraftService.create(secondCommand, ACTOR);
+        var firstPage = offeringDraftService.drafts(offeringContractPeriodId, 1, null);
+        var secondPage = offeringDraftService.drafts(offeringContractPeriodId, 1, firstPage.nextCursor());
+        offeringDraftService.update(first.id(), new AcademicOfferingDraftUpdateCommand(
+                1, "G-01B", LocalDate.of(2027, 6, 10), LocalDate.of(2027, 6, 30),
+                26, "MySQL contract update"), ACTOR);
+        var firstHistory = offeringDraftService.history(first.id(), 1, null);
+        var secondHistory = offeringDraftService.history(first.id(), 1, firstHistory.nextCursor());
+
+        // Assert
+        assertEquals(1, firstPage.drafts().size());
+        assertTrue(firstPage.nextCursor() != null);
+        assertEquals(1, secondPage.drafts().size());
+        assertEquals(Set.of("G-01", "G-02"), Set.of(
+                firstPage.drafts().getFirst().draft().sectionCode(),
+                secondPage.drafts().getFirst().draft().sectionCode()));
+        assertEquals("G-01B", offeringDraftService.drafts(offeringContractPeriodId, 100, null)
+                .drafts().stream().filter(view -> view.draft().id().equals(first.id()))
+                .findFirst().orElseThrow().draft().sectionCode());
+        assertEquals(AcademicOfferingDraftAuditAction.OFFERING_DRAFT_UPDATED,
+                firstHistory.events().getFirst().action());
+        assertTrue(firstHistory.nextCursor() != null);
+        assertEquals(AcademicOfferingDraftAuditAction.OFFERING_DRAFT_CREATED,
+                secondHistory.events().getFirst().action());
+        assertEquals(3, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_offering_draft_audit_event
+                WHERE offering_id IN (?, ?)
+                """, Integer.class, firstPage.drafts().getFirst().draft().id().toString(), first.id().toString()));
     }
 
     @Test

@@ -1006,6 +1006,90 @@ flowchart LR
 
 El Acuerdo 027 de 2024 también autorizó, exclusivamente para los cursos de junio-julio de 2024, hasta dos cursos por estudiante si uno era en calidad de repitente; la disposición no fue declarada permanente. No se automatizan esta excepción ni otras reglas por analogía entre cohortes ([Acuerdo 027 de 2024](https://www.uptc.edu.co/export/sites/default/secretaria_general/consejo_superior/acuerdos_2024/Acuerdo_027_2024.pdf)).
 
+## Administración de borradores de oferta académica
+
+El primer corte deja registrar grupos propuestos por periodo y por asignatura de un currículo publicado. La pantalla vive en `/#academia`. Lee los periodos que la página ya consultó y reutiliza los endpoints públicos existentes para programas, currículos publicados y sus asignaturas; no añade un catálogo paralelo. El operador aporta el código de grupo, fechas propuestas, capacidad propuesta y referencia institucional. Esta acción no cambia el estado del periodo.
+
+```mermaid
+sequenceDiagram
+  actor Operator as Operador académico autorizado
+  participant UI as React: #academia · borradores
+  participant Me as GET /api/v1/me
+  participant Catalog as API pública del catálogo
+  participant API as Spring Boot: AcademicOfferingDraftController
+  participant Auth as Spring Security
+  participant Service as AcademicOfferingDraftService
+  participant DB as MySQL
+
+  Operator->>UI: abre Borradores de oferta
+  UI->>Me: valida permisos en la sesión
+  Me-->>UI: academic:offerings:read / academic:offerings:write
+  UI->>API: GET /api/v1/admin/academic-offerings?periodId=…&limit=25
+  API->>Auth: requiere academic:offerings:read
+  Auth-->>API: principal autorizado
+  API->>Service: drafts(periodId, limit, cursor)
+  Service->>DB: SELECT por periodo, cursor de fecha e ID
+  DB-->>Service: filas del periodo y fila centinela
+  Service-->>API: borradores y cursor opaco
+  API-->>UI: borradores y cursor opaco
+
+  opt preparar un borrador con permiso de escritura
+    UI->>Catalog: consulta currículos publicados del programa
+    Catalog-->>UI: versiones publicadas
+    UI->>Catalog: consulta entradas publicadas del currículo
+    Catalog-->>UI: asignaturas y código/nombre/versiones
+    Operator->>UI: ingresa grupo, fechas, capacidad y referencia
+    UI->>API: POST /api/v1/admin/academic-offerings
+    API->>Auth: requiere academic:offerings:write
+    Auth-->>API: principal autorizado
+    API->>Service: create(command, actorSub)
+    Service->>DB: valida referencias y persiste borrador + evento
+    DB-->>Service: commit de la misma transacción
+    Service-->>UI: ID y versión 1 · DRAFT
+  end
+
+  opt editar un borrador
+    Operator->>UI: guarda cambios con versión observada
+    UI->>API: PUT /api/v1/admin/academic-offerings/{id} · expectedVersion
+    API->>Auth: requiere academic:offerings:write
+    Auth-->>API: principal autorizado
+    API->>Service: compara y revisa el borrador
+    Service->>DB: bloqueo, comparación y actualización + evento
+    alt la versión sigue vigente
+      DB-->>Service: commit
+      Service-->>API: nueva versión
+      API-->>UI: nueva versión
+    else otra operación ya cambió el borrador
+      Service-->>API: conflicto de versión
+      API-->>UI: 409; sin reintento automático ni evento parcial
+    end
+  end
+
+  opt consultar historial
+    Operator->>UI: solicita historial del borrador
+    UI->>API: GET /api/v1/admin/academic-offerings/{id}/audit-events?limit=25
+    API->>Auth: requiere academic:offerings:read
+    Auth-->>API: principal autorizado
+    API->>Service: history(offeringId, limit, cursor)
+    Service->>DB: pagina eventos por ID descendente
+    DB-->>Service: eventos y fila centinela
+    Service-->>API: eventos y cursor opaco
+    API-->>UI: actor opaco, acción, referencia y snapshots tipados
+  end
+
+  opt se revoca lectura o se desmonta el panel
+    UI->>UI: aborta lecturas y oculta resultados
+    UI->>Me: revalida permisos ante 401/403
+  end
+
+  Note over UI,DB: Capacidad propuesta solamente; no hay publicación, cupos disponibles, inscripción ni matrícula
+  Note over API,DB: Fechas y periodo viven en entidades existentes; el ciclo OPEN/CLOSED no se modifica
+```
+
+La lista y el historial aceptan páginas de 1 a 100 filas. React carga inicialmente 25, valida las respuestas, aplica cursores opacos y solo agrega la página siguiente bajo la misma autorización. Crear y editar requieren lectura y escritura; cada ruta backend vuelve a autorizar. Un currículo o periodo inexistente y un currículo no publicado se rechazan antes de insertar; las claves foráneas duplicadas regresan conflicto y no guardan evento parcial. Una respuesta 409 termina el intento, actualiza la lectura y pide al operador revisar la nueva versión antes de editar.
+
+Este registro técnico no define reglas de programación intersemestral, matrícula, disponibilidad, prerrequisitos, docente, aula, horario semanal, capacidad oficial ni publicación. La fuente maestra, responsables, solapamiento con SIRA/Fase III/UPTConecta y autorización de uso real continúan como gates institucionales.
+
 ## Consulta de identidad propia
 
 ```mermaid
