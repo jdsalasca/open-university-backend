@@ -50,7 +50,7 @@
 - [x] API, permisos e i18n (8 pruebas de controlador pasan en H2).
 - [x] React, consola y accesibilidad (301 pruebas Vitest y 4 pruebas de presupuesto, lint limpio y build dentro del presupuesto).
 - [x] Documentación y revisión (diagramas C4/proceso, modelo de datos, gates institucionales y bitácora aprobada revisados).
-- [ ] Integración fast-forward a `develop`, actualización de Compose y comprobación de rutas.
+- [x] Integración fast-forward a `develop`, actualización de Compose y comprobación de rutas.
 
 ### Registro incremental
 
@@ -61,3 +61,4 @@
 - RED→GREEN: una convocatoria versionada distinta a la agenda de respaldo aún mostraba la insignia fija `2027-I`; la tarjeta ahora distingue una revisión publicada del calendario de referencia y no infiere el periodo desde texto libre.
 - La bitácora aprobada ya existe en `/#academia`: reutiliza la auditoría relacional, requiere `academic:structure:read`, pagina con cursor, filtra por entidad/acción, expone actor opaco y cancela al perder lectura. Verificación dirigida: 8 pruebas frontend y 4 escenarios de API (autorización, filtros/paginación y entradas inválidas).
 - Verificación final del frontend tras la corrección de la tarjeta: 33 archivos / 301 pruebas Vitest y 4 pruebas Node del presupuesto; `npm run lint` limpio; `npm run build` correcto dentro del presupuesto.
+- Integración: `Universiry-frontend/develop` en `82eddaf` y `Universiry-backend/develop` en `24a6b51`, ambos con avance rápido. Compose reconstruido con `docker compose up --build -d`; MySQL sano, frontend `200`, convocatorias públicas `200 []` y lectura anónima de bitácora `401`. No se recrearon ni borraron volúmenes; los archivos sin seguimiento preexistentes del checkout principal se conservaron.
