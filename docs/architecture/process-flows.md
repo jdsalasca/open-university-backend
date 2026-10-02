@@ -1209,6 +1209,42 @@ sequenceDiagram
 
 Si cambia el departamento, React limpia la entidad seleccionada y aborta la consulta anterior; las respuestas obsoletas se descartan. El fallo de carga ofrece reintento y una búsqueda vacía permite limpiar el filtro. El snapshot de DANE DIVIPOLA/MGN 2025 contiene 33 departamentos y 1.122 entidades (1.103 municipios, una isla y 18 áreas no municipalizadas); las filas mantienen `dataYear` 2024 o 2025. Esta referencia territorial no reemplaza el directorio oficial de colegios ni habilita inscripción o selección de aspirantes.
 
+## Propuesta local de asignación de aulas (solo DEV)
+
+La vista deja claro que aulas, grupos y horas son datos ficticios. Sin una sesión temporal local, el botón de cálculo está inactivo. Al generar una propuesta, React envía solo el escenario fijo seleccionado; el servidor vuelve a exigir autenticación, valida forma y límites, y llama al algoritmo determinista. Un escenario inválido se rechaza con `400`; una búsqueda que excede el presupuesto responde `422` y no devuelve una propuesta parcial.
+
+```mermaid
+sequenceDiagram
+  actor Reviewer as Revisor local
+  participant React as React: #aulas-demo
+  participant Client as RoomAllocationClient
+  participant Security as Spring Security
+  participant API as RoomAllocationProposalController
+  participant Planner as RoomAssignmentPlanner
+
+  Reviewer->>React: selecciona un escenario sintético
+  alt No hay sesión local autenticada
+    React-->>Reviewer: desactiva el cálculo e indica cómo iniciar el preview
+  else Hay sesión local autenticada
+    Reviewer->>React: pulsa Calcular propuesta
+    React->>Client: scenario + bearer en memoria + AbortSignal
+    Client->>Security: POST /api/v1/dev/room-allocation/proposals
+    Security->>Security: exige sesión autenticada en Spring local-preview
+    Security-->>API: request autenticada
+    API->>API: valida formato y límites del escenario
+    API->>Planner: propose(scenario)
+    Planner->>Planner: comprueba capacidad, equipo y cruces [inicio, fin)
+    Planner-->>API: máximo de grupos; desempate por menor holgura
+    API-->>Client: propuesta efímera o 400/422
+    Client-->>React: respuesta validada
+    React-->>Reviewer: muestra asignaciones y causas sin aula
+  end
+  Note over React,Planner: No consulta ni modifica MySQL, inventario, calendario, oferta, matrícula o auditoría
+  Note over React,Client: Al cerrar la sesión o desmontar, aborta la consulta y descarta el resultado
+```
+
+Los intervalos son semiabiertos: una clase que termina a las 10:00 no bloquea la que empieza a las 10:00. Los límites se aplican antes y durante el cálculo (12 grupos, 24 aulas, 8 reuniones por grupo y máximo 100.000 estados explorados); si se agota el presupuesto, el algoritmo no afirma optimalidad. El endpoint/controlador solo se registran con Spring `local-preview`, y la ruta React, el cliente y las fixtures se excluyen del manifest productivo. El laboratorio no expresa una regla oficial de asignación ni confirma reservas.
+
 ## Consulta de la guía pública de espacios
 
 La pantalla combina búsqueda local con una instantánea versionada de ubicaciones y rutas de orientación. No se consulta el sitio UPTC en tiempo de ejecución, no se guardan espacios en MySQL y no se solicita ubicación del navegador. La guía ofrece enlaces a canales institucionales; no recibe solicitudes ni confirma disponibilidad.

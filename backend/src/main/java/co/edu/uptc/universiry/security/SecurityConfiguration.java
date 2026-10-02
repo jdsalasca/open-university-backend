@@ -69,7 +69,8 @@ public class SecurityConfiguration {
                     authorize.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll();
                     if (environment.acceptsProfiles(Profiles.of("local-preview"))) {
                         authorize.requestMatchers(POST, "/api/v1/dev/local-preview-session").permitAll()
-                                .requestMatchers(DELETE, "/api/v1/dev/local-preview-session").authenticated();
+                                .requestMatchers(DELETE, "/api/v1/dev/local-preview-session").authenticated()
+                                .requestMatchers(POST, "/api/v1/dev/room-allocation/proposals").authenticated();
                     }
                     authorize
                         .requestMatchers(
