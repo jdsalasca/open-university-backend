@@ -24,7 +24,7 @@
 - `frontend/src/features/admissions/demo/admissionsDemoStore.test.ts`: límites de dominio del store.
 - `frontend/src/features/admissions/demo/AdmissionsWorkflowLab.tsx`: selector de perspectivas y carga local del estado compartido.
 - `frontend/src/features/admissions/demo/AdmissionsApplicantDemo.tsx`: formulario RHF sin datos personales.
-- `frontend/src/features/admissions/demo/AdmissionsAdminDemo.tsx`: bandeja sintética, estado vacío y transición de revisión.
+- `frontend/src/features/admissions/demo/AdmissionsAdminDemo.tsx`: bandeja sintética filtrable, detalle y transiciones demo de revisión/corrección.
 - `frontend/src/features/admissions/demo/AdmissionsWorkflowLab.scss`: estilos de tabs, pasos, formularios y bandeja, mobile-first.
 - `frontend/src/features/admissions/AdmissionsExperience.tsx`: contenedor de importación DEV y calendario público.
 - `frontend/src/features/admissions/AdmissionsExperience.test.tsx`: suite del calendario público y su consola existentes.
@@ -76,3 +76,13 @@
 - [x] Revisar duplicación, límites de permisos, estados accesibles, navegación por teclado y SCSS adaptable a móvil.
 - [x] Crear commits en ambos repos, actualizar el puntero del submódulo e integrar los dos repositorios en `develop` conforme a la autorización existente.
 - [x] Actualizar con `docker compose up --build -d --wait` y verificar UI 200, backend `UP`, MySQL sano y agenda pública sin convocatorias administradas ni tráfico de postulación.
+
+## Continuación aprobada: respuesta de ajuste en el recorrido demo
+
+- [x] Extender el contrato de estados para solicitar un ajuste fijo, confirmarlo desde Aspirante · demo, reanudar la revisión y cerrarla.
+- [x] Añadir prueba AAA para verificar que un motivo inválido o una transición fuera de secuencia no alteran la ficha.
+- [x] Añadir pruebas de bandeja para búsqueda/filtro, detalle, motivo visible y cierre de revisión sin decisión de admisión.
+- [x] Implementar la acción de cierre que faltaba en la revisión reanudada y presentar el motivo fijo en el detalle del equipo.
+- [x] Adaptar los nuevos controles del inbox/detalle a SCSS y a los breakpoints existentes.
+- [x] Actualizar la especificación, diagrama de proceso, estado C4, roadmap e instrucciones frontend.
+- [x] Ejecutar suite completa (361 pruebas Vitest y 10 verificaciones Node), build de producción (82 módulos, laboratorio excluido), linter e inspección de rutas y servicios del preview después de este incremento.

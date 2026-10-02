@@ -173,7 +173,7 @@ Cada publicación exige confirmación explícita, una referencia institucional y
 
 ### Laboratorio local de experiencia de admisiones (solo DEV)
 
-Al ejecutar Vite en modo desarrollo, `/#admisiones` inicia en una vista sintética de aspirante. La persona elige dos programas ficticios diferentes y confirma que leyó el aviso; el formulario no pide identidad, contacto, PIN ni soportes. La ficha se crea en un store Zustand no persistido que se comparte con la bandeja demo del equipo mientras la pantalla permanece montada. Allí solo se puede iniciar y cerrar una revisión de muestra: no se representa admisión, rechazo, puntaje o selección. La tercera pestaña conserva el calendario y su API actual; la consola de calendarios sigue dependiendo de sus permisos reales. Al recargar, el store local vuelve a los dos casos sintéticos iniciales.
+Al ejecutar Vite en modo desarrollo, `/#admisiones` inicia en una vista sintética de aspirante. La persona elige dos programas ficticios diferentes y confirma que leyó el aviso; el formulario no pide identidad, contacto, PIN ni soportes. La ficha se crea en un store Zustand no persistido que se comparte con la bandeja demo del equipo mientras la pantalla permanece montada. El equipo puede filtrar por referencia/estado, abrir el detalle, iniciar revisión, solicitar uno de dos ajustes fijos y finalizar el ejercicio. Desde la perspectiva aspirante se confirma la respuesta ficticia; el equipo puede reanudar y cerrar la revisión. No se representa admisión, rechazo, puntaje o selección. La tercera pestaña conserva el calendario y su API actual; la consola de calendarios sigue dependiendo de sus permisos reales. Al recargar, el store local vuelve a los casos sintéticos iniciales.
 
 ```mermaid
 sequenceDiagram
@@ -196,15 +196,22 @@ sequenceDiagram
   Aspirante->>Lab: cambia a Equipo de admisiones · demo
   Lab->>Store: lee la misma ficha local
   Lab-->>Equipo: muestra referencia, opciones ficticias y estado
-  Equipo->>Store: inicia o cierra solo una revisión de demostración
-  Store-->>Lab: avanza el estado DEMO_RECEIVED → DEMO_REVIEWING → DEMO_REVIEW_COMPLETE
-  Lab-->>Equipo: actualiza la tarjeta sin decidir admisión
+  Equipo->>Lab: abre detalle e inicia revisión demo
+  Lab->>Store: DEMO_RECEIVED → DEMO_REVIEWING
+  Equipo->>Lab: elige un motivo fijo y solicita ajuste
+  Lab->>Store: DEMO_REVIEWING → DEMO_CORRECTION_REQUESTED
+  Lab-->>Equipo: presenta estado y motivo de ajuste
+  Aspirante->>Lab: confirma la respuesta demo
+  Lab->>Store: DEMO_CORRECTION_REQUESTED → DEMO_CORRECTION_SUBMITTED
+  Equipo->>Lab: reanuda y finaliza revisión demo
+  Lab->>Store: DEMO_CORRECTION_SUBMITTED → DEMO_REVIEWING → DEMO_REVIEW_COMPLETE
+  Lab-->>Equipo: actualiza la ficha sin decidir admisión
   Aspirante->>Lab: cambia a Calendario público
   Lab->>Calendar: conserva la agenda y la consola existentes
   Calendar->>API: GET /api/v1/admissions/calls
   API-->>Calendar: solo convocatorias publicadas
   Note over Browser,Store: Al recargar, el store efímero se descarta y reaparece el baseline sintético
-  Note over Form,Store: Sin PII, API de postulaciones, persistencia, PIN, pago ni documentos
+  Note over Form,Store: Sin PII, texto libre de ajustes, API de postulaciones, persistencia, PIN, pago ni documentos
   Note over Lab,API: El bundle de producción excluye el laboratorio; solo el calendario permanece
 ```
 

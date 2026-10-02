@@ -21,8 +21,8 @@ Fuentes primarias: [ACRA — aspirante pregrado](https://reportes.uptc.edu.co/si
 
 La ruta ofrece tres perspectivas claramente etiquetadas:
 
-1. **Aspirante (demostración):** elige entre opciones ficticias, marca una lista de autoverificación sin datos personales y envía una ficha sintética a la bandeja local.
-2. **Equipo de admisiones (demostración):** consulta una bandeja con casos ficticios, incluida la ficha recién creada, y puede iniciar o cerrar una revisión de demostración. No puede admitir, rechazar, clasificar ni calcular puntajes.
+1. **Aspirante (demostración):** elige entre opciones ficticias, confirma el aviso sin datos personales, crea una ficha sintética y consulta su estado. Puede confirmar una respuesta ficticia a un ajuste de ejercicio.
+2. **Equipo de admisiones (demostración):** consulta una bandeja filtrable por referencia y estado, abre el detalle y puede iniciar la revisión, solicitar un ajuste de una lista fija o finalizar la revisión. Tras una confirmación demo de la perspectiva aspirante, puede reanudarla y cerrarla. No puede admitir, rechazar, clasificar ni calcular puntajes.
 3. **Calendario público:** conserva la agenda versionada y el respaldo oficial ya existente.
 
 El selector de perspectiva es una herramienta de prueba visual. No representa roles, sesión, autorización o capacidad institucional.
@@ -30,7 +30,8 @@ El selector de perspectiva es una herramienta de prueba visual. No representa ro
 ## Datos y seguridad
 
 - Solo carga en entorno Vite de desarrollo mediante una importación dinámica; el build productivo no debe incluir el laboratorio.
-- El dominio de demostración contiene un consecutivo sintético, dos opciones ficticias, dos casillas de autoverificación y un estado limitado a `DEMO_RECEIVED`, `DEMO_REVIEWING` o `DEMO_REVIEW_COMPLETE`.
+- El dominio de demostración contiene un consecutivo sintético, dos opciones ficticias, confirmaciones demo y estados acotados a `DEMO_RECEIVED`, `DEMO_REVIEWING`, `DEMO_CORRECTION_REQUESTED`, `DEMO_CORRECTION_SUBMITTED` y `DEMO_REVIEW_COMPLETE`.
+- Los motivos de ajuste son opciones fijas de demostración; no existe un campo de texto libre. El detalle de la bandeja muestra el motivo seleccionado.
 - La store Zustand vive únicamente en memoria del módulo. No usa `persist`, `localStorage`, `sessionStorage`, API, backend, MySQL, analítica ni servicios externos.
 - No hay campos de nombre, documento, contacto, puntaje, PIN, pago, expediente o archivos. La interfaz advierte que no se deben introducir datos reales.
 - Los estados de demostración no cambian perfiles canónicos `user_id`, calendarios oficiales, admisión, matrícula ni permisos.
@@ -38,8 +39,8 @@ El selector de perspectiva es una herramienta de prueba visual. No representa ro
 
 ## Contrato de UI
 
-- React Hook Form controla y valida opciones distintas y las dos casillas antes de crear una ficha de demostración.
-- Zustand comparte casos entre la vista de aspirante y la bandeja sin persistencia.
+- React Hook Form controla y valida opciones distintas y las confirmaciones antes de crear una ficha de demostración; la bandeja permite buscar por referencia y filtrar por estado.
+- Zustand comparte casos entre la vista de aspirante y la bandeja sin persistencia y valida transiciones permitidas, incluida la solicitud/respuesta de ajuste y el cierre de revisión.
 - Errores y confirmaciones son accesibles (`aria-live`/`role="alert"`), los tabs admiten teclado y el diseño parte de móvil.
 - Las llamadas de administración real permanecen exclusivamente en la perspectiva de calendario y siguen protegidas por los permisos existentes.
 
@@ -51,14 +52,15 @@ flowchart LR
   Staff[Operador de prueba]
   Browser["Navegador local · Vite DEV"]
   Lab["React: laboratorio de admisiones\nReact Hook Form + SCSS"]
-  Store["Zustand en memoria\ncasos sintéticos"]
+  Store["Zustand en memoria\ncasos sintéticos y estados demo"]
   Calendar["Calendario público existente\nReact + API versionada"]
   Backend["Monolito Spring Boot\nsolo calendario real"]
   Database[(MySQL · calendarios existentes)]
   ACRA["Canal oficial ACRA / sistema vigente"]
 
   Applicant -->|elige opciones ficticias| Lab
-  Staff -->|revisa casos sintéticos| Lab
+  Staff -->|filtra, solicita ajuste o cierra revisión demo| Lab
+  Applicant -->|confirma respuesta demo| Lab
   Lab <--> Store
   Browser --> Lab
   Browser --> Calendar
@@ -71,7 +73,7 @@ flowchart LR
 
 - El navegador local abre por defecto el recorrido de aspirante de demostración y permite cambiar entre aspirante, equipo y calendario.
 - Enviar una ficha válida crea un consecutivo sintético visible en la bandeja; opciones duplicadas o casillas incompletas producen errores claros y no cambian el store.
-- Las transiciones del operador solo cambian estados de revisión de demostración; nunca se presenta una decisión de admisión.
+- El recorrido permite iniciar revisión, solicitar un ajuste fijo, confirmarlo desde la perspectiva aspirante, reanudar y finalizar. Las transiciones solo afectan estados de demostración; nunca presentan una decisión de admisión.
 - Al recargar, la ficha deja de existir. No hay tráfico de postulación ni datos personales.
 - El build de producción excluye el módulo del laboratorio.
 - `npm test`, `npm run build` y `npm run lint` pasan; las pruebas de componentes cubren permisos/calendario existentes, validaciones, flujo aspirante→bandeja, transiciones, estados vacíos y teclado.
