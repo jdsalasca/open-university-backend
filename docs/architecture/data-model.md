@@ -31,6 +31,12 @@ Cada lugar conserva identidad estable, tipo, nombre, municipio, departamento sol
 
 `spaces` se añade al allowlist de `institution_module_label`; `V16__add_public_spaces_module_to_branding.sql` acepta la clave y la agrega a las revisiones de marca ya persistidas. La etiqueta y la visibilidad controlan el enlace lateral, mientras la consulta es pública y la ruta directa no queda bloqueada por branding.
 
+## Catálogo territorial de referencia
+
+`GET /api/v1/territorial-catalog/departments` y `GET /api/v1/territorial-catalog/departments/{departmentCode}/entities` exponen el puerto `TerritorialCatalog` mediante `ClasspathTerritorialCatalogAdapter`, que carga `territories/divipola-mgn-2025.json` como una instantánea validada. La procedencia identifica DANE, DIVIPOLA según MGN 2025, fecha de consulta del 2 de octubre de 2026 y los enlaces del servicio/documentación. La proyección contiene 33 departamentos y 1.122 entidades: 1.103 municipios, una isla y 18 áreas no municipalizadas; `dataYear` conserva por registro los valores 2024 o 2025 publicados por la fuente.
+
+Los códigos departamentales, locales y compuestos son cadenas para preservar ceros iniciales. El dominio valida formato, unicidad, relación departamento-entidad y tipo antes de servir el snapshot. No hay tabla ni migración MySQL, geometrías, datos personales o petición a DANE en tiempo de ejecución. Actualizar el archivo requiere revisar la nueva publicación oficial, registrar fecha/versión/procedencia, comparar códigos, jerarquía, tipos y conteos, y ejecutar las pruebas del adaptador y los contratos HTTP. El selector de admisiones solo es un laboratorio local DEV: la selección no se incorpora a la ficha sintética ni se envía o persiste. Este catálogo no incluye instituciones educativas/colegios; su fuente y autorización deben validarse por separado.
+
 ## Catálogo académico versionado v1
 
 El dominio `academics` es dueño de escritura de estas siete tablas. La migración `V2__academic_catalog.sql` crea el catálogo, `V3__curriculum_search_projection.sql` agrega/backfillea snapshots de lectura, `V4__normalize_curriculum_search_snapshot_defaults.sql` establece sus defaults y `V5__index_curriculum_draft_queue_order.sql` amplía el índice de la cola administrativa; ninguna reutiliza la auditoría de identidad visual, cuyas claves foráneas son propias de branding.

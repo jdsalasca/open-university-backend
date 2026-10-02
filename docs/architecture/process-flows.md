@@ -1136,6 +1136,38 @@ flowchart LR
   Accept -->|aprobado| Shadow --> Cutover --> Stabilize --> Retire
 ```
 
+## Consulta del catálogo territorial de referencia
+
+La pestaña DEV del laboratorio de admisiones muestra un selector de referencia con datos atribuidos a DANE. La selección no se mezcla con el formulario ni con el store sintético; estos endpoints no registran una postulación.
+
+```mermaid
+sequenceDiagram
+  actor Reviewer as Revisor local
+  participant React as Selector territorial DEV
+  participant API as Spring Boot
+  participant Port as TerritorialCatalog
+  participant Snapshot as JSON DIVIPOLA en classpath
+
+  Port->>Snapshot: lee el archivo al iniciar el backend
+  Snapshot-->>Port: snapshot validado en memoria
+  Reviewer->>React: abre la pestaña Catálogo territorial · demo
+  React->>API: GET /api/v1/territorial-catalog/departments
+  API->>Port: snapshot()
+  Port-->>API: snapshot inmutable con fuente y versión
+  API-->>React: lista de departamentos con códigos de texto
+  Reviewer->>React: selecciona un departamento
+  React->>API: GET /api/v1/territorial-catalog/departments/{code}/entities
+  API->>Port: snapshot()
+  Port-->>API: snapshot inmutable
+  API->>API: filtra por departamento
+  API-->>React: entidades del departamento seleccionado
+  React-->>Reviewer: selector, búsqueda local y atribución DANE
+  Note over React,API: Sin POST, MySQL, solicitud de inscripción ni llamada externa en tiempo de ejecución
+  Note over React,Snapshot: Solo Vite DEV; actualizar el snapshot exige revisar la publicación DANE
+```
+
+Si cambia el departamento, React limpia la entidad seleccionada y aborta la consulta anterior; las respuestas obsoletas se descartan. El fallo de carga ofrece reintento y una búsqueda vacía permite limpiar el filtro. El snapshot de DANE DIVIPOLA/MGN 2025 contiene 33 departamentos y 1.122 entidades (1.103 municipios, una isla y 18 áreas no municipalizadas); las filas mantienen `dataYear` 2024 o 2025. Esta referencia territorial no reemplaza el directorio oficial de colegios ni habilita inscripción o selección de aspirantes.
+
 ## Consulta de la guía pública de espacios
 
 La pantalla combina búsqueda local con una instantánea versionada de ubicaciones y rutas de orientación. No se consulta el sitio UPTC en tiempo de ejecución, no se guardan espacios en MySQL y no se solicita ubicación del navegador. La guía ofrece enlaces a canales institucionales; no recibe solicitudes ni confirma disponibilidad.

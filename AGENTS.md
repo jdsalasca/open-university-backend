@@ -57,6 +57,8 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 
 ## Documentación y continuidad
 
+- El catálogo territorial anónimo de solo lectura usa backend/src/main/resources/territories/divipola-mgn-2025.json mediante el puerto TerritorialCatalog; preservar códigos DIVIPOLA como texto, categorías y dataYear por fila, y mantener procedencia/fecha en la respuesta. No añadir MySQL ni llamadas DANE en tiempo de ejecución; cualquier snapshot actualizado exige revisar la publicación oficial y validar conteos, códigos, jerarquía y tipos. El selector solo vive en la pestaña DEV del laboratorio, sin postulación, PII, POST ni persistencia; validar por separado la fuente del directorio de colegios.
+
 - Leer esta guía y `docs/PROJECT.md` antes de cambiar el diseño.
 - Leer `docs/discovery/sponsor-university-platform-scope-2026-10.md` para el alcance funcional ampliado, sus dependencias y los criterios para no convertir prototipos en fuentes institucionales.
 - En cambios del frontend, leer también `frontend/AGENTS.md` y ejecutar validaciones desde el submódulo frontend.
