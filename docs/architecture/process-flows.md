@@ -963,7 +963,42 @@ sequenceDiagram
   UI->>UI: presenta controles según permisos del backend
 ```
 
-La respuesta no reproduce claims de perfil ni datos de otras personas. Sin issuer/audience configurados, el backend responde 401; con autenticación válida y sin rol mapeado, `/api/v1/me` devuelve permisos vacíos y las mutaciones responden 403. React no interpreta grupos ni claims. El callback acepta solo hashes locales conocidos, limpia `code`/`state` de la URL y elimina refresh tokens y claims de perfil no usados. El estado OIDC necesario durante la redirección permanece en `sessionStorage`, pero el usuario y sus tokens se guardan solo en memoria; una recarga exige iniciar sesión otra vez. Antes de habilitar expedientes personales reales deben aprobarse la arquitectura de sesión de producción y los headers/CSP de su punto de entrada. Compose y `.env.example` no incluyen una cuenta, grupo, token o proveedor de demostración.
+La respuesta no reproduce claims de perfil ni datos de otras personas. Sin issuer/audience configurados, el backend responde 401; con autenticación válida y sin rol mapeado, `/api/v1/me` devuelve permisos vacíos y las mutaciones responden 403. React no interpreta grupos ni claims. El callback acepta solo hashes locales conocidos, limpia `code`/`state` de la URL y elimina refresh tokens y claims de perfil no usados. El estado OIDC necesario durante la redirección permanece en `sessionStorage`, pero el usuario y sus tokens se guardan solo en memoria; una recarga exige iniciar sesión otra vez. Antes de habilitar expedientes personales reales deben aprobarse la arquitectura de sesión de producción y los headers/CSP de su punto de entrada. La única excepción de revisión local es el perfil `local-preview` descrito a continuación; no es una cuenta/grupo OIDC ni cambia el cierre institucional.
+
+## Sesión temporal para el preview de desarrollador
+
+```mermaid
+sequenceDiagram
+  actor Dev as Desarrollador en localhost
+  participant React as Vite DEV + React
+  participant API as Spring Boot: perfil local-preview
+  participant Store as Sesiones opacas en memoria
+  participant Me as GET /api/v1/me
+  participant Identity as Identidad canónica local
+  participant DB as MySQL Compose
+
+  Dev->>React: pulsa «Entrar al preview local»
+  React->>API: POST /api/v1/dev/local-preview-session sin cookie
+  API->>Store: emite bearer aleatorio de 256 bits, TTL 4 h
+  Store-->>API: token de proceso no persistido
+  API-->>React: accessToken + expiresAt, Cache-Control no-store
+  React->>React: conserva token solo en memoria; muestra banda de preview
+  React->>Me: GET /api/v1/me con bearer
+  Me->>Store: el decoder acepta solo token activo del perfil
+  Store-->>Me: issuer/subject sintético local
+  Me->>Identity: registra vínculo mínimo y resuelve permisos allowlisted
+  Identity->>DB: crea/lee solo user_id y vínculo local
+  Me-->>React: userId, subject y permisos actuales
+  React->>React: presenta capacidades según /api/v1/me
+  opt El desarrollador sale
+    Dev->>React: pulsa «Salir del preview local»
+    React->>API: DELETE /api/v1/dev/local-preview-session con bearer
+    API->>Store: revoca token
+    React->>React: descarta token y permisos en memoria
+  end
+```
+
+El backend ofrece esta ruta solo bajo `local-preview`, activado por Compose local con los puertos unidos a loopback. La sesión dura cuatro horas, admite como máximo 16 tokens vivos, no se restaura tras recargar y se invalida al salir o reiniciar backend. Cada permiso proviene del conversor del servidor y luego de `/api/v1/me`; React no puede elevarlo. Si el perfil backend no está activo, la emisión/validación falla cerrada. El manifest de producción excluye el cliente HTTP y la lógica React de la sesión local. Puede modificar únicamente los datos existentes en la base de desarrollo local; usa datos sintéticos. No representa SSO, MFA, perfiles UPTC, permisos por ámbito ni acceso institucional. Ver [ADR-0004](decisions/ADR-0004-local-preview-developer-session.md).
 
 ## Administración de perfiles y ámbitos
 
@@ -1004,7 +1039,7 @@ sequenceDiagram
   end
 ```
 
-Los perfiles aspirante, admitido y estudiante no se conceden manualmente; dependen de una vinculación verificada con el ciclo estudiantil. El registro canónico crea solo `user_id` y vínculo OIDC opaco, sin PII; varios vínculos pueden apuntar a un usuario, pero no existe endpoint para asociarlos o fusionarlos. `ADMINISTRATOR` se limita a gestionar roles con alcance universitario y no adquiere permisos sobre otros módulos. La consola y las rutas están implementadas, pero permanecen cerradas en Compose porque OIDC y la provisión inicial no están configurados. La propuesta de roles, su matriz y su operación institucional aún requieren aprobación; los tests usan sujetos sintéticos y no crean usuarios de desarrollo.
+Los perfiles aspirante, admitido y estudiante no se conceden manualmente; dependen de una vinculación verificada con el ciclo estudiantil. El registro canónico crea solo `user_id` y vínculo OIDC opaco, sin PII; varios vínculos pueden apuntar a un usuario, pero no existe endpoint para asociarlos o fusionarlos. `ADMINISTRATOR` se limita a gestionar roles con alcance universitario y no adquiere permisos sobre otros módulos. La consola y las rutas siguen cerradas para identidades institucionales hasta aprobar matriz y provisión; Compose local dispone de la excepción temporal `local-preview` documentada arriba, sin usuarios semilla ni asignación de rol.
 
 ## Desarrollo local y selección de idioma
 

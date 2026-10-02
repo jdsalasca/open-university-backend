@@ -7,6 +7,9 @@ import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.PUT;
@@ -52,7 +56,8 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain applicationSecurity(
             HttpSecurity http,
-            JwtAuthenticationConverter jwtAuthenticationConverter
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            Environment environment
     ) throws Exception {
         AuthenticationEntryPoint authenticationEntryPoint = this::writeUnauthorized;
         AccessDeniedHandler accessDeniedHandler = this::writeForbidden;
@@ -60,8 +65,13 @@ public class SecurityConfiguration {
         http
                 // Protected mutations require an explicit Authorization: Bearer token; authentication never uses cookies/sessions.
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authorize -> authorize
-                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .authorizeHttpRequests(authorize -> {
+                    authorize.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll();
+                    if (environment.acceptsProfiles(Profiles.of("local-preview"))) {
+                        authorize.requestMatchers(POST, "/api/v1/dev/local-preview-session").permitAll()
+                                .requestMatchers(DELETE, "/api/v1/dev/local-preview-session").authenticated();
+                    }
+                    authorize
                         .requestMatchers(
                                 GET,
                                 "/api/v1/branding",
@@ -154,8 +164,8 @@ public class SecurityConfiguration {
                         .requestMatchers(PATCH, "/api/v1/admin/access/assignments/*/revoke")
                         .hasAuthority(ApplicationPermission.IDENTITY_ROLES_WRITE.authority())
                         .requestMatchers("/api/v1/admin/**").denyAll()
-                        .anyRequest().denyAll()
-                )
+                        .anyRequest().denyAll();
+                })
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
@@ -170,6 +180,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    @Profile("!local-preview")
     JwtAuthenticationConverter jwtAuthenticationConverter(
             @Value("${UPTC_OIDC_AUTHORITIES_CLAIM:authorities}") String authoritiesClaim,
             @Value("${UPTC_OIDC_ROLE_PERMISSION_MAPPING:}") String rolePermissionMapping,
@@ -186,6 +197,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    @Profile("!local-preview")
     JwtDecoder jwtDecoder(
             @Value("${UPTC_OIDC_ISSUER_URI:}") String issuerUri,
             @Value("${UPTC_OIDC_AUDIENCE:}") String audience

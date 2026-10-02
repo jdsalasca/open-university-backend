@@ -13,12 +13,12 @@ La plataforma crece por capacidades. Una regla amplia sobre `/api/v1/admin/**` p
 - El backend recibe access tokens Bearer sin sesión ni cookie. `UPTC_OIDC_ISSUER_URI` y `UPTC_OIDC_AUDIENCE` son obligatorios para validar un token; cuando falta cualquiera, el decoder rechaza todos los tokens.
 - `UPTC_OIDC_AUTHORITIES_CLAIM` elige el claim que contiene los valores de rol. `UPTC_OIDC_ROLE_PERMISSION_MAPPING` acepta un objeto JSON con la forma `{"<valor-exacto-del-claim>":["<permiso-interno>"]}`. Su valor vacío predeterminado concede cero permisos.
 - Solo se aceptan los valores definidos por `ApplicationPermission`. El parseo rechaza JSON inválido, claves duplicadas, roles vacíos, listas vacías, permisos desconocidos y valores repetidos. Un rol no configurado no concede permisos por nombre parecido, prefijo o convención.
-- No hay roles ni grupos de demostración. `.env.example` deja issuer, audience y mapeo vacíos; ningún nombre UPTC productivo se incluye sin aprobación de DTIC.
+- No hay roles, grupos o asignaciones de demostración en el acceso institucional. `.env.example` deja issuer, audience y mapeo vacíos; ningún nombre UPTC productivo se incluye sin aprobación de DTIC. El preview local excepcional y aislado está documentado en [ADR-0004](ADR-0004-local-preview-developer-session.md).
 - Cada método y ruta administrativa se autoriza por su permiso de capacidad. Toda ruta bajo `/api/v1/admin/**` que no esté registrada se deniega.
 - `GET /api/v1/me` devuelve solo subject y permisos internos resueltos en servidor y lleva `Cache-Control: no-store`. No replica claims de perfil.
 - React usa Authorization Code con PKCE y consulta `/api/v1/me`; no decodifica claims para decidir permisos. La visibilidad de controles es una ayuda de interfaz; el backend aplica la autorización final.
 - El navegador conserva en `sessionStorage` únicamente el estado transaccional necesario para completar el callback; el usuario OIDC y sus tokens viven en memoria. No usa `localStorage`, `offline_access`, renovación silenciosa ni refresh tokens. Una recarga exige iniciar sesión de nuevo. El cambio desde el almacenamiento por pestaña queda registrado en [ADR-0003](ADR-0003-oidc-user-memory-only.md).
-- Sin configuración OIDC válida, React mantiene el inicio de sesión inactivo y las capacidades administrativas cerradas.
+- Sin configuración OIDC válida, React mantiene inactivo el inicio de sesión institucional y las capacidades administrativas cerradas. Solo Vite DEV junto al perfil backend `local-preview` puede ofrecer la sesión sintética descrita en ADR-0004.
 
 ## Consecuencias
 
