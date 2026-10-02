@@ -25,7 +25,7 @@
 
 ## Resultado de implementación y verificación
 
-- Frontend `develop`: commit `3136b37` publicado en `origin/develop`. `npm test`: 335 pruebas Vitest y 9 pruebas Node aprobadas; `npm run build` y `npm run lint` aprobados. La ruta `/#programas` quedó en 325.282 B JS/38.834 B CSS; el manifest no incluye el cliente HTTP ni el helper local. El límite JS subió 1.000 B (0,3 %) para esta entrega funcional y queda sujeto a revisión en la etapa de rendimiento.
+- Frontend `develop`: commits `3136b37` y `5e7bea0` publicados en `origin/develop`. `npm test`: 337 pruebas Vitest y 9 pruebas Node aprobadas; `npm run build` y `npm run lint` aprobados. La regresión de retener en memoria una referencia ya revocada quedó cubierta por una prueba AAA. La ruta `/#programas` quedó en 325.282 B JS/38.834 B CSS; el manifest no incluye el cliente HTTP ni el helper local. El límite JS subió 1.000 B (0,3 %) para esta entrega funcional y queda sujeto a revisión en la etapa de rendimiento.
 - Backend: `mvnw verify` aprobó 311 pruebas; 11 contratos opcionales quedaron omitidos por su configuración de integración. `docker compose config --quiet` y `docker compose up --build -d --wait` pasaron; backend, frontend y MySQL quedaron saludables y se conservó el volumen.
 - Smoke contra MySQL Compose: emisión con `no-store` y sin cookies, bearer opaco de 43 caracteres, subject `local-preview-developer`, 12 permisos devueltos por `/api/v1/me`, revocación HTTP 204 y rechazo posterior HTTP 401.
 - La pestaña de Chrome queda en `http://localhost:5173/#academia`, sin sesión activa. El acceso visual se deja listo; no se pulsa desde el navegador porque esa acción habilita permisos administrativos locales y requiere confirmación justo antes de concederse.
