@@ -92,4 +92,4 @@
 - [x] **Step 2: Observe the new tab test fail** before implementing it.
 - [x] **Step 3: Add the clearly labeled DEV-only tab and explanatory notice** without changing application-store data.
 - [x] **Step 4: Update C4, API/data contract, process flow, roadmap status, and agent guardrails** with snapshot provenance and limitations.
-- [ ] **Step 5: Run complete backend/frontend validation, inspect the local preview, commit frontend then backend/submodule pointer on `develop`, and push both authorized upstream repositories.**
+- [x] **Step 5: Run complete backend/frontend validation, inspect the local preview, commit frontend then backend/submodule pointer on `develop`, and push both authorized upstream repositories.**
