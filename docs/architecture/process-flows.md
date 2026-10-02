@@ -210,6 +210,33 @@ sequenceDiagram
 
 Este prototipo de recorrido no es un formulario oficial ni concede identidad, rol o permiso administrativo. Las decisiones de admisión, expedientes, integraciones y reglas siguen sujetas a los gates G0–G3 y a la aprobación del dueño institucional del proceso.
 
+### Consulta de semana académica de ejemplo (solo DEV)
+
+```mermaid
+sequenceDiagram
+  actor Reviewer as Persona que revisa la experiencia
+  participant Browser as Navegador local
+  participant Shell as React: shell Vite DEV
+  participant Week as Mi semana académica · demo
+  participant Fixtures as Seis sesiones inventadas en memoria
+
+  Reviewer->>Browser: abre #estudiante-demo
+  Browser->>Shell: resuelve la ruta solo en desarrollo
+  Shell->>Week: importa dinámicamente el componente de muestra
+  Week->>Fixtures: lee horario ficticio fijo
+  Week-->>Reviewer: muestra aviso y semana de ejemplo
+  Reviewer->>Week: selecciona un día
+  Week->>Fixtures: filtra sesiones en memoria
+  Fixtures-->>Week: devuelve coincidencias o lista vacía
+  Week-->>Reviewer: muestra sesiones o estado vacío accesible
+  Reviewer->>Week: solicita detalle de una sesión
+  Week-->>Reviewer: muestra hora, código, aula y docente inventados
+  Note over Week,Fixtures: Sin API académica, identidad, matrícula, escritura ni persistencia
+  Note over Shell,Week: El manifest de producción bloquea el módulo demo
+```
+
+La ruta es una evaluación visual, no la consulta real de materias de una persona. Los datos son constantes ficticias con códigos `DEMO-*`; el shell conserva su contexto global de identidad e identidad visual, pero la vista no usa sus permisos ni solicita datos académicos. El módulo no añade formularios de matrícula/notas ni una fuente oficial de horarios. La futura consulta propia exige una fuente maestra, autorización por usuario, aislamiento verificable y aprobación institucional.
+
 ### Flujo público de inscripción y selección para 2027-I
 
 El mapa separa fechas y reglas que aparecen en actos públicos de los puntos operativos pendientes. Es una guía para el taller, no una máquina de estados ni autorización para automatizar decisiones. UPTC reportó la implementación de «Inscríbete» para 2026-II; la Resolución 111/2026 nombra SIRA en el proceso 2027-I. El diagrama conserva esos nombres separados: no afirma que sean el mismo sistema ni que el portal descrito en el comunicado sea el de 2027-I. ISE, pago y matrícula/asignaturas quedan fuera del primer corte funcional.
