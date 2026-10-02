@@ -72,7 +72,7 @@
 ### 6. Validación, integración y preview
 
 - [x] Ejecutar `npm test`, `npm run build` y `npm run lint`.
-- [x] Inspeccionar el build/manifest de producción: no contiene el laboratorio; `npm run build` pasó y Vite procesó 82 módulos.
+- [x] Inspeccionar el build/manifest: el calendario continúa en producción y no aparece ninguna entrada del laboratorio; Vite procesó 82 módulos.
 - [x] Revisar duplicación, límites de permisos, estados accesibles, navegación por teclado y SCSS adaptable a móvil.
-- [ ] Commit de frontend, actualizar puntero submódulo/docs backend, integrar ambos en `develop` conforme a autorización ya dada.
-- [ ] Actualizar `docker compose up --build -d --wait`, comprobar UI/API y confirmar que el calendario sigue respondiendo sin escrituras de postulación.
+- [x] Crear commits en ambos repos, actualizar el puntero del submódulo e integrar los dos repositorios en `develop` conforme a la autorización existente.
+- [x] Actualizar con `docker compose up --build -d --wait` y verificar UI 200, backend `UP`, MySQL sano y agenda pública sin convocatorias administradas ni tráfico de postulación.
