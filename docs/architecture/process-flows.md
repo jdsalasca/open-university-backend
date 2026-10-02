@@ -224,25 +224,25 @@ sequenceDiagram
   actor Reviewer as Persona que revisa la experiencia
   participant Browser as Navegador local
   participant Shell as React: shell Vite DEV
-  participant Week as Mi semana académica · demo
-  participant Fixtures as Seis sesiones inventadas en memoria
+  participant StudentDemo as Mi semana / Mis asignaturas · demo
+  participant Fixtures as Seis materias y siete encuentros ficticios
 
   Reviewer->>Browser: abre #estudiante-demo
   Browser->>Shell: resuelve la ruta solo en desarrollo
-  Shell->>Week: importa dinámicamente el componente de muestra
-  Week->>Fixtures: lee horario ficticio fijo
-  Week-->>Reviewer: muestra aviso y semana de ejemplo
-  Reviewer->>Week: selecciona un día
-  Week->>Fixtures: filtra sesiones en memoria
-  Fixtures-->>Week: devuelve coincidencias o lista vacía
-  Week-->>Reviewer: muestra sesiones o estado vacío accesible
-  Reviewer->>Week: solicita detalle de una sesión
-  Week-->>Reviewer: muestra hora, código, aula y docente inventados
-  Note over Week,Fixtures: Sin API académica, identidad, matrícula, escritura ni persistencia
-  Note over Shell,Week: El manifest de producción bloquea el módulo demo
+  Shell->>StudentDemo: importa dinámicamente el componente de muestra
+  StudentDemo->>Fixtures: lee la estructura ficticia compartida
+  StudentDemo-->>Reviewer: muestra aviso y vista semanal
+  Reviewer->>StudentDemo: filtra por día o cambia a Mis asignaturas
+  StudentDemo->>Fixtures: deriva encuentros o agrupa materias
+  Fixtures-->>StudentDemo: devuelve coincidencias, seis materias únicas o lista vacía
+  StudentDemo-->>Reviewer: muestra agenda o tarjetas accesibles
+  Reviewer->>StudentDemo: selecciona un encuentro o una materia
+  StudentDemo-->>Reviewer: muestra horarios, código, espacio y docente inventados
+  Note over StudentDemo,Fixtures: Sin API académica, identidad, matrícula, escritura ni persistencia
+  Note over Shell,StudentDemo: El manifest de producción bloquea el módulo demo
 ```
 
-La ruta es una evaluación visual, no la consulta real de materias de una persona. Los datos son constantes ficticias con códigos `DEMO-*`; el shell conserva su contexto global de identidad e identidad visual, pero la vista no usa sus permisos ni solicita datos académicos. El módulo no añade formularios de matrícula/notas ni una fuente oficial de horarios. La futura consulta propia exige una fuente maestra, autorización por usuario, aislamiento verificable y aprobación institucional.
+La ruta es una evaluación visual, no la consulta real de materias de una persona. Los datos son constantes ficticias con códigos `DEMO-*`; la semana y la vista de asignaturas comparten una sola estructura para que una materia con varios encuentros no aparezca duplicada. El shell conserva su contexto global de identidad e identidad visual, pero la vista no usa sus permisos ni solicita datos académicos. El módulo no añade formularios de matrícula/notas ni una fuente oficial de horarios. La futura consulta propia exige una fuente maestra, autorización por usuario, aislamiento verificable y aprobación institucional.
 
 ### Flujo público de inscripción y selección para 2027-I
 
