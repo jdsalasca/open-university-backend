@@ -73,19 +73,26 @@ class RoleAssignmentControllerTest {
         String issuer = "https://identity.example.edu";
         String adminSubject = "access-manager-" + UUID.randomUUID();
         String teacherSubject = "teacher-" + UUID.randomUUID();
-        authenticateOnce(issuer, teacherSubject);
+        String teacherUserId = authenticateOnce(issuer, teacherSubject);
         authenticateOnce(issuer, adminSubject);
+        mockMvc.perform(get("/api/v1/admin/access/identities")
+                        .param("subjectPrefix", "teacher-")
+                        .with(jwt().jwt(jwt -> jwt.issuer(issuer).subject(adminSubject))
+                                .authorities(new SimpleGrantedAuthority("identity:roles:read"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].userId").value(teacherUserId))
+                .andExpect(jsonPath("$[0].subject").value(teacherSubject))
+                .andExpect(jsonPath("$[0].email").doesNotExist());
         String request = """
                 {
-                  "targetIssuer": "%s",
-                  "targetSubject": "%s",
+                  "targetUserId": "%s",
                   "profileKey": "TEACHER",
                   "scopes": [{"kind": "UNIVERSITY", "reference": null}],
                   "validFrom": "%s",
                   "validThrough": null,
                   "sourceReference": "Acta sintética 2026-42"
                 }
-                """.formatted(issuer, teacherSubject, LocalDate.now().toString());
+                """.formatted(teacherUserId, LocalDate.now().toString());
 
         // Act
         MvcResult created = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -106,6 +113,7 @@ class RoleAssignmentControllerTest {
                         .with(jwt().jwt(jwt -> jwt.issuer(issuer).subject(teacherSubject)
                                 .claim("email", "private@example.test"))))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(teacherUserId))
                 .andExpect(jsonPath("$.assignments[0].profileKey").value("TEACHER"))
                 .andExpect(jsonPath("$.email").doesNotExist());
 
@@ -124,19 +132,35 @@ class RoleAssignmentControllerTest {
 
         // Assert
         mockMvc.perform(get("/api/v1/admin/access/assignments")
-                        .param("issuer", issuer)
-                        .param("subject", teacherSubject)
+                        .param("userId", teacherUserId)
                         .with(jwt().jwt(jwt -> jwt.issuer(issuer).subject(adminSubject))
                                 .authorities(new SimpleGrantedAuthority("identity:roles:read"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].targetSubject").value(teacherSubject))
+                .andExpect(jsonPath("$[0].targetUserId").value(teacherUserId))
                 .andExpect(jsonPath("$[0].version").value(2))
                 .andExpect(jsonPath("$[0].email").doesNotExist());
+
+        mockMvc.perform(get("/api/v1/admin/access/assignments")
+                        .param("userId", "not-a-uuid")
+                        .with(jwt().jwt(jwt -> jwt.issuer(issuer).subject(adminSubject))
+                                .authorities(new SimpleGrantedAuthority("identity:roles:read"))))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/v1/admin/access/assignments")
+                        .param("userId", UUID.randomUUID().toString())
+                        .with(jwt().jwt(jwt -> jwt.issuer(issuer).subject(adminSubject))
+                                .authorities(new SimpleGrantedAuthority("identity:roles:read"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 
-    private void authenticateOnce(String issuer, String subject) throws Exception {
-        mockMvc.perform(get("/api/v1/me")
+    private String authenticateOnce(String issuer, String subject) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/v1/me")
                         .with(jwt().jwt(jwt -> jwt.issuer(issuer).subject(subject))))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").isNotEmpty())
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString(StandardCharsets.UTF_8))
+                .get("userId").textValue();
     }
 }

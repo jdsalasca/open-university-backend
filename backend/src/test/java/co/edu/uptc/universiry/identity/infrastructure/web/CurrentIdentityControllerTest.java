@@ -34,7 +34,7 @@ class CurrentIdentityControllerTest {
     }
 
     @Test
-    void authenticated_user_receives_only_subject_and_known_permissions_without_caching() throws Exception {
+    void authenticated_user_receives_canonical_id_subject_and_known_permissions_without_caching() throws Exception {
         mockMvc.perform(get("/api/v1/me")
                         .with(jwt()
                                 .jwt(jwt -> jwt
@@ -46,6 +46,7 @@ class CurrentIdentityControllerTest {
                                         new SimpleGrantedAuthority("SCOPE_profile")
                                 )))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").isNotEmpty())
                 .andExpect(jsonPath("$.subject").value("synthetic-subject-42"))
                 .andExpect(jsonPath("$.permissions.length()").value(1))
                 .andExpect(jsonPath("$.permissions[0]").value("branding:read"))

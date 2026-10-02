@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.security;
 
+import co.edu.uptc.universiry.identity.application.IdentityDirectory;
 import co.edu.uptc.universiry.identity.application.RoleAssignmentRepository;
 import co.edu.uptc.universiry.identity.domain.AssignmentScope;
 import co.edu.uptc.universiry.identity.domain.AssignmentStatus;
@@ -7,6 +8,7 @@ import co.edu.uptc.universiry.identity.domain.AuthenticatedPrincipal;
 import co.edu.uptc.universiry.identity.domain.InstitutionalReference;
 import co.edu.uptc.universiry.identity.domain.RoleAssignment;
 import co.edu.uptc.universiry.identity.domain.RoleProfile;
+import co.edu.uptc.universiry.identity.domain.RegisteredIdentity;
 import co.edu.uptc.universiry.identity.domain.ScopeKind;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,9 @@ class EffectiveAuthoritiesConverterTest {
     @Mock
     private RoleAssignmentRepository assignments;
 
+    @Mock
+    private IdentityDirectory identities;
+
     @Test
     void combines_only_explicit_oidc_permissions_with_active_role_permissions() {
         // Arrange
@@ -47,17 +52,20 @@ class EffectiveAuthoritiesConverterTest {
                 .build();
         AuthenticatedPrincipal principal = new AuthenticatedPrincipal(
                 "https://identity.example.edu", "admin-1");
+        UUID userId = UUID.randomUUID();
+        when(identities.find(principal)).thenReturn(java.util.Optional.of(
+                new RegisteredIdentity(UUID.randomUUID(), userId, principal, NOW)));
         RoleAssignment admin = new RoleAssignment(
-                UUID.randomUUID(), principal, RoleProfile.ADMINISTRATOR,
+                UUID.randomUUID(), userId, RoleProfile.ADMINISTRATOR,
                 Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)),
                 TODAY, null, AssignmentStatus.ACTIVE,
-                new AuthenticatedPrincipal("https://identity.example.edu", "bootstrap-1"),
+                UUID.randomUUID(),
                 new InstitutionalReference("Acta institucional 42"), NOW, 1);
-        when(assignments.findActiveAssignments(principal, TODAY)).thenReturn(List.of(admin));
+        when(assignments.findActiveAssignments(userId, TODAY)).thenReturn(List.of(admin));
         ApplicationAuthoritiesConverter configuredClaims = new ApplicationAuthoritiesConverter(
                 "authorities", "{\"UPTC_PORTAL_ADMIN\":[\"branding:read\"]}");
         EffectiveAuthoritiesConverter converter = new EffectiveAuthoritiesConverter(
-                configuredClaims, assignments, Clock.fixed(NOW, ZoneId.of("America/Bogota")));
+                configuredClaims, identities, assignments, Clock.fixed(NOW, ZoneId.of("America/Bogota")));
 
         // Act
         List<String> authorities = converter.convert(token).stream()
@@ -66,7 +74,33 @@ class EffectiveAuthoritiesConverterTest {
                 .toList();
 
         // Assert
-        verify(assignments).findActiveAssignments(principal, TODAY);
+        verify(identities).find(principal);
+        verify(assignments).findActiveAssignments(userId, TODAY);
         assertEquals(List.of("branding:read", "identity:roles:read", "identity:roles:write"), authorities);
+    }
+
+    @Test
+    void unregistered_oidc_binding_receives_no_local_role_authorities() {
+        // Arrange
+        Jwt token = Jwt.withTokenValue("synthetic-token")
+                .header("alg", "none")
+                .issuer("https://identity.example.edu")
+                .subject("unregistered-subject")
+                .build();
+        AuthenticatedPrincipal principal = new AuthenticatedPrincipal(
+                "https://identity.example.edu", "unregistered-subject");
+        when(identities.find(principal)).thenReturn(java.util.Optional.empty());
+        EffectiveAuthoritiesConverter converter = new EffectiveAuthoritiesConverter(
+                new ApplicationAuthoritiesConverter("authorities", ""), identities, assignments,
+                Clock.fixed(NOW, ZoneId.of("America/Bogota")));
+
+        // Act
+        List<String> authorities = converter.convert(token).stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        // Assert
+        assertEquals(List.of(), authorities);
+        org.mockito.Mockito.verifyNoInteractions(assignments);
     }
 }

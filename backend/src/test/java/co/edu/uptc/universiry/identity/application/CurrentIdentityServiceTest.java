@@ -36,9 +36,10 @@ class CurrentIdentityServiceTest {
         // Arrange
         AuthenticatedPrincipal principal = new AuthenticatedPrincipal(
                 "https://identity.example.edu", "synthetic-subject-1");
-        RegisteredIdentity registered = new RegisteredIdentity(UUID.randomUUID(), principal, NOW);
+        UUID userId = UUID.randomUUID();
+        RegisteredIdentity registered = new RegisteredIdentity(UUID.randomUUID(), userId, principal, NOW);
         when(identities.registerIfAbsent(principal, NOW)).thenReturn(registered);
-        when(assignments.findActiveAssignments(principal, NOW.atZone(ZoneId.of("America/Bogota")).toLocalDate()))
+        when(assignments.findActiveAssignments(userId, NOW.atZone(ZoneId.of("America/Bogota")).toLocalDate()))
                 .thenReturn(List.of());
         CurrentIdentityService service = new CurrentIdentityService(identities, assignments,
                 Clock.fixed(NOW, ZoneId.of("America/Bogota")));
@@ -49,6 +50,8 @@ class CurrentIdentityServiceTest {
 
         // Assert
         verify(identities).registerIfAbsent(principal, NOW);
+        verify(assignments).findActiveAssignments(userId, NOW.atZone(ZoneId.of("America/Bogota")).toLocalDate());
+        assertEquals(userId, result.userId());
         assertEquals("synthetic-subject-1", result.subject());
         assertEquals(List.of("branding:read"), result.permissions());
         assertEquals(List.of(), result.assignments());

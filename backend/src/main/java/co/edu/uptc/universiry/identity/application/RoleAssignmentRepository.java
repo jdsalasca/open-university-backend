@@ -1,7 +1,6 @@
 package co.edu.uptc.universiry.identity.application;
 
 import co.edu.uptc.universiry.identity.domain.AccessAuditEvent;
-import co.edu.uptc.universiry.identity.domain.AuthenticatedPrincipal;
 import co.edu.uptc.universiry.identity.domain.RoleAssignment;
 
 import java.time.LocalDate;
@@ -11,11 +10,11 @@ import java.util.UUID;
 
 public interface RoleAssignmentRepository {
 
-    List<RoleAssignment> findAssignments(AuthenticatedPrincipal target);
+    List<RoleAssignment> findAssignments(UUID targetUserId);
 
     Optional<RoleAssignment> findAssignment(UUID assignmentId);
 
-    List<RoleAssignment> findActiveAssignments(AuthenticatedPrincipal target, LocalDate institutionalDate);
+    List<RoleAssignment> findActiveAssignments(UUID targetUserId, LocalDate institutionalDate);
 
     void create(RoleAssignment assignment, AccessAuditEvent auditEvent);
 

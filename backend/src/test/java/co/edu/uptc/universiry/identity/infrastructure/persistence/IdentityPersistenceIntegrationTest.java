@@ -23,11 +23,21 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,16 +65,19 @@ class IdentityPersistenceIntegrationTest {
         jdbcTemplate.update("DELETE FROM identity_role_assignment_scope");
         jdbcTemplate.update("DELETE FROM identity_role_assignment");
         jdbcTemplate.update("DELETE FROM institutional_identity");
+        jdbcTemplate.update("DELETE FROM university_user");
     }
 
     @Test
     void migration_starts_without_seeded_identities_or_role_assignments() {
         // Arrange
         int identities = count("institutional_identity");
+        int users = count("university_user");
         int assignments = count("identity_role_assignment");
 
         // Act + Assert
         assertEquals(0, identities);
+        assertEquals(0, users);
         assertEquals(0, assignments);
     }
 
@@ -82,9 +95,53 @@ class IdentityPersistenceIntegrationTest {
 
         // Assert
         assertEquals(initial.id(), repeated.id());
+        assertEquals(initial.userId(), repeated.userId());
         assertEquals(NOW, repeated.firstSeenAt());
         assertNotEquals(initial.id(), distinct.id());
+        assertNotEquals(initial.userId(), distinct.userId());
         assertEquals(2, count("institutional_identity"));
+        assertEquals(2, count("university_user"));
+        assertTrue(identityDirectory.userExists(initial.userId()));
+        assertFalse(identityDirectory.userExists(UUID.randomUUID()));
+    }
+
+    @Test
+    void concurrent_registration_of_the_same_pair_creates_one_user_and_one_binding() throws Exception {
+        // Arrange
+        AuthenticatedPrincipal principal = principal("https://id.example.edu", "concurrent-" + UUID.randomUUID());
+        int contenders = 8;
+        ExecutorService executor = Executors.newFixedThreadPool(contenders);
+        CountDownLatch ready = new CountDownLatch(contenders);
+        CountDownLatch start = new CountDownLatch(1);
+        List<Future<RegisteredIdentity>> registrations = new ArrayList<>();
+        try {
+            for (int index = 0; index < contenders; index++) {
+                registrations.add(executor.submit(() -> {
+                    ready.countDown();
+                    if (!start.await(5, TimeUnit.SECONDS)) {
+                        throw new IllegalStateException("concurrent registration did not start");
+                    }
+                    return identityDirectory.registerIfAbsent(principal, NOW);
+                }));
+            }
+
+            // Act
+            assertTrue(ready.await(5, TimeUnit.SECONDS));
+            start.countDown();
+            List<RegisteredIdentity> results = new ArrayList<>();
+            for (Future<RegisteredIdentity> registration : registrations) {
+                results.add(registration.get(10, TimeUnit.SECONDS));
+            }
+
+            // Assert
+            assertEquals(1, results.stream().map(RegisteredIdentity::id).distinct().count());
+            assertEquals(1, results.stream().map(RegisteredIdentity::userId).distinct().count());
+            assertEquals(1, count("institutional_identity"));
+            assertEquals(1, count("university_user"));
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+        }
     }
 
     @Test
@@ -123,8 +180,9 @@ class IdentityPersistenceIntegrationTest {
 
         // Act
         assignmentRepository.create(assignment, grantEvent);
-        List<RoleAssignment> allAssignments = assignmentRepository.findAssignments(target);
-        List<RoleAssignment> activeAssignments = assignmentRepository.findActiveAssignments(target, TODAY);
+        UUID targetUserId = userId(target);
+        List<RoleAssignment> allAssignments = assignmentRepository.findAssignments(targetUserId);
+        List<RoleAssignment> activeAssignments = assignmentRepository.findActiveAssignments(targetUserId, TODAY);
 
         // Assert
         assertEquals(1, allAssignments.size());
@@ -134,6 +192,67 @@ class IdentityPersistenceIntegrationTest {
                 new AssignmentScope(ScopeKind.PROGRAM, programId.toString())), allAssignments.getFirst().scopes());
         assertEquals(1, activeAssignments.size());
         assertEquals(1, count("identity_access_audit_event"));
+        String expectedActorIdentityId = identityDirectory.find(grantor).orElseThrow().id().toString();
+        assertEquals(expectedActorIdentityId, jdbcTemplate.queryForObject(
+                "SELECT actor_identity_id FROM identity_access_audit_event WHERE assignment_id = ?",
+                String.class, assignment.id().toString()));
+        assertEquals(userId(grantor).toString(), jdbcTemplate.queryForObject(
+                "SELECT actor_user_id FROM identity_access_audit_event WHERE assignment_id = ?",
+                String.class, assignment.id().toString()));
+    }
+
+    @Test
+    void audit_event_rejects_a_federated_binding_from_another_canonical_user_atomically() {
+        // Arrange
+        AuthenticatedPrincipal target = principal("https://id.example.edu", "teacher-" + UUID.randomUUID());
+        AuthenticatedPrincipal grantor = principal("https://id.example.edu", "manager-" + UUID.randomUUID());
+        AuthenticatedPrincipal unrelatedActor = principal("https://id.example.edu", "unrelated-" + UUID.randomUUID());
+        identityDirectory.registerIfAbsent(target, NOW);
+        RegisteredIdentity registeredGrantor = identityDirectory.registerIfAbsent(grantor, NOW);
+        RegisteredIdentity unrelatedBinding = identityDirectory.registerIfAbsent(unrelatedActor, NOW);
+        RoleAssignment assignment = assignment(target, grantor,
+                Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)));
+        AccessAuditEvent mismatchedEvent = new AccessAuditEvent(
+                UUID.randomUUID(), assignment.id(), AccessAuditAction.GRANTED,
+                unrelatedBinding.id(), registeredGrantor.userId(), NOW, SOURCE, 0, 1);
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class, () -> assignmentRepository.create(assignment, mismatchedEvent));
+        assertEquals(0, count("identity_role_assignment"));
+        assertEquals(0, count("identity_access_audit_event"));
+    }
+
+    @Test
+    void assignments_are_shared_by_oidc_aliases_and_isolated_by_canonical_user_id() {
+        // Arrange
+        AuthenticatedPrincipal originalBinding = principal(
+                "https://id.example.edu", "teacher-original-" + UUID.randomUUID());
+        AuthenticatedPrincipal grantor = principal(
+                "https://id.example.edu", "administrator-" + UUID.randomUUID());
+        RegisteredIdentity original = identityDirectory.registerIfAbsent(originalBinding, NOW);
+        RegisteredIdentity registeredGrantor = identityDirectory.registerIfAbsent(grantor, NOW);
+        RoleAssignment assignment = new RoleAssignment(
+                UUID.randomUUID(), original.userId(), RoleProfile.TEACHER,
+                Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)), TODAY, null,
+                AssignmentStatus.ACTIVE, registeredGrantor.userId(), SOURCE, NOW, 1);
+        assignmentRepository.create(assignment, event(
+                assignment.id(), AccessAuditAction.GRANTED, grantor, 0, 1));
+
+        AuthenticatedPrincipal aliasBinding = principal(
+                "https://alternate-id.example.edu", "teacher-alias-" + UUID.randomUUID());
+        insertAliasBinding(UUID.randomUUID(), original.userId(), aliasBinding);
+        RegisteredIdentity otherUser = identityDirectory.registerIfAbsent(
+                principal("https://id.example.edu", "unrelated-teacher-" + UUID.randomUUID()), NOW);
+
+        // Act
+        RegisteredIdentity alias = identityDirectory.find(aliasBinding).orElseThrow();
+        List<RoleAssignment> sharedAssignments = assignmentRepository.findAssignments(alias.userId());
+
+        // Assert
+        assertEquals(original.userId(), alias.userId());
+        assertEquals(1, sharedAssignments.size());
+        assertEquals(assignment.id(), sharedAssignments.getFirst().id());
+        assertTrue(assignmentRepository.findAssignments(otherUser.userId()).isEmpty());
     }
 
     @Test
@@ -177,7 +296,7 @@ class IdentityPersistenceIntegrationTest {
         assertEquals(1, count("identity_role_assignment"));
         assertEquals(1, count("identity_role_assignment_scope"));
         assertEquals(1, count("identity_access_audit_event"));
-        assertTrue(assignmentRepository.findAssignments(secondTarget).isEmpty());
+        assertTrue(assignmentRepository.findAssignments(userId(secondTarget)).isEmpty());
     }
 
     @Test
@@ -225,7 +344,7 @@ class IdentityPersistenceIntegrationTest {
         // Act + Assert
         assertThrows(RoleAssignmentVersionConflictException.class,
                 () -> assignmentRepository.revoke(assignment.id(), 0, staleEvent));
-        assertEquals(AssignmentStatus.ACTIVE, assignmentRepository.findAssignments(target).getFirst().status());
+        assertEquals(AssignmentStatus.ACTIVE, assignmentRepository.findAssignments(userId(target)).getFirst().status());
         assertEquals(1, count("identity_access_audit_event"));
     }
 
@@ -248,7 +367,12 @@ class IdentityPersistenceIntegrationTest {
         assertEquals(AssignmentStatus.REVOKED, revoked.status());
         assertEquals(2, revoked.version());
         assertEquals(2, count("identity_access_audit_event"));
-        assertEquals(0, assignmentRepository.findActiveAssignments(target, TODAY).size());
+        assertEquals(0, assignmentRepository.findActiveAssignments(userId(target), TODAY).size());
+        String expectedActorIdentityId = identityDirectory.find(grantor).orElseThrow().id().toString();
+        assertEquals(expectedActorIdentityId, jdbcTemplate.queryForObject("""
+                SELECT actor_identity_id FROM identity_access_audit_event
+                WHERE assignment_id = ? AND action_key = 'REVOKED'
+                """, String.class, assignment.id().toString()));
     }
 
     private RoleAssignment assignment(
@@ -263,8 +387,8 @@ class IdentityPersistenceIntegrationTest {
             AuthenticatedPrincipal grantor,
             Set<AssignmentScope> scopes,
             RoleProfile profile) {
-        return new RoleAssignment(UUID.randomUUID(), target, profile, scopes,
-                TODAY, null, AssignmentStatus.ACTIVE, grantor, SOURCE, NOW, 1);
+        return new RoleAssignment(UUID.randomUUID(), userId(target), profile, scopes,
+                TODAY, null, AssignmentStatus.ACTIVE, userId(grantor), SOURCE, NOW, 1);
     }
 
     private AccessAuditEvent event(
@@ -273,8 +397,9 @@ class IdentityPersistenceIntegrationTest {
             AuthenticatedPrincipal actor,
             long previousVersion,
             long version) {
+        RegisteredIdentity registeredActor = identityDirectory.find(actor).orElseThrow();
         return new AccessAuditEvent(UUID.randomUUID(), assignmentId, action,
-                actor, NOW, SOURCE, previousVersion, version);
+                registeredActor.id(), registeredActor.userId(), NOW, SOURCE, previousVersion, version);
     }
 
     private AccessAuditEvent event(
@@ -284,8 +409,9 @@ class IdentityPersistenceIntegrationTest {
             AuthenticatedPrincipal actor,
             long previousVersion,
             long version) {
+        RegisteredIdentity registeredActor = identityDirectory.find(actor).orElseThrow();
         return new AccessAuditEvent(eventId, assignmentId, action,
-                actor, NOW, SOURCE, previousVersion, version);
+                registeredActor.id(), registeredActor.userId(), NOW, SOURCE, previousVersion, version);
     }
 
     private UUID createSite() {
@@ -326,11 +452,31 @@ class IdentityPersistenceIntegrationTest {
             RegisteredIdentity grantor) {
         jdbcTemplate.update("""
                 INSERT INTO identity_role_assignment (
-                    assignment_id, target_identity_id, profile_key, status, valid_from, valid_through,
-                    source_reference, granted_by_identity_id, created_at, version
+                    assignment_id, target_user_id, profile_key, status, valid_from, valid_through,
+                    source_reference, granted_by_user_id, created_at, version
                 ) VALUES (?, ?, ?, 'ACTIVE', ?, NULL, ?, ?, ?, 1)
-                """, UUID.randomUUID().toString(), target.id().toString(), profileKey,
-                TODAY, SOURCE.value(), grantor.id().toString(), NOW);
+                """, UUID.randomUUID().toString(), target.userId().toString(), profileKey,
+                TODAY, SOURCE.value(), grantor.userId().toString(), NOW);
+    }
+
+    private void insertAliasBinding(UUID identityId, UUID userId, AuthenticatedPrincipal principal) {
+        byte[] issuerDigest;
+        try {
+            issuerDigest = MessageDigest.getInstance("SHA-256")
+                    .digest(principal.issuer().getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException(impossible);
+        }
+        jdbcTemplate.update("""
+                INSERT INTO institutional_identity (
+                    identity_id, user_id, issuer, subject, issuer_sha256, first_seen_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """, identityId.toString(), userId.toString(), principal.issuer(),
+                principal.subject().getBytes(StandardCharsets.US_ASCII), issuerDigest, NOW);
+    }
+
+    private UUID userId(AuthenticatedPrincipal principal) {
+        return identityDirectory.find(principal).orElseThrow().userId();
     }
 
     private static AuthenticatedPrincipal principal(String issuer, String subject) {

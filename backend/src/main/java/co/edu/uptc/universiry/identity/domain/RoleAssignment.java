@@ -7,24 +7,24 @@ import java.util.UUID;
 
 public record RoleAssignment(
         UUID id,
-        AuthenticatedPrincipal target,
+        UUID targetUserId,
         RoleProfile profile,
         Set<AssignmentScope> scopes,
         LocalDate validFrom,
         LocalDate validThrough,
         AssignmentStatus status,
-        AuthenticatedPrincipal grantedBy,
+        UUID grantedByUserId,
         InstitutionalReference sourceReference,
         Instant createdAt,
         long version) {
 
     public RoleAssignment {
-        if (id == null || target == null || profile == null || validFrom == null || status == null
-                || grantedBy == null || sourceReference == null || createdAt == null || version < 1) {
+        if (id == null || targetUserId == null || profile == null || validFrom == null || status == null
+                || grantedByUserId == null || sourceReference == null || createdAt == null || version < 1) {
             throw new IllegalArgumentException("role assignment is missing required values");
         }
-        if (target.equals(grantedBy)) {
-            throw new IllegalArgumentException("a principal cannot grant a role to itself");
+        if (targetUserId.equals(grantedByUserId)) {
+            throw new IllegalArgumentException("a user cannot grant a role to itself");
         }
         if (validThrough != null && validThrough.isBefore(validFrom)) {
             throw new IllegalArgumentException("role assignment end date cannot precede its start date");

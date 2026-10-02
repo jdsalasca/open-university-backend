@@ -2,6 +2,7 @@ package co.edu.uptc.universiry.security;
 
 import co.edu.uptc.universiry.platform.i18n.application.MessageCatalog;
 import co.edu.uptc.universiry.identity.application.RoleAssignmentRepository;
+import co.edu.uptc.universiry.identity.application.IdentityDirectory;
 import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -160,13 +161,15 @@ public class SecurityConfiguration {
     JwtAuthenticationConverter jwtAuthenticationConverter(
             @Value("${UPTC_OIDC_AUTHORITIES_CLAIM:authorities}") String authoritiesClaim,
             @Value("${UPTC_OIDC_ROLE_PERMISSION_MAPPING:}") String rolePermissionMapping,
+            IdentityDirectory identities,
             RoleAssignmentRepository assignments,
             Clock clock
     ) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(
                 new EffectiveAuthoritiesConverter(
-                        new ApplicationAuthoritiesConverter(authoritiesClaim, rolePermissionMapping), assignments, clock));
+                        new ApplicationAuthoritiesConverter(authoritiesClaim, rolePermissionMapping),
+                        identities, assignments, clock));
         return converter;
     }
 

@@ -6,6 +6,7 @@ import co.edu.uptc.universiry.identity.domain.RegisteredIdentity;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface IdentityDirectory {
 
@@ -14,4 +15,6 @@ public interface IdentityDirectory {
     Optional<RegisteredIdentity> find(AuthenticatedPrincipal principal);
 
     List<RegisteredIdentity> findBySubjectPrefix(String subjectPrefix, int limit);
+
+    boolean userExists(UUID userId);
 }

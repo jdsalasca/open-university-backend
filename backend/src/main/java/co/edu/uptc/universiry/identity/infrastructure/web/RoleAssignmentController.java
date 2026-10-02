@@ -48,10 +48,8 @@ public class RoleAssignmentController {
 
     @GetMapping("/assignments")
     public ResponseEntity<List<RoleAssignmentResponse>> assignments(
-            @RequestParam String issuer,
-            @RequestParam String subject) {
-        AuthenticatedPrincipal target = new AuthenticatedPrincipal(issuer, subject);
-        List<RoleAssignmentResponse> response = roles.assignmentsFor(target).stream()
+            @RequestParam UUID userId) {
+        List<RoleAssignmentResponse> response = roles.assignmentsFor(userId).stream()
                 .map(RoleAssignmentResponse::from)
                 .toList();
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(response);

@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.security;
 
+import co.edu.uptc.universiry.identity.application.IdentityDirectory;
 import co.edu.uptc.universiry.identity.application.RoleAssignmentRepository;
 import co.edu.uptc.universiry.identity.domain.AuthenticatedPrincipal;
 import org.springframework.core.convert.converter.Converter;
@@ -16,14 +17,17 @@ import java.util.TreeSet;
 public final class EffectiveAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
     private final ApplicationAuthoritiesConverter configuredClaims;
+    private final IdentityDirectory identities;
     private final RoleAssignmentRepository assignments;
     private final Clock clock;
 
     public EffectiveAuthoritiesConverter(
             ApplicationAuthoritiesConverter configuredClaims,
+            IdentityDirectory identities,
             RoleAssignmentRepository assignments,
             Clock clock) {
         this.configuredClaims = configuredClaims;
+        this.identities = identities;
         this.assignments = assignments;
         this.clock = clock;
     }
@@ -42,7 +46,11 @@ public final class EffectiveAuthoritiesConverter implements Converter<Jwt, Colle
         } catch (IllegalArgumentException invalidIdentity) {
             return toAuthorities(authorityNames);
         }
-        assignments.findActiveAssignments(principal, LocalDate.now(clock)).stream()
+        var registeredIdentity = identities.find(principal).orElse(null);
+        if (registeredIdentity == null) {
+            return toAuthorities(authorityNames);
+        }
+        assignments.findActiveAssignments(registeredIdentity.userId(), LocalDate.now(clock)).stream()
                 .flatMap(assignment -> assignment.profile().permissions().stream())
                 .map(ApplicationPermission::authority)
                 .forEach(authorityNames::add);

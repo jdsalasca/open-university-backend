@@ -7,14 +7,16 @@ public record AccessAuditEvent(
         UUID id,
         UUID assignmentId,
         AccessAuditAction action,
-        AuthenticatedPrincipal actor,
+        UUID actorIdentityId,
+        UUID actorUserId,
         Instant occurredAt,
         InstitutionalReference sourceReference,
         long previousVersion,
         long version) {
 
     public AccessAuditEvent {
-        if (id == null || assignmentId == null || action == null || actor == null || occurredAt == null
+        if (id == null || assignmentId == null || action == null || actorIdentityId == null
+                || actorUserId == null || occurredAt == null
                 || sourceReference == null || previousVersion < 0
                 || version != previousVersion + 1) {
             throw new IllegalArgumentException("audit event must describe a single valid assignment transition");

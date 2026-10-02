@@ -2,17 +2,16 @@ package co.edu.uptc.universiry.identity.infrastructure.web;
 
 import co.edu.uptc.universiry.identity.application.CreateRoleAssignmentCommand;
 import co.edu.uptc.universiry.identity.domain.AssignmentScope;
-import co.edu.uptc.universiry.identity.domain.AuthenticatedPrincipal;
 import co.edu.uptc.universiry.identity.domain.ScopeKind;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public record CreateRoleAssignmentRequest(
-        String targetIssuer,
-        String targetSubject,
+        UUID targetUserId,
         String profileKey,
         List<ScopeRequest> scopes,
         LocalDate validFrom,
@@ -20,10 +19,12 @@ public record CreateRoleAssignmentRequest(
         String sourceReference) {
 
     public CreateRoleAssignmentCommand toCommand() {
+        if (targetUserId == null) {
+            throw new IllegalArgumentException("canonical role target user id is required");
+        }
         if (scopes == null || scopes.isEmpty()) {
             throw new IllegalArgumentException("at least one role scope is required");
         }
-        AuthenticatedPrincipal target = new AuthenticatedPrincipal(targetIssuer, targetSubject);
         Set<ScopeKind> seenKinds = EnumSet.noneOf(ScopeKind.class);
         Set<AssignmentScope> resolvedScopes = new java.util.HashSet<>();
         for (ScopeRequest scope : scopes) {
@@ -37,7 +38,7 @@ public record CreateRoleAssignmentRequest(
             resolvedScopes.add(new AssignmentScope(kind, scope.reference()));
         }
         return new CreateRoleAssignmentCommand(
-                target, profileKey, Set.copyOf(resolvedScopes), validFrom, validThrough, sourceReference);
+                targetUserId, profileKey, Set.copyOf(resolvedScopes), validFrom, validThrough, sourceReference);
     }
 
     public record ScopeRequest(String kind, String reference) {

@@ -1,7 +1,7 @@
 # Identidad y permisos por ámbito — propuesta de diseño
 
 **Estado:** borrador para aprobación del patrocinador; una base técnica de consola, API, persistencia y auditoría está implementada en `develop`, pero no autoriza configuración institucional ni acceso a datos reales.<br>
-**Nota de alcance:** este borrador precede a la aclaración posterior del patrocinador de que debe existir un solo `user_id` canónico para aspirantes, estudiantes, docentes, administrativos y egresados. No se debe usar este modelo como contrato final del registro de usuarios hasta reconciliarlo con `docs/discovery/sponsor-university-platform-scope-2026-10.md` y aprobar el diseño actualizado.<br>
+**Nota de alcance:** la migración V21 implementa el usuario canónico mínimo y los vínculos OIDC separados descritos en este modelo. La propuesta de perfiles/permisos aún requiere aprobación institucional; OIDC permanece sin configurar, y no existen asociación/fusión de identidades, perfiles activos del ciclo estudiantil ni datos personales.<br>
 **Fecha:** 1 de octubre de 2026<br>
 **Primera capacidad:** asignación administrativa de permisos a identidades ya autenticadas, con alcance explícito y auditoría.<br>
 **Fuentes de autenticación:** proveedor OIDC institucional, pendiente de configuración y validación por DTIC.<br>
@@ -9,7 +9,7 @@
 
 ## Decisión propuesta
 
-Adoptar un modelo híbrido: el proveedor institucional autentica a la persona y aporta su identificador opaco estable (`issuer` + `subject`); el backend conserva las asignaciones de roles funcionales de esta plataforma y sus ámbitos en MySQL. El backend calcula permisos en cada solicitud autenticada. El proveedor continúa siendo responsable de activar y desactivar la identidad institucional.
+Adoptar un modelo híbrido con una persona/cuenta canónica mínima `university_user.user_id`. El proveedor institucional autentica y aporta un vínculo opaco (`issuer` + `subject`) que referencia ese UUID; el backend conserva las asignaciones de roles funcionales de esta plataforma y sus ámbitos en MySQL, todos por `user_id`. El backend calcula permisos en cada solicitud autenticada. El proveedor continúa siendo responsable de activar y desactivar la identidad institucional.
 
 Esta opción responde al requerimiento de administrar perfiles y subroles de la plataforma, mantiene el control de acceso en el backend y permite revocar una asignación de la aplicación sin cambiar las credenciales de la persona. No se almacenan contraseñas, tokens OIDC, correo, teléfonos, fotos ni perfiles personales. No se aceptan permisos enviados por React.
 
@@ -23,8 +23,9 @@ Alternativas evaluadas:
 
 ## Identidad, perfiles solicitados y estado académico
 
-- Una identidad de aplicación se vincula por el par validado (`issuer`, `subject`) del token. Ambos valores se validan criptográficamente con issuer y audience configurados por DTIC. La pareja es opaca: no se interpreta como correo ni documento.
-- Tras el primer token válido, el backend puede registrar de forma automática solo esa pareja mínima. Iniciar sesión no concede privilegios administrativos; la nueva identidad parte con cero permisos hasta recibir una asignación aprobada.
+- `university_user` conserva solo UUID y fecha de creación. `institutional_identity` conserva el par validado (`issuer`, `subject`) y una FK no única a `user_id`; ambas partes son opacas y no se interpretan como correo ni documento.
+- Tras el primer token válido y una consulta autenticada a `/api/v1/me`, el backend crea idempotentemente el usuario y su vínculo mínimo. Iniciar sesión no concede privilegios administrativos; la nueva identidad parte con cero permisos hasta recibir una asignación aprobada.
+- Un usuario puede tener varios vínculos, pero aún no existe endpoint ni procedimiento de producto para asociarlos, desvincularlos o fusionarlos. No asumir equivalencia de subjects o personas por coincidencia de claims.
 - La revocación local de una asignación se aplica desde la siguiente solicitud autenticada. La latencia de baja de una cuenta institucional depende de la vigencia del token y de las capacidades de revocación/introspección del proveedor; DTIC debe fijar ese contrato antes de producción.
 - El catálogo visible debe reconocer los perfiles/etapas solicitados por el patrocinador: aspirante, admitido, estudiante, docente, administrativo, admisiones, directivo y administrador. Esta etiqueta funcional no concede por sí sola permisos: cada perfil agrupa únicamente permisos allowlisted después de aprobar su matriz.
 - Aspirante, admitido y estudiante representan además etapas/relaciones del ciclo académico. Sus permisos de autoservicio se derivarán de un vínculo verificado con el registro fuente que se apruebe para cada proceso; esas etiquetas no autorizan a leer o editar personas ajenas ni a asignar permisos de gestión.
@@ -55,7 +56,9 @@ La base técnica local implementada cubre lo siguiente. Su implementación no eq
 
 - Contratos de aplicación para resolver principal autenticado, asignaciones activas, ámbito de recurso y decisión permiso–recurso.
 - Persistencia versionada con Flyway para la vinculación mínima de identidad, perfiles permitidos, asignaciones tipadas y auditoría append-only del módulo de acceso.
+- V21 incorpora `university_user`, backfill determinista de identidades históricas y referencias canónicas para usuario objetivo, otorgante y actor de auditoría; preserva identificadores y registros previos.
 - Endpoints del backend para consultar permisos/ámbitos propios y administrar asignaciones bajo permiso explícito de acceso; cada ruta queda allowlisted y denegada por defecto.
+- `/api/v1/me` devuelve `userId`; el directorio devuelve el UUID canónico junto con vínculos opacos, y la consola de asignación consulta y selecciona por `userId`.
 - Una vista de control React que lista/crea/revoca asignaciones solo con autorización de servidor, y presenta estados de carga, vacío, conflicto, error y pérdida de permiso.
 - Pruebas AAA de dominio, autorización de rutas y contratos MySQL con datos sintéticos.
 
@@ -67,9 +70,15 @@ Quedan para incrementos separados: búsqueda de personas por directorio/HR, alta
 
 ```mermaid
 classDiagram
-  class AuthenticatedPrincipal {
+  class CanonicalUser {
+    userId
+    createdAt
+  }
+  class InstitutionalIdentity {
+    identityId
     issuer
     subject
+    userId
   }
   class RoleDefinition {
     roleKey
@@ -90,18 +99,22 @@ classDiagram
   }
   class AccessAuditEvent {
     action
-    actor
+    actorIdentityId
+    actorUserId
     occurredAt
     sourceReference
     summary
   }
-  AuthenticatedPrincipal "1" --> "0..*" RoleAssignment
+  CanonicalUser "1" --> "0..*" InstitutionalIdentity
+  CanonicalUser "1" --> "0..*" RoleAssignment : target/grantor
+  CanonicalUser "1" --> "0..*" AccessAuditEvent : actor
+  InstitutionalIdentity "1" --> "0..*" AccessAuditEvent : authenticated binding
   RoleDefinition "1" --> "0..*" RoleAssignment
   RoleAssignment "1" --> "1..*" AssignmentScope
   RoleAssignment "1" --> "1..*" AccessAuditEvent
 ```
 
-Las cardinalidades y el esquema relacional concreto se revisan al planear la migración: los ámbitos académicos deben tener integridad referencial y reutilizar `academic_organization_unit`, `academic_site` y el catálogo de programas. La fuente/código de cargo debe identificarse con Talento Humano/DTIC antes de crear una tabla maestra duplicada.
+V21 materializa el usuario canónico y sus claves foráneas para identidad y asignaciones. La auditoría conserva además `actor_identity_id`, que identifica el vínculo usado en cada acción, junto con `actor_user_id`; el adaptador valida que ambos pertenezcan al mismo usuario. El backfill asigna a cada identidad histórica su propio UUID previo de identidad; una asociación posterior exige un flujo explícito que hoy no existe. Los ámbitos académicos deben tener integridad referencial y reutilizar `academic_organization_unit`, `academic_site` y el catálogo de programas. La fuente/código de cargo debe identificarse con Talento Humano/DTIC antes de crear una tabla maestra duplicada.
 
 Interfaces internas propuestas:
 
@@ -138,7 +151,7 @@ sequenceDiagram
   UI->>API: Solicitud con Bearer
   API->>API: Validar firma, issuer y audience
   API->>AUTH: Principal issuer + subject y acción/recurso
-  AUTH->>DB: Leer asignaciones vigentes y ámbitos
+  AUTH->>DB: Resolver user_id canónico y leer asignaciones vigentes por UUID
   DB-->>AUTH: Concesiones tipadas
   AUTH-->>API: Permitir o denegar
   API-->>UI: Respuesta sin copiar claims personales

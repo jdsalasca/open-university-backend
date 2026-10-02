@@ -10,6 +10,7 @@ import co.edu.uptc.universiry.identity.domain.AuthenticatedPrincipal;
 import co.edu.uptc.universiry.identity.domain.InstitutionalReference;
 import co.edu.uptc.universiry.identity.domain.RoleAssignment;
 import co.edu.uptc.universiry.identity.domain.RoleProfile;
+import co.edu.uptc.universiry.identity.domain.RegisteredIdentity;
 import co.edu.uptc.universiry.identity.domain.ScopeKind;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -62,19 +63,21 @@ class IdentityAccessMySqlContractTest {
         String databaseVersion = jdbcTemplate.queryForObject("SELECT VERSION()", String.class);
         AuthenticatedPrincipal target = principal("administrator-" + UUID.randomUUID());
         AuthenticatedPrincipal grantor = principal("access-manager-" + UUID.randomUUID());
-        identityDirectory.registerIfAbsent(target, NOW);
-        identityDirectory.registerIfAbsent(grantor, NOW);
+        RegisteredIdentity targetIdentity = identityDirectory.registerIfAbsent(target, NOW);
+        RegisteredIdentity grantorIdentity = identityDirectory.registerIfAbsent(grantor, NOW);
         UUID assignmentId = UUID.randomUUID();
         InstitutionalReference reference = new InstitutionalReference("MySQL identity contract");
         RoleAssignment assignment = new RoleAssignment(
-                assignmentId, target, RoleProfile.ADMINISTRATOR,
+                assignmentId, targetIdentity.userId(), RoleProfile.ADMINISTRATOR,
                 Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)),
-                TODAY, null, AssignmentStatus.ACTIVE, grantor, reference, NOW, 1);
+                TODAY, null, AssignmentStatus.ACTIVE, grantorIdentity.userId(), reference, NOW, 1);
 
         // Act
-        assignmentRepository.create(assignment, event(assignmentId, AccessAuditAction.GRANTED, grantor, reference, 0, 1));
+        assignmentRepository.create(assignment, event(
+                assignmentId, AccessAuditAction.GRANTED, grantorIdentity, reference, 0, 1));
         RoleAssignment revoked = assignmentRepository.revoke(
-                assignmentId, 1, event(assignmentId, AccessAuditAction.REVOKED, grantor, reference, 1, 2));
+                assignmentId, 1, event(assignmentId, AccessAuditAction.REVOKED,
+                        grantorIdentity, reference, 1, 2));
 
         // Assert
         assertTrue(databaseVersion != null && databaseVersion.startsWith("8.4."));
@@ -83,12 +86,18 @@ class IdentityAccessMySqlContractTest {
         assertEquals(2, jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM identity_access_audit_event WHERE assignment_id = ?",
                 Integer.class, assignmentId.toString()));
-        assertTrue(assignmentRepository.findActiveAssignments(target, TODAY).isEmpty());
+        assertEquals(2, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM identity_access_audit_event
+                WHERE assignment_id = ? AND actor_identity_id = ? AND actor_user_id = ?
+                """, Integer.class, assignmentId.toString(), grantorIdentity.id().toString(),
+                grantorIdentity.userId().toString()));
+        assertTrue(assignmentRepository.findActiveAssignments(targetIdentity.userId(), TODAY).isEmpty());
     }
 
     @AfterTransaction
     void contract_data_was_rolled_back() {
         assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM institutional_identity", Integer.class));
+        assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM university_user", Integer.class));
     }
 
     private static AuthenticatedPrincipal principal(String subject) {
@@ -98,11 +107,11 @@ class IdentityAccessMySqlContractTest {
     private static AccessAuditEvent event(
             UUID assignmentId,
             AccessAuditAction action,
-            AuthenticatedPrincipal actor,
+            RegisteredIdentity actor,
             InstitutionalReference reference,
             long previousVersion,
             long version) {
-        return new AccessAuditEvent(UUID.randomUUID(), assignmentId, action, actor,
+        return new AccessAuditEvent(UUID.randomUUID(), assignmentId, action, actor.id(), actor.userId(),
                 NOW, reference, previousVersion, version);
     }
 

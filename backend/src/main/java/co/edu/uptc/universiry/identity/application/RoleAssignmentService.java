@@ -37,32 +37,35 @@ public class RoleAssignmentService {
         return identities.findBySubjectPrefix(subjectPrefix, limit);
     }
 
-    public List<RoleAssignment> assignmentsFor(AuthenticatedPrincipal target) {
-        return assignments.findAssignments(target);
+    public List<RoleAssignment> assignmentsFor(UUID targetUserId) {
+        if (targetUserId == null) {
+            throw new IllegalArgumentException("canonical assignment target is required");
+        }
+        return assignments.findAssignments(targetUserId);
     }
 
     @Transactional
     public RoleAssignment assign(AuthenticatedPrincipal actor, CreateRoleAssignmentCommand command) {
-        if (actor == null || command == null || command.target() == null) {
+        if (actor == null || command == null || command.targetUserId() == null) {
             throw new IllegalArgumentException("actor and role assignment command are required");
-        }
-        if (actor.equals(command.target())) {
-            throw new IllegalArgumentException("a principal cannot assign a role to itself");
         }
         RoleProfile profile = RoleProfile.fromKey(command.profileKey());
         if (!profile.manuallyAssignable()) {
             throw new IllegalArgumentException("lifecycle profiles must come from their verified source");
         }
-        requireRegistered(actor);
-        if (identities.find(command.target()).isEmpty()) {
+        RegisteredIdentity registeredActor = requireRegistered(actor);
+        if (registeredActor.userId().equals(command.targetUserId())) {
+            throw new IllegalArgumentException("a user cannot assign a role to themselves");
+        }
+        if (!identities.userExists(command.targetUserId())) {
             throw new IdentityNotRegisteredException();
         }
         InstitutionalReference reference = new InstitutionalReference(command.sourceReference());
         var now = clock.instant();
         RoleAssignment assignment = new RoleAssignment(
-                UUID.randomUUID(), command.target(), profile, command.scopes(), command.validFrom(),
-                command.validThrough(), AssignmentStatus.ACTIVE, actor, reference, now, 1);
-        boolean overlappingDuplicate = assignments.findAssignments(command.target()).stream()
+                UUID.randomUUID(), command.targetUserId(), profile, command.scopes(), command.validFrom(),
+                command.validThrough(), AssignmentStatus.ACTIVE, registeredActor.userId(), reference, now, 1);
+        boolean overlappingDuplicate = assignments.findAssignments(command.targetUserId()).stream()
                 .filter(existing -> existing.status() == AssignmentStatus.ACTIVE)
                 .filter(existing -> existing.profile() == profile && existing.scopes().equals(assignment.scopes()))
                 .anyMatch(existing -> validityOverlaps(
@@ -71,7 +74,8 @@ public class RoleAssignmentService {
             throw new IllegalArgumentException("an overlapping assignment with the same profile and scope already exists");
         }
         AccessAuditEvent auditEvent = new AccessAuditEvent(
-                UUID.randomUUID(), assignment.id(), AccessAuditAction.GRANTED, actor,
+                UUID.randomUUID(), assignment.id(), AccessAuditAction.GRANTED,
+                registeredActor.id(), registeredActor.userId(),
                 now, reference, 0, 1);
         assignments.create(assignment, auditEvent);
         return assignment;
@@ -86,15 +90,16 @@ public class RoleAssignmentService {
         if (actor == null || assignmentId == null || expectedVersion < 1) {
             throw new IllegalArgumentException("actor, assignment id, and a positive version are required");
         }
-        requireRegistered(actor);
+        RegisteredIdentity registeredActor = requireRegistered(actor);
         RoleAssignment current = assignments.findAssignment(assignmentId)
                 .orElseThrow(RoleAssignmentNotFoundException::new);
-        if (actor.equals(current.target())) {
-            throw new IllegalArgumentException("a principal cannot revoke its own role assignment");
+        if (registeredActor.userId().equals(current.targetUserId())) {
+            throw new IllegalArgumentException("a user cannot revoke their own role assignment");
         }
         InstitutionalReference reference = new InstitutionalReference(sourceReference);
         AccessAuditEvent auditEvent = new AccessAuditEvent(
-                UUID.randomUUID(), assignmentId, AccessAuditAction.REVOKED, actor,
+                UUID.randomUUID(), assignmentId, AccessAuditAction.REVOKED,
+                registeredActor.id(), registeredActor.userId(),
                 clock.instant(), reference, expectedVersion, expectedVersion + 1);
         return assignments.revoke(assignmentId, expectedVersion, auditEvent);
     }

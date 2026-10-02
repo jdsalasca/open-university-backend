@@ -18,10 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IdentityAccessDomainTest {
 
-    private static final AuthenticatedPrincipal TARGET = new AuthenticatedPrincipal(
+    private static final UUID TARGET_USER_ID = UUID.fromString("0b394286-422f-4ba9-96e9-51896e224334");
+    private static final UUID GRANTOR_USER_ID = UUID.fromString("a2f05308-311a-4a08-999f-f045024cdd41");
+    private static final UUID GRANTOR_IDENTITY_ID = UUID.fromString("51f05308-311a-4a08-999f-f045024cdd41");
+    private static final AuthenticatedPrincipal TARGET_PRINCIPAL = new AuthenticatedPrincipal(
             "https://identity.example.edu", "opaque-subject-7f29");
-    private static final AuthenticatedPrincipal GRANTOR = new AuthenticatedPrincipal(
-            "https://identity.example.edu", "opaque-admin-118a");
     private static final Instant CREATED_AT = Instant.parse("2026-10-01T12:00:00Z");
 
     @Test
@@ -37,10 +38,10 @@ class IdentityAccessDomainTest {
                 "https://identity.example.edu", "opaque-subject-7F29");
 
         // Act + Assert
-        assertEquals(TARGET, samePair);
-        assertNotEquals(TARGET, otherIssuer);
-        assertNotEquals(TARGET, differentIssuerCase);
-        assertNotEquals(TARGET, otherSubject);
+        assertEquals(TARGET_PRINCIPAL, samePair);
+        assertNotEquals(TARGET_PRINCIPAL, otherIssuer);
+        assertNotEquals(TARGET_PRINCIPAL, differentIssuerCase);
+        assertNotEquals(TARGET_PRINCIPAL, otherSubject);
     }
 
     @Test
@@ -195,16 +196,16 @@ class IdentityAccessDomainTest {
     void assignment_validity_is_inclusive_and_revocation_stops_matching() {
         // Arrange
         RoleAssignment active = new RoleAssignment(
-                UUID.randomUUID(), TARGET, RoleProfile.TEACHER,
+                UUID.randomUUID(), TARGET_USER_ID, RoleProfile.TEACHER,
                 Set.of(new AssignmentScope(ScopeKind.SITE, "site-1")),
                 LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 1), AssignmentStatus.ACTIVE,
-                GRANTOR, new InstitutionalReference("acta-2026-18"), CREATED_AT, 1);
+                GRANTOR_USER_ID, new InstitutionalReference("acta-2026-18"), CREATED_AT, 1);
         ResourceDescriptor resource = new ResourceDescriptor(Map.of(ScopeKind.SITE, "site-1"));
         LocalDate lastValidDay = LocalDate.of(2026, 10, 1);
         LocalDate expiredDay = LocalDate.of(2026, 10, 2);
         RoleAssignment revoked = new RoleAssignment(
-                active.id(), TARGET, RoleProfile.TEACHER, active.scopes(), active.validFrom(),
-                active.validThrough(), AssignmentStatus.REVOKED, GRANTOR,
+                active.id(), TARGET_USER_ID, RoleProfile.TEACHER, active.scopes(), active.validFrom(),
+                active.validThrough(), AssignmentStatus.REVOKED, GRANTOR_USER_ID,
                 active.sourceReference(), CREATED_AT, 2);
 
         // Act + Assert
@@ -231,6 +232,19 @@ class IdentityAccessDomainTest {
     }
 
     @Test
+    void role_assignment_rejects_matching_canonical_target_and_grantor_ids() {
+        // Arrange
+        UUID sameUserId = UUID.randomUUID();
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class, () -> new RoleAssignment(
+                UUID.randomUUID(), sameUserId, RoleProfile.ADMINISTRATOR,
+                Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)),
+                LocalDate.of(2026, 10, 1), null, AssignmentStatus.ACTIVE, sameUserId,
+                new InstitutionalReference("acta-2026-18"), CREATED_AT, 1));
+    }
+
+    @Test
     void audit_event_records_a_single_monotonic_transition() {
         // Arrange
         UUID assignmentId = UUID.randomUUID();
@@ -238,11 +252,17 @@ class IdentityAccessDomainTest {
         // Act + Assert
         AccessAuditEvent event = new AccessAuditEvent(
                 UUID.randomUUID(), assignmentId, AccessAuditAction.GRANTED,
-                GRANTOR, CREATED_AT, new InstitutionalReference("acta-2026-18"), 0, 1);
+                GRANTOR_IDENTITY_ID, GRANTOR_USER_ID,
+                CREATED_AT, new InstitutionalReference("acta-2026-18"), 0, 1);
         assertEquals(assignmentId, event.assignmentId());
+        assertEquals(GRANTOR_IDENTITY_ID, event.actorIdentityId());
         assertThrows(IllegalArgumentException.class, () -> new AccessAuditEvent(
                 UUID.randomUUID(), assignmentId, AccessAuditAction.REVOKED,
-                GRANTOR, CREATED_AT, new InstitutionalReference("acta-2026-18"), 2, 2));
+                GRANTOR_IDENTITY_ID, GRANTOR_USER_ID,
+                CREATED_AT, new InstitutionalReference("acta-2026-18"), 2, 2));
+        assertThrows(IllegalArgumentException.class, () -> new AccessAuditEvent(
+                UUID.randomUUID(), assignmentId, AccessAuditAction.REVOKED,
+                null, GRANTOR_USER_ID, CREATED_AT, new InstitutionalReference("acta-2026-18"), 0, 1));
     }
 
     private static RoleAssignment assignment(
@@ -250,8 +270,8 @@ class IdentityAccessDomainTest {
             Set<AssignmentScope> scopes,
             AssignmentStatus status) {
         return new RoleAssignment(
-                UUID.randomUUID(), TARGET, profile, scopes,
+                UUID.randomUUID(), TARGET_USER_ID, profile, scopes,
                 LocalDate.of(2026, 10, 1), null, status,
-                GRANTOR, new InstitutionalReference("acta-2026-18"), CREATED_AT, 1);
+                GRANTOR_USER_ID, new InstitutionalReference("acta-2026-18"), CREATED_AT, 1);
     }
 }

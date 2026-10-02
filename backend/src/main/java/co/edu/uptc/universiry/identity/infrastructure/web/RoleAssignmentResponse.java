@@ -7,11 +7,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 public record RoleAssignmentResponse(
         String assignmentId,
-        String targetIssuer,
-        String targetSubject,
+        UUID targetUserId,
         String profileKey,
         List<AssignmentScope> scopes,
         String status,
@@ -26,7 +26,7 @@ public record RoleAssignmentResponse(
                 .sorted(Comparator.comparing(scope -> scope.kind().name()))
                 .toList();
         return new RoleAssignmentResponse(
-                assignment.id().toString(), assignment.target().issuer(), assignment.target().subject(),
+                assignment.id().toString(), assignment.targetUserId(),
                 assignment.profile().key(), scopes, assignment.status().name(), assignment.validFrom(),
                 assignment.validThrough(), assignment.sourceReference().value(), assignment.createdAt(),
                 assignment.version());

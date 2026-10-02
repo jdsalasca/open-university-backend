@@ -861,9 +861,10 @@ sequenceDiagram
   IdP-->>UI: access token
   UI->>UI: elimina code/state de la URL y conserva usuario y tokens solo en memoria
   UI->>API: GET /api/v1/me con Authorization Bearer
-  API->>Auth: valida firma, issuer y audience; resuelve mapa exacto de permisos
-  Auth-->>API: subject + permisos internos (vacío si no hay mapeo)
-  API-->>UI: subject + permisos, Cache-Control no-store
+  API->>Auth: valida firma, issuer y audience; resuelve o registra idempotentemente el vínculo OIDC mínimo
+  Auth->>Auth: consulta asignaciones por user_id canónico + mapa explícito de permisos externos
+  Auth-->>API: userId canónico + subject opaco + permisos internos efectivos
+  API-->>UI: userId, subject y permisos, Cache-Control no-store
   UI->>UI: presenta controles según permisos del backend
 ```
 
@@ -884,31 +885,31 @@ sequenceDiagram
 
   Operator->>UI: inicia sesión con el proveedor configurado
   UI->>Me: consulta permisos y asignaciones activas
-  Me->>Auth: valida JWT y combina mapeo explícito con perfiles vigentes
-  Auth-->>Me: identidad issuer+subject y permisos efectivos
+  Me->>Auth: valida JWT; resuelve/crea user_id mínimo y combina mapeo explícito con roles vigentes
+  Auth-->>Me: userId canónico, subject opaco y permisos efectivos
   Me-->>UI: resumen de sesión con Cache-Control no-store
   UI->>UI: oculta #accesos si falta identity:roles:read
-  Operator->>UI: busca prefijo de sujeto ya autenticado
-  UI->>API: GET identidades y perfiles con bearer en memoria
+  Operator->>UI: busca prefijo de subject opaco ya autenticado
+  UI->>API: GET vínculos OIDC, userId y perfiles con bearer en memoria
   API->>Auth: exige identity:roles:read
   Auth-->>API: permiso efectivo del servidor
-  API->>DB: consulta directorio opaco y asignaciones
-  DB-->>API: sujetos autenticados y roles/ámbitos
-  API-->>UI: resultados mínimos, sin correo ni perfil personal
+  API->>DB: consulta vínculos del directorio y asignaciones por user_id
+  DB-->>API: userId, subjects opacos y roles/ámbitos
+  API-->>UI: resultados mínimos; seleccionar/query por userId, sin correo ni perfil personal
   opt Concesión o revocación autorizada
     Operator->>UI: confirma perfil, ámbito, vigencia y referencia
     UI->>API: POST asignación o PATCH revocación con versión esperada
     API->>Auth: exige identity:roles:write
-    Auth-->>API: actor y permiso efectivo del servidor
-    API->>UseCase: valida alcance, autoasignación, fechas y referencia
+    Auth-->>API: actor userId canónico y permiso efectivo del servidor
+    API->>UseCase: valida alcance, autoasignación por userId, fechas y referencia
     UseCase->>DB: transacción de asignación o revocación
-    UseCase->>Audit: registra actor, referencia y transición de versión
+    UseCase->>Audit: registra userId, identityId, referencia y transición de versión
     DB-->>UseCase: commit conjunto o rollback
     API-->>UI: resultado o conflicto 409; nunca reintenta la escritura
   end
 ```
 
-Los perfiles aspirante, admitido y estudiante no se conceden manualmente; dependen de una vinculación verificada con el ciclo estudiantil. `ADMINISTRATOR` se limita a gestionar roles con alcance universitario y no adquiere permisos sobre otros módulos. La consola y las rutas están implementadas, pero permanecen cerradas en Compose porque OIDC y la provisión inicial no están configurados. La propuesta de roles, su matriz y su operación institucional aún requieren aprobación; los tests usan sujetos sintéticos y no crean usuarios de desarrollo.
+Los perfiles aspirante, admitido y estudiante no se conceden manualmente; dependen de una vinculación verificada con el ciclo estudiantil. El registro canónico crea solo `user_id` y vínculo OIDC opaco, sin PII; varios vínculos pueden apuntar a un usuario, pero no existe endpoint para asociarlos o fusionarlos. `ADMINISTRATOR` se limita a gestionar roles con alcance universitario y no adquiere permisos sobre otros módulos. La consola y las rutas están implementadas, pero permanecen cerradas en Compose porque OIDC y la provisión inicial no están configurados. La propuesta de roles, su matriz y su operación institucional aún requieren aprobación; los tests usan sujetos sintéticos y no crean usuarios de desarrollo.
 
 ## Desarrollo local y selección de idioma
 

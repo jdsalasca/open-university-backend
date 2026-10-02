@@ -1,7 +1,5 @@
 package co.edu.uptc.universiry.identity.infrastructure.persistence;
 
-import co.edu.uptc.universiry.identity.application.IdentityDirectory;
-import co.edu.uptc.universiry.identity.application.IdentityNotRegisteredException;
 import co.edu.uptc.universiry.identity.application.RoleAssignmentNotFoundException;
 import co.edu.uptc.universiry.identity.application.RoleAssignmentRepository;
 import co.edu.uptc.universiry.identity.application.RoleAssignmentVersionConflictException;
@@ -9,9 +7,7 @@ import co.edu.uptc.universiry.identity.domain.AccessAuditAction;
 import co.edu.uptc.universiry.identity.domain.AccessAuditEvent;
 import co.edu.uptc.universiry.identity.domain.AssignmentScope;
 import co.edu.uptc.universiry.identity.domain.AssignmentStatus;
-import co.edu.uptc.universiry.identity.domain.AuthenticatedPrincipal;
 import co.edu.uptc.universiry.identity.domain.InstitutionalReference;
-import co.edu.uptc.universiry.identity.domain.RegisteredIdentity;
 import co.edu.uptc.universiry.identity.domain.RoleAssignment;
 import co.edu.uptc.universiry.identity.domain.RoleProfile;
 import co.edu.uptc.universiry.identity.domain.ScopeKind;
@@ -41,34 +37,23 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
     private static final RowMapper<AssignmentRow> ASSIGNMENT_ROW_MAPPER = JdbcRoleAssignmentRepositoryAdapter::mapAssignmentRow;
 
     private final JdbcTemplate jdbcTemplate;
-    private final IdentityDirectory identityDirectory;
-
-    public JdbcRoleAssignmentRepositoryAdapter(JdbcTemplate jdbcTemplate, IdentityDirectory identityDirectory) {
+    public JdbcRoleAssignmentRepositoryAdapter(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.identityDirectory = identityDirectory;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleAssignment> findAssignments(AuthenticatedPrincipal target) {
-        if (target == null) {
-            throw new IllegalArgumentException("assignment target identity is required");
-        }
-        RegisteredIdentity registeredTarget = identityDirectory.find(target).orElse(null);
-        if (registeredTarget == null) {
-            return List.of();
+    public List<RoleAssignment> findAssignments(UUID targetUserId) {
+        if (targetUserId == null) {
+            throw new IllegalArgumentException("canonical assignment target is required");
         }
         List<AssignmentRow> rows = jdbcTemplate.query("""
                 SELECT a.assignment_id, a.profile_key, a.status, a.valid_from, a.valid_through,
-                       a.source_reference, a.created_at, a.version,
-                       target.issuer AS target_issuer, target.subject AS target_subject,
-                       grantor.issuer AS grantor_issuer, grantor.subject AS grantor_subject
+                       a.source_reference, a.created_at, a.version, a.target_user_id, a.granted_by_user_id
                 FROM identity_role_assignment a
-                JOIN institutional_identity target ON target.identity_id = a.target_identity_id
-                JOIN institutional_identity grantor ON grantor.identity_id = a.granted_by_identity_id
-                WHERE a.target_identity_id = ?
+                WHERE a.target_user_id = ?
                 ORDER BY a.created_at DESC, a.assignment_id
-                """, ASSIGNMENT_ROW_MAPPER, registeredTarget.id().toString());
+                """, ASSIGNMENT_ROW_MAPPER, targetUserId.toString());
         if (rows.isEmpty()) {
             return List.of();
         }
@@ -87,27 +72,26 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleAssignment> findActiveAssignments(AuthenticatedPrincipal target, LocalDate institutionalDate) {
-        if (institutionalDate == null) {
-            throw new IllegalArgumentException("institutional date is required");
+    public List<RoleAssignment> findActiveAssignments(UUID targetUserId, LocalDate institutionalDate) {
+        if (targetUserId == null || institutionalDate == null) {
+            throw new IllegalArgumentException("canonical assignment target and institutional date are required");
         }
-        return findAssignments(target).stream().filter(assignment -> assignment.isActiveOn(institutionalDate)).toList();
+        return findAssignments(targetUserId).stream()
+                .filter(assignment -> assignment.isActiveOn(institutionalDate)).toList();
     }
 
     @Override
     @Transactional
     public void create(RoleAssignment assignment, AccessAuditEvent auditEvent) {
         validateGrantEvent(assignment, auditEvent);
-        RegisteredIdentity target = requireRegistered(assignment.target());
-        RegisteredIdentity grantor = requireRegistered(assignment.grantedBy());
         jdbcTemplate.update("""
                 INSERT INTO identity_role_assignment (
-                    assignment_id, target_identity_id, profile_key, status, valid_from, valid_through,
-                    source_reference, granted_by_identity_id, created_at, version
+                    assignment_id, target_user_id, profile_key, status, valid_from, valid_through,
+                    source_reference, granted_by_user_id, created_at, version
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, assignment.id().toString(), target.id().toString(), assignment.profile().key(),
+                """, assignment.id().toString(), assignment.targetUserId().toString(), assignment.profile().key(),
                 assignment.status().name(), assignment.validFrom(), assignment.validThrough(),
-                assignment.sourceReference().value(), grantor.id().toString(),
+                assignment.sourceReference().value(), assignment.grantedByUserId().toString(),
                 Timestamp.from(assignment.createdAt()), assignment.version());
         insertScopes(assignment);
         appendAuditEvent(auditEvent);
@@ -140,12 +124,8 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
     private Optional<RoleAssignment> findById(UUID assignmentId) {
         List<AssignmentRow> rows = jdbcTemplate.query("""
                 SELECT a.assignment_id, a.profile_key, a.status, a.valid_from, a.valid_through,
-                       a.source_reference, a.created_at, a.version,
-                       target.issuer AS target_issuer, target.subject AS target_subject,
-                       grantor.issuer AS grantor_issuer, grantor.subject AS grantor_subject
+                       a.source_reference, a.created_at, a.version, a.target_user_id, a.granted_by_user_id
                 FROM identity_role_assignment a
-                JOIN institutional_identity target ON target.identity_id = a.target_identity_id
-                JOIN institutional_identity grantor ON grantor.identity_id = a.granted_by_identity_id
                 WHERE a.assignment_id = ?
                 """, ASSIGNMENT_ROW_MAPPER, assignmentId.toString());
         if (rows.isEmpty()) {
@@ -214,25 +194,27 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
     }
 
     private void appendAuditEvent(AccessAuditEvent event) {
-        RegisteredIdentity actor = requireRegistered(event.actor());
-        jdbcTemplate.update("""
+        int inserted = jdbcTemplate.update("""
                 INSERT INTO identity_access_audit_event (
-                    audit_event_id, assignment_id, action_key, actor_identity_id, occurred_at,
+                    audit_event_id, assignment_id, action_key, actor_identity_id, actor_user_id, occurred_at,
                     source_reference, previous_version, version
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                )
+                SELECT ?, ?, ?, identity_binding.identity_id, identity_binding.user_id, ?, ?, ?, ?
+                FROM institutional_identity identity_binding
+                WHERE identity_binding.identity_id = ? AND identity_binding.user_id = ?
                 """, event.id().toString(), event.assignmentId().toString(), event.action().name(),
-                actor.id().toString(), Timestamp.from(event.occurredAt()), event.sourceReference().value(),
-                event.previousVersion(), event.version());
-    }
-
-    private RegisteredIdentity requireRegistered(AuthenticatedPrincipal principal) {
-        return identityDirectory.find(principal).orElseThrow(IdentityNotRegisteredException::new);
+                Timestamp.from(event.occurredAt()), event.sourceReference().value(), event.previousVersion(),
+                event.version(), event.actorIdentityId().toString(), event.actorUserId().toString());
+        if (inserted != 1) {
+            throw new IllegalArgumentException("audit actor identity must belong to its canonical user");
+        }
     }
 
     private static void validateGrantEvent(RoleAssignment assignment, AccessAuditEvent event) {
         if (assignment == null || event == null || assignment.status() != AssignmentStatus.ACTIVE
                 || assignment.version() != 1 || event.action() != AccessAuditAction.GRANTED
-                || !event.assignmentId().equals(assignment.id()) || !event.actor().equals(assignment.grantedBy())
+                || !event.assignmentId().equals(assignment.id())
+                || !event.actorUserId().equals(assignment.grantedByUserId())
                 || !event.sourceReference().equals(assignment.sourceReference())
                 || event.previousVersion() != 0 || event.version() != assignment.version()) {
             throw new IllegalArgumentException("grant event must describe the initial assignment and its grantor");
@@ -264,10 +246,8 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
         Date through = resultSet.getDate("valid_through");
         return new AssignmentRow(
                 UUID.fromString(resultSet.getString("assignment_id")),
-                new AuthenticatedPrincipal(resultSet.getString("target_issuer"),
-                        new String(resultSet.getBytes("target_subject"), java.nio.charset.StandardCharsets.US_ASCII)),
-                new AuthenticatedPrincipal(resultSet.getString("grantor_issuer"),
-                        new String(resultSet.getBytes("grantor_subject"), java.nio.charset.StandardCharsets.US_ASCII)),
+                UUID.fromString(resultSet.getString("target_user_id")),
+                UUID.fromString(resultSet.getString("granted_by_user_id")),
                 RoleProfile.fromKey(resultSet.getString("profile_key")),
                 AssignmentStatus.valueOf(resultSet.getString("status")),
                 resultSet.getDate("valid_from").toLocalDate(),
@@ -279,8 +259,8 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
 
     private record AssignmentRow(
             UUID id,
-            AuthenticatedPrincipal target,
-            AuthenticatedPrincipal grantedBy,
+            UUID targetUserId,
+            UUID grantedByUserId,
             RoleProfile profile,
             AssignmentStatus status,
             LocalDate validFrom,
@@ -290,8 +270,8 @@ public class JdbcRoleAssignmentRepositoryAdapter implements RoleAssignmentReposi
             long version) {
 
         private RoleAssignment toDomain(Set<AssignmentScope> scopes) {
-            return new RoleAssignment(id, target, profile, scopes, validFrom, validThrough, status,
-                    grantedBy, sourceReference, createdAt, version);
+            return new RoleAssignment(id, targetUserId, profile, scopes, validFrom, validThrough, status,
+                    grantedByUserId, sourceReference, createdAt, version);
         }
     }
 }

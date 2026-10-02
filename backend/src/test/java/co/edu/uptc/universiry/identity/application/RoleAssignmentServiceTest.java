@@ -21,12 +21,14 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -53,19 +55,16 @@ class RoleAssignmentServiceTest {
     }
 
     @Test
-    void grants_a_scoped_profile_with_one_matching_audit_transition() {
+    void grants_a_scoped_profile_and_audit_transition_to_a_canonical_user() {
         // Arrange
         AuthenticatedPrincipal actor = principal("role-manager");
-        AuthenticatedPrincipal target = principal("teacher-17");
-        when(identities.find(actor)).thenReturn(Optional.of(registered(actor)));
-        when(identities.find(target)).thenReturn(Optional.of(registered(target)));
-        CreateRoleAssignmentCommand command = new CreateRoleAssignmentCommand(
-                target,
-                "TEACHER",
-                Set.of(new AssignmentScope(ScopeKind.PROGRAM, UUID.randomUUID().toString())),
-                TODAY,
-                TODAY.plusMonths(6),
-                "Acta institucional 42");
+        UUID actorUserId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        RegisteredIdentity registeredActor = registered(actor, actorUserId);
+        when(identities.find(actor)).thenReturn(Optional.of(registeredActor));
+        when(identities.userExists(targetUserId)).thenReturn(true);
+        when(assignments.findAssignments(targetUserId)).thenReturn(List.of());
+        CreateRoleAssignmentCommand command = command(targetUserId, "TEACHER");
 
         // Act
         RoleAssignment created = service.assign(actor, command);
@@ -74,11 +73,13 @@ class RoleAssignmentServiceTest {
         ArgumentCaptor<RoleAssignment> assignment = ArgumentCaptor.forClass(RoleAssignment.class);
         ArgumentCaptor<AccessAuditEvent> audit = ArgumentCaptor.forClass(AccessAuditEvent.class);
         verify(assignments).create(assignment.capture(), audit.capture());
-        assertEquals(target, created.target());
+        assertEquals(targetUserId, created.targetUserId());
         assertEquals(RoleProfile.TEACHER, created.profile());
         assertEquals(AssignmentStatus.ACTIVE, created.status());
         assertEquals(1, created.version());
-        assertEquals(actor, assignment.getValue().grantedBy());
+        assertEquals(actorUserId, assignment.getValue().grantedByUserId());
+        assertEquals(actorUserId, audit.getValue().actorUserId());
+        assertEquals(registeredActor.id(), audit.getValue().actorIdentityId());
         assertEquals(AccessAuditAction.GRANTED, audit.getValue().action());
         assertEquals(assignment.getValue().id(), audit.getValue().assignmentId());
         assertEquals(0, audit.getValue().previousVersion());
@@ -86,15 +87,15 @@ class RoleAssignmentServiceTest {
     }
 
     @Test
-    void rejects_self_elevation_before_writing_an_assignment_or_audit() {
+    void rejects_self_elevation_when_actor_uses_an_alternate_oidc_binding() {
         // Arrange
-        AuthenticatedPrincipal actor = principal("role-manager");
-        CreateRoleAssignmentCommand command = new CreateRoleAssignmentCommand(
-                actor, "ADMINISTRATOR", Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)),
-                TODAY, null, "Acta institucional 42");
+        AuthenticatedPrincipal actorAlias = principal("role-manager-alias");
+        UUID canonicalUserId = UUID.randomUUID();
+        when(identities.find(actorAlias)).thenReturn(Optional.of(registered(actorAlias, canonicalUserId)));
 
         // Act / Assert
-        assertThrows(IllegalArgumentException.class, () -> service.assign(actor, command));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.assign(actorAlias, command(canonicalUserId, "ADMINISTRATOR")));
         verify(assignments, never()).create(any(), any());
     }
 
@@ -102,29 +103,24 @@ class RoleAssignmentServiceTest {
     void rejects_manual_applicant_membership_before_writing() {
         // Arrange
         AuthenticatedPrincipal actor = principal("role-manager");
-        AuthenticatedPrincipal target = principal("applicant-17");
-        CreateRoleAssignmentCommand command = new CreateRoleAssignmentCommand(
-                target, "APPLICANT", Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)),
-                TODAY, null, "Acta institucional 42");
 
         // Act / Assert
-        assertThrows(IllegalArgumentException.class, () -> service.assign(actor, command));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.assign(actor, command(UUID.randomUUID(), "APPLICANT")));
         verify(assignments, never()).create(any(), any());
     }
 
     @Test
-    void rejects_assignment_when_target_has_never_authenticated() {
+    void rejects_assignment_when_target_user_does_not_exist() {
         // Arrange
         AuthenticatedPrincipal actor = principal("role-manager");
-        AuthenticatedPrincipal target = principal("unknown-subject");
-        when(identities.find(actor)).thenReturn(Optional.of(registered(actor)));
-        when(identities.find(target)).thenReturn(Optional.empty());
-        CreateRoleAssignmentCommand command = new CreateRoleAssignmentCommand(
-                target, "TEACHER", Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)),
-                TODAY, null, "Acta institucional 42");
+        when(identities.find(actor)).thenReturn(Optional.of(registered(actor, UUID.randomUUID())));
+        UUID unknownUserId = UUID.randomUUID();
+        when(identities.userExists(unknownUserId)).thenReturn(false);
 
         // Act / Assert
-        assertThrows(IdentityNotRegisteredException.class, () -> service.assign(actor, command));
+        assertThrows(IdentityNotRegisteredException.class,
+                () -> service.assign(actor, command(unknownUserId, "TEACHER")));
         verify(assignments, never()).create(any(), any());
     }
 
@@ -132,17 +128,18 @@ class RoleAssignmentServiceTest {
     void rejects_an_overlapping_duplicate_profile_and_scope() {
         // Arrange
         AuthenticatedPrincipal actor = principal("role-manager");
-        AuthenticatedPrincipal target = principal("teacher-17");
-        when(identities.find(actor)).thenReturn(Optional.of(registered(actor)));
-        when(identities.find(target)).thenReturn(Optional.of(registered(target)));
+        UUID actorUserId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        when(identities.find(actor)).thenReturn(Optional.of(registered(actor, actorUserId)));
+        when(identities.userExists(targetUserId)).thenReturn(true);
         Set<AssignmentScope> scopes = Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null));
         RoleAssignment existing = new RoleAssignment(
-                UUID.randomUUID(), target, RoleProfile.TEACHER, scopes,
-                TODAY.minusDays(30), TODAY.plusDays(30), AssignmentStatus.ACTIVE, actor,
+                UUID.randomUUID(), targetUserId, RoleProfile.TEACHER, scopes,
+                TODAY.minusDays(30), TODAY.plusDays(30), AssignmentStatus.ACTIVE, UUID.randomUUID(),
                 new InstitutionalReference("Acta institucional 41"), NOW.minusSeconds(3600), 1);
-        when(assignments.findAssignments(target)).thenReturn(java.util.List.of(existing));
+        when(assignments.findAssignments(targetUserId)).thenReturn(List.of(existing));
         CreateRoleAssignmentCommand command = new CreateRoleAssignmentCommand(
-                target, "TEACHER", scopes, TODAY, TODAY.plusMonths(6), "Acta institucional 42");
+                targetUserId, "TEACHER", scopes, TODAY, TODAY.plusMonths(6), "Acta institucional 42");
 
         // Act / Assert
         assertThrows(IllegalArgumentException.class, () -> service.assign(actor, command));
@@ -150,26 +147,49 @@ class RoleAssignmentServiceTest {
     }
 
     @Test
-    void refuses_to_revoke_the_callers_own_assignment() {
+    void refuses_to_revoke_own_assignment_through_an_alternate_oidc_binding() {
         // Arrange
-        AuthenticatedPrincipal actor = principal("teacher-17");
+        AuthenticatedPrincipal actorAlias = principal("teacher-alias");
+        UUID canonicalUserId = UUID.randomUUID();
         UUID assignmentId = UUID.randomUUID();
         RoleAssignment ownAssignment = new RoleAssignment(
-                assignmentId, actor, RoleProfile.TEACHER,
+                assignmentId, canonicalUserId, RoleProfile.TEACHER,
                 Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null)),
-                TODAY, null, AssignmentStatus.ACTIVE, principal("admin-1"),
+                TODAY, null, AssignmentStatus.ACTIVE, UUID.randomUUID(),
                 new InstitutionalReference("Acta institucional 42"), NOW, 1);
         when(assignments.findAssignment(assignmentId)).thenReturn(Optional.of(ownAssignment));
-        when(identities.find(actor)).thenReturn(Optional.of(registered(actor)));
+        when(identities.find(actorAlias)).thenReturn(Optional.of(registered(actorAlias, canonicalUserId)));
 
         // Act / Assert
         assertThrows(IllegalArgumentException.class,
-                () -> service.revoke(actor, assignmentId, 1, "Acta institucional 43"));
+                () -> service.revoke(actorAlias, assignmentId, 1, "Acta institucional 43"));
         verify(assignments, never()).revoke(any(), any(Long.class), any());
     }
 
-    private static RegisteredIdentity registered(AuthenticatedPrincipal principal) {
-        return new RegisteredIdentity(UUID.randomUUID(), principal, NOW);
+    @Test
+    void passes_unknown_user_queries_to_the_repository_as_an_empty_result() {
+        // Arrange
+        UUID unknownUserId = UUID.randomUUID();
+        when(assignments.findAssignments(unknownUserId)).thenReturn(List.of());
+
+        // Act
+        List<RoleAssignment> result = service.assignmentsFor(unknownUserId);
+
+        // Assert
+        verify(assignments).findAssignments(unknownUserId);
+        assertTrue(result.isEmpty());
+    }
+
+    private static CreateRoleAssignmentCommand command(UUID targetUserId, String profileKey) {
+        Set<AssignmentScope> scopes = profileKey.equals("ADMINISTRATOR")
+                ? Set.of(new AssignmentScope(ScopeKind.UNIVERSITY, null))
+                : Set.of(new AssignmentScope(ScopeKind.PROGRAM, UUID.randomUUID().toString()));
+        return new CreateRoleAssignmentCommand(
+                targetUserId, profileKey, scopes, TODAY, TODAY.plusMonths(6), "Acta institucional 42");
+    }
+
+    private static RegisteredIdentity registered(AuthenticatedPrincipal principal, UUID userId) {
+        return new RegisteredIdentity(UUID.randomUUID(), userId, principal, NOW);
     }
 
     private static AuthenticatedPrincipal principal(String subject) {
