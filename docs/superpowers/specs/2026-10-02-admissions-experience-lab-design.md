@@ -19,11 +19,12 @@ Fuentes primarias: [ACRA — aspirante pregrado](https://reportes.uptc.edu.co/si
 
 ## Recorrido local
 
-La ruta ofrece tres perspectivas claramente etiquetadas:
+La ruta ofrece cuatro opciones accesibles y claramente etiquetadas; las dos primeras destacan los recorridos que deben revisarse:
 
 1. **Aspirante (demostración):** elige entre opciones ficticias, confirma el aviso sin datos personales, crea una ficha sintética y consulta su estado. Puede confirmar una respuesta ficticia a un ajuste de ejercicio.
 2. **Equipo de admisiones (demostración):** consulta una bandeja filtrable por referencia y estado, abre el detalle y puede iniciar la revisión, solicitar un ajuste de una lista fija o finalizar la revisión. Tras una confirmación demo de la perspectiva aspirante, puede reanudarla y cerrarla. No puede admitir, rechazar, clasificar ni calcular puntajes.
 3. **Calendario público:** conserva la agenda versionada y el respaldo oficial ya existente.
+4. **Catálogo territorial · demo:** consulta referencias DIVIPOLA sin asociarlas a una ficha de admisión.
 
 El selector de perspectiva es una herramienta de prueba visual. No representa roles, sesión, autorización o capacidad institucional.
 
@@ -41,7 +42,8 @@ El selector de perspectiva es una herramienta de prueba visual. No representa ro
 
 - React Hook Form controla y valida opciones distintas y las confirmaciones antes de crear una ficha de demostración; la bandeja permite buscar por referencia y filtrar por estado.
 - Zustand comparte casos entre la vista de aspirante y la bandeja sin persistencia y valida transiciones permitidas, incluida la solicitud/respuesta de ajuste y el cierre de revisión.
-- Errores y confirmaciones son accesibles (`aria-live`/`role="alert"`), los tabs admiten teclado y el diseño parte de móvil.
+- Los cuatro tabs son tarjetas con título y descripción; aspirante y equipo aparecen como entradas principales, y el navegador lateral anuncia ambas perspectivas en DEV.
+- Errores y confirmaciones son accesibles (`aria-live`/`role="alert"`), los tabs admiten teclado y el diseño adapta la cuadrícula a móvil.
 - Las llamadas de administración real permanecen exclusivamente en la perspectiva de calendario y siguen protegidas por los permisos existentes.
 
 ## C4 del incremento
@@ -72,6 +74,7 @@ flowchart LR
 ## Criterios de aceptación
 
 - El navegador local abre por defecto el recorrido de aspirante de demostración y permite cambiar entre aspirante, equipo y calendario.
+- La navegación lateral identifica `Aspirante y equipo · demo`; la cuadrícula muestra las descripciones de los cuatro recorridos y los permite seleccionar con mouse o teclado.
 - Enviar una ficha válida crea un consecutivo sintético visible en la bandeja; opciones duplicadas o casillas incompletas producen errores claros y no cambian el store.
 - El recorrido permite iniciar revisión, solicitar un ajuste fijo, confirmarlo desde la perspectiva aspirante, reanudar y finalizar. Las transiciones solo afectan estados de demostración; nunca presentan una decisión de admisión.
 - Al recargar, la ficha deja de existir. No hay tráfico de postulación ni datos personales.

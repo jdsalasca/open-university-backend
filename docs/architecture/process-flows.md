@@ -189,11 +189,11 @@ sequenceDiagram
   Aspirante->>Browser: abre #admisiones con Vite DEV
   Browser->>Lab: importa bajo import.meta.env.DEV
   Lab->>Store: crea el baseline sintético en memoria
-  Lab-->>Aspirante: ofrece pestañas de aspirante, equipo y calendario
+  Lab-->>Aspirante: muestra cuatro tarjetas para aspirante, equipo, calendario y catálogo territorial
   Aspirante->>Form: selecciona dos opciones ficticias
   Form->>Form: valida elecciones distintas y confirmaciones demo
   Form->>Store: agrega DEMO-0003 sin salir del navegador
-  Aspirante->>Lab: cambia a Equipo de admisiones · demo
+  Aspirante->>Lab: selecciona Equipo de admisiones · demo
   Lab->>Store: lee la misma ficha local
   Lab-->>Equipo: muestra referencia, opciones ficticias y estado
   Equipo->>Lab: abre detalle e inicia revisión demo
@@ -206,7 +206,7 @@ sequenceDiagram
   Equipo->>Lab: reanuda y finaliza revisión demo
   Lab->>Store: DEMO_CORRECTION_SUBMITTED → DEMO_REVIEWING → DEMO_REVIEW_COMPLETE
   Lab-->>Equipo: actualiza la ficha sin decidir admisión
-  Aspirante->>Lab: cambia a Calendario público
+  Aspirante->>Lab: selecciona Calendario público
   Lab->>Calendar: conserva la agenda y la consola existentes
   Calendar->>API: GET /api/v1/admissions/calls
   API-->>Calendar: solo convocatorias publicadas
