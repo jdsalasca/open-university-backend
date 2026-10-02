@@ -3,6 +3,7 @@ package co.edu.uptc.universiry.academics.infrastructure.web;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
@@ -17,6 +18,8 @@ import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AcademicStructureAuditControllerTest {
 
     private static final String READ = "academic:structure:read";
+    private static final String WRITE = "academic:structure:write";
     private static final String ENDPOINT = "/api/v1/admin/academic-structure/audit-events";
 
     @Autowired
@@ -107,6 +111,77 @@ class AcademicStructureAuditControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.events").isEmpty())
                 .andExpect(jsonPath("$.nextCursor").doesNotExist());
+    }
+
+    @Test
+    void audit_summary_is_localized_using_the_request_language() throws Exception {
+        // Arrange
+        String code = "FAC-AUDIT-I18N-ES";
+        String request = """
+                {"code":"%s","type":"FACULTY","displayName":"Facultad de prueba",
+                 "displayOrder":1,"validFrom":"2026-01-01","validThrough":null,
+                 "sourceReference":"Referencia de prueba"}
+                """.formatted(code);
+        var writer = jwt().jwt(token -> token.subject("structure.writer"))
+                .authorities(new SimpleGrantedAuthority(WRITE));
+        var reader = jwt().jwt(token -> token.subject("structure.reader"))
+                .authorities(new SimpleGrantedAuthority(READ));
+
+        // Act
+        var created = mockMvc.perform(post("/api/v1/admin/academic-structure/units")
+                        .header("Accept-Language", "es-CO")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request)
+                        .with(writer))
+                .andExpect(status().isCreated())
+                .andReturn();
+        String entityId = com.jayway.jsonpath.JsonPath.read(
+                created.getResponse().getContentAsString(), "$.id");
+
+        // Assert
+        mockMvc.perform(get(ENDPOINT)
+                        .param("entityId", entityId)
+                        .with(reader))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.events[0].summary").value("Unidad académica creada: " + code));
+    }
+
+    @Test
+    void order_audit_summary_is_localized_and_interpolates_its_values() throws Exception {
+        // Arrange
+        String request = """
+                {"code":"FAC-AUDIT-ORDER-ES","type":"FACULTY","displayName":"Facultad de prueba",
+                 "displayOrder":1,"validFrom":"2026-01-01","validThrough":null,
+                 "sourceReference":"Referencia de prueba"}
+                """;
+        var writer = jwt().jwt(token -> token.subject("structure.writer"))
+                .authorities(new SimpleGrantedAuthority(WRITE));
+        var reader = jwt().jwt(token -> token.subject("structure.reader"))
+                .authorities(new SimpleGrantedAuthority(READ));
+
+        String entityId = com.jayway.jsonpath.JsonPath.read(
+                mockMvc.perform(post("/api/v1/admin/academic-structure/units")
+                                .header("Accept-Language", "es-CO")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(request)
+                                .with(writer))
+                        .andExpect(status().isCreated())
+                        .andReturn().getResponse().getContentAsString(), "$.id");
+
+        // Act
+        mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", entityId)
+                        .header("Accept-Language", "es-CO")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"expectedDisplayOrder\":1,\"displayOrder\":2,"
+                                + "\"sourceReference\":\"Ajuste de orden\"}")
+                        .with(writer))
+                .andExpect(status().isNoContent());
+
+        // Assert
+        mockMvc.perform(get(ENDPOINT).param("entityId", entityId).with(reader))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.events[0].summary")
+                        .value("Orden de visualización de unidad académica cambió de 1 a 2"));
     }
 
     @Test

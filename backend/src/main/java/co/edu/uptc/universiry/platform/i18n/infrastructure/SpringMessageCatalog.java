@@ -16,7 +16,7 @@ public class SpringMessageCatalog implements MessageCatalog {
     }
 
     @Override
-    public String message(String key, Locale locale) {
-        return messageSource.getMessage(key, null, locale);
+    public String message(String key, Locale locale, Object... arguments) {
+        return messageSource.getMessage(key, arguments, locale);
     }
 }

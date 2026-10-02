@@ -4,5 +4,5 @@ import java.util.Locale;
 
 public interface MessageCatalog {
 
-    String message(String key, Locale locale);
+    String message(String key, Locale locale, Object... arguments);
 }

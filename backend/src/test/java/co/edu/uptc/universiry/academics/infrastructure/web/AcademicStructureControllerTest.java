@@ -569,26 +569,31 @@ class AcademicStructureControllerTest {
         String orderChange = "{\"expectedDisplayOrder\":%d,\"displayOrder\":%d,\"sourceReference\":\""
                 + reference + "\"}";
         mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{unitId}/order", facultyId)
-                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .with(writer()).header("Accept-Language", "en")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(orderChange.formatted(8, 2)))
                 .andExpect(status().isNoContent());
         mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{siteId}/order", centralSiteId)
-                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .with(writer()).header("Accept-Language", "en")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(orderChange.formatted(7, 3)))
                 .andExpect(status().isNoContent());
         mockMvc.perform(patch("/api/v1/admin/academic-structure/units/{parentId}/children/{childId}/order",
                         facultyId, schoolId)
-                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .with(writer()).header("Accept-Language", "en")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(orderChange.formatted(6, 1)))
                 .andExpect(status().isNoContent());
         mockMvc.perform(patch("/api/v1/admin/academic-structure/sites/{parentId}/children/{childId}/order",
                         centralSiteId, regionalSiteId)
-                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .with(writer()).header("Accept-Language", "en")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(orderChange.formatted(5, 2)))
                 .andExpect(status().isNoContent());
         mockMvc.perform(patch("/api/v1/admin/academic-structure/programs/{programId}/affiliations/{affiliationId}/order",
                         programId, affiliationId)
-                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .with(writer()).header("Accept-Language", "en")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(orderChange.formatted(4, 0)))
                 .andExpect(status().isNoContent());
 

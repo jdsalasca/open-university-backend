@@ -19,6 +19,8 @@ import co.edu.uptc.universiry.academics.domain.AcademicSiteRelation;
 import co.edu.uptc.universiry.academics.domain.AcademicSiteType;
 import co.edu.uptc.universiry.academics.domain.AcademicStructureSnapshot;
 import co.edu.uptc.universiry.academics.domain.AcademicStructureRules;
+import co.edu.uptc.universiry.platform.i18n.application.MessageCatalog;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -31,6 +33,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -66,10 +69,12 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
 
     private final JdbcTemplate jdbcTemplate;
     private final Clock clock;
+    private final MessageCatalog messages;
 
-    public JdbcAcademicStructureRepositoryAdapter(JdbcTemplate jdbcTemplate, Clock clock) {
+    public JdbcAcademicStructureRepositoryAdapter(JdbcTemplate jdbcTemplate, Clock clock, MessageCatalog messages) {
         this.jdbcTemplate = jdbcTemplate;
         this.clock = clock;
+        this.messages = messages;
     }
 
     @Override
@@ -206,7 +211,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, unit.id().toString(), unit.code(), unit.type().name(), unit.displayName(), unit.displayOrder(),
                 unit.status().name(), unit.validFrom(), unit.validThrough(), timestamp(clock.instant()));
-        audit(unit.id(), "UNIT_CREATED", actorSub, sourceReference, "Organization unit created: " + unit.code());
+        audit(unit.id(), "UNIT_CREATED", actorSub, sourceReference,
+                "academic-structure.audit.unit-created", unit.code());
     }
 
     @Override
@@ -229,7 +235,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, unit.id().toString(), unit.code(), unit.type().name(), unit.displayName(), unit.displayOrder(),
                 unit.status().name(), unit.validFrom(), unit.validThrough(), timestamp(clock.instant()));
-        audit(unit.id(), "UNIT_CREATED", actorSub, sourceReference, "Organization unit created: " + unit.code());
+        audit(unit.id(), "UNIT_CREATED", actorSub, sourceReference,
+                "academic-structure.audit.unit-created", unit.code());
 
         jdbcTemplate.update("""
                 INSERT INTO academic_organization_relation
@@ -238,7 +245,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 """, relation.parentUnitId().toString(), relation.childUnitId().toString(),
                 relation.displayOrder(), relation.validFrom(), relation.validThrough());
         audit(unit.id(), "UNIT_RELATED", actorSub, sourceReference,
-                "Organization unit " + unit.id() + " added under " + relation.parentUnitId());
+                "academic-structure.audit.organization-relation-created",
+                unit.id().toString(), relation.parentUnitId().toString());
     }
 
     @Override
@@ -252,7 +260,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, site.id().toString(), site.code(), site.type().name(), site.displayName(), site.displayOrder(),
                 site.status().name(), site.validFrom(), site.validThrough(), timestamp(clock.instant()));
-        audit(site.id(), "SITE_CREATED", actorSub, sourceReference, "Academic site created: " + site.code());
+        audit(site.id(), "SITE_CREATED", actorSub, sourceReference,
+                "academic-structure.audit.site-created", site.code());
     }
 
     @Override
@@ -274,7 +283,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 """, relation.parentUnitId().toString(), relation.childUnitId().toString(),
                 relation.displayOrder(), relation.validFrom(), relation.validThrough());
         audit(relation.childUnitId(), "UNIT_RELATED", actorSub, sourceReference,
-                "Organization unit " + relation.childUnitId() + " added under " + relation.parentUnitId());
+                "academic-structure.audit.organization-relation-created",
+                relation.childUnitId().toString(), relation.parentUnitId().toString());
     }
 
     @Override
@@ -323,9 +333,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
         int changed = jdbcTemplate.update(updateSql, command.effectiveThrough(), parentId.toString(),
                 childId.toString(), command.validFrom(), command.effectiveThrough());
         if (changed != 1) throw new AcademicStructureConflictException();
-        audit(childId, kind.auditAction, actorSub, sourceReference,
-                kind.auditLabel + " " + parentId + "/" + childId + " closed through "
-                        + command.effectiveThrough());
+        audit(childId, kind.auditAction, actorSub, sourceReference, kind.auditSummaryKey,
+                parentId.toString(), childId.toString(), command.effectiveThrough().toString());
     }
 
     @Override
@@ -347,7 +356,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 """, relation.parentSiteId().toString(), relation.childSiteId().toString(),
                 relation.displayOrder(), relation.validFrom(), relation.validThrough());
         audit(relation.childSiteId(), "SITE_RELATED", actorSub, sourceReference,
-                "Academic site " + relation.childSiteId() + " added under " + relation.parentSiteId());
+                "academic-structure.audit.site-relation-created",
+                relation.childSiteId().toString(), relation.parentSiteId().toString());
     }
 
     @Override
@@ -379,7 +389,7 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 affiliation.sourceReference(), actorSub,
                 timestamp(now));
         audit(affiliation.id(), "PROGRAM_AFFILIATED", actorSub, affiliation.sourceReference(),
-                "Academic program affiliated: " + affiliation.programId());
+                "academic-structure.audit.program-affiliated", affiliation.programId().toString());
     }
 
     @Override
@@ -451,8 +461,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 command.siteId().toString(), command.displayOrder(), command.effectiveFrom(),
                 source.validThrough(), command.sourceReference(), actorSub, timestamp(now));
         audit(newAffiliationId, "PROGRAM_AFFILIATION_REASSIGNED", actorSub, command.sourceReference(),
-                "Program " + programId + " affiliation " + affiliationId + " reassigned as "
-                        + newAffiliationId + " from " + command.effectiveFrom());
+                "academic-structure.audit.program-reassigned", programId.toString(), affiliationId.toString(),
+                newAffiliationId.toString(), command.effectiveFrom().toString());
     }
 
     @Override
@@ -465,7 +475,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                        NULL AS organization_unit_id, NULL AS site_id
                 FROM academic_organization_unit WHERE organization_unit_id = ?
                 """, today, unitId.toString());
-        applyOrderChange(unitId, "UNIT_ORDER_CHANGED", "Organization unit", actorSub, command, current,
+        applyOrderChange(unitId, "UNIT_ORDER_CHANGED", "academic-structure.audit.unit-order-changed",
+                new Object[0], actorSub, command, current,
                 """
                 UPDATE academic_organization_unit SET display_order = ?
                 WHERE organization_unit_id = ? AND display_order = ? AND status = 'ACTIVE'
@@ -483,7 +494,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                        NULL AS organization_unit_id, NULL AS site_id
                 FROM academic_site WHERE site_id = ?
                 """, today, siteId.toString());
-        applyOrderChange(siteId, "SITE_ORDER_CHANGED", "Academic site", actorSub, command, current,
+        applyOrderChange(siteId, "SITE_ORDER_CHANGED", "academic-structure.audit.site-order-changed",
+                new Object[0], actorSub, command, current,
                 """
                 UPDATE academic_site SET display_order = ?
                 WHERE site_id = ? AND display_order = ? AND status = 'ACTIVE'
@@ -507,7 +519,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 ORDER BY valid_from
                 """, today, parentId.toString(), childId.toString());
         applyOrderChange(childId, "UNIT_RELATION_ORDER_CHANGED",
-                "Organization unit relation " + parentId + "/" + childId,
+                "academic-structure.audit.organization-relation-order-changed",
+                new Object[]{parentId.toString(), childId.toString()},
                 actorSub, command, current,
                 """
                 UPDATE academic_organization_relation SET display_order = ?
@@ -534,7 +547,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 ORDER BY valid_from
                 """, today, parentId.toString(), childId.toString());
         applyOrderChange(childId, "SITE_RELATION_ORDER_CHANGED",
-                "Academic site relation " + parentId + "/" + childId,
+                "academic-structure.audit.site-relation-order-changed",
+                new Object[]{parentId.toString(), childId.toString()},
                 actorSub, command, current,
                 """
                 UPDATE academic_site_relation SET display_order = ?
@@ -559,7 +573,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                 """, today, programId.toString(), affiliationId.toString());
         requireCurrentUnit(current.organizationUnitId(), today);
         requireCurrentSite(current.siteId(), today);
-        applyOrderChange(programId, "PROGRAM_ORDER_CHANGED", "Program affiliation " + affiliationId,
+        applyOrderChange(programId, "PROGRAM_ORDER_CHANGED", "academic-structure.audit.program-order-changed",
+                new Object[]{affiliationId.toString()},
                 actorSub, command, current,
                 """
                 UPDATE academic_program_affiliation SET display_order = ?
@@ -601,7 +616,8 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
 
     private void applyOrderChange(UUID entityId,
                                   String action,
-                                  String entityName,
+                                  String auditSummaryKey,
+                                  Object[] auditSummaryArguments,
                                   String actorSub,
                                   AcademicDisplayOrderCommand command,
                                   OrderState current,
@@ -613,8 +629,10 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
         }
         int changed = jdbcTemplate.update(updateSql, updateParameters);
         if (changed != 1) throw new AcademicStructureConflictException();
-        audit(entityId, action, actorSub, command.sourceReference(), entityName
-                + " display order changed from " + current.displayOrder() + " to " + command.displayOrder());
+        Object[] completeSummaryArguments = Arrays.copyOf(auditSummaryArguments, auditSummaryArguments.length + 2);
+        completeSummaryArguments[completeSummaryArguments.length - 2] = current.displayOrder();
+        completeSummaryArguments[completeSummaryArguments.length - 1] = command.displayOrder();
+        audit(entityId, action, actorSub, command.sourceReference(), auditSummaryKey, completeSummaryArguments);
     }
 
     private void lockStructure() {
@@ -676,7 +694,9 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
         return jdbcTemplate.queryForObject(sql, Integer.class, id.toString()) > 0;
     }
 
-    private void audit(UUID entityId, String action, String actorSub, String sourceReference, String summary) {
+    private void audit(UUID entityId, String action, String actorSub, String sourceReference,
+                       String summaryKey, Object... summaryArguments) {
+        String summary = messages.message(summaryKey, LocaleContextHolder.getLocale(), summaryArguments);
         jdbcTemplate.update("""
                 INSERT INTO academic_structure_audit_event
                     (entity_id, action_key, actor_sub, source_reference, occurred_at, event_summary)
@@ -721,24 +741,25 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
 
     private enum RelationKind {
         ORGANIZATION("academic_organization_relation", "parent_unit_id", "child_unit_id", "UNIT_RELATION_CLOSED",
-                "Organization unit relation"),
+                "academic-structure.audit.organization-relation-closed"),
         SITE("academic_site_relation", "parent_site_id", "child_site_id", "SITE_RELATION_CLOSED",
-                "Academic site relation"),
+                "academic-structure.audit.site-relation-closed"),
         PROGRAM_AFFILIATION("academic_program_affiliation", "program_id", "affiliation_id",
-                "PROGRAM_AFFILIATION_CLOSED", "Academic program affiliation");
+                "PROGRAM_AFFILIATION_CLOSED", "academic-structure.audit.program-affiliation-closed");
 
         private final String table;
         private final String parentColumn;
         private final String childColumn;
         private final String auditAction;
-        private final String auditLabel;
+        private final String auditSummaryKey;
 
-        RelationKind(String table, String parentColumn, String childColumn, String auditAction, String auditLabel) {
+        RelationKind(String table, String parentColumn, String childColumn, String auditAction,
+                     String auditSummaryKey) {
             this.table = table;
             this.parentColumn = parentColumn;
             this.childColumn = childColumn;
             this.auditAction = auditAction;
-            this.auditLabel = auditLabel;
+            this.auditSummaryKey = auditSummaryKey;
         }
     }
 

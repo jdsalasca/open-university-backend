@@ -96,7 +96,7 @@ class SecurityConfigurationTest {
         @Bean
         @Primary
         MessageCatalog specialCharacterMessageCatalog() {
-            return (key, locale) -> TRANSLATION_WITH_JSON_SPECIAL_CHARACTERS;
+            return (key, locale, arguments) -> TRANSLATION_WITH_JSON_SPECIAL_CHARACTERS;
         }
     }
 }
