@@ -88,7 +88,7 @@ La flecha punteada hacia el gate es una dependencia por descubrir, no un estado 
 
 ### Agenda pública de admisiones 2027-I
 
-La ruta `/#admisiones` presenta las fechas de pregrado presencial publicadas por ACRA, la fecha en que se revisó la fuente y enlaces oficiales para confirmar cambios. El contenido se mantiene versionado con la aplicación para que cada actualización tenga revisión y trazabilidad. La persona puede descargar una instantánea `.ics` con eventos de día completo, fechas finales inclusivas convertidas al formato iCalendar y la fuente oficial incluida en cada evento. El archivo no se sincroniza después de descargarlo. El calendario no crea postulaciones ni se conecta a PIN, selección, documentos o sistemas académicos; la inscripción se realiza únicamente en el canal oficial que UPTC publique.
+La ruta `/#admisiones` usa como respaldo las fechas de pregrado presencial publicadas por ACRA, junto con la fecha de consulta y enlaces oficiales para confirmar cambios. Cuando la API versionada no tiene una publicación o no está disponible, se muestra ese respaldo sin borrar la fuente original. La persona puede descargar una instantánea `.ics` con eventos de día completo, fechas finales inclusivas convertidas al formato iCalendar y la fuente oficial incluida en cada evento. El archivo no se sincroniza después de descargarlo. Esta vista no crea postulaciones ni se conecta a PIN, selección, documentos o sistemas académicos; la inscripción se realiza únicamente en el canal oficial que UPTC publique.
 
 ```mermaid
 sequenceDiagram
@@ -109,11 +109,67 @@ sequenceDiagram
   File-->>Aspirante: descarga para el calendario personal
   Aspirante->>ACRA: abre el calendario oficial para confirmar detalles
   Aspirante->>News: consulta el comunicado institucional enlazado
-  Note over UI,File: La descarga no consulta APIs ni contiene datos personales
-  Note over UI,Content: No hay captura de datos ni escrituras en MySQL
+  Note over UI,File: La descarga es local y no sincroniza cambios ni contiene datos personales
+  Note over UI,Content: Este es el respaldo estático cuando no hay agenda administrada publicada; su consola se muestra en el flujo siguiente
 ```
 
 La fuente ACRA se marcaba como actualizada el 15 de septiembre de 2026 y se consultó el 1 de octubre de 2026; cualquier modificación posterior debe reflejarse en el contenido y en su fecha de consulta. La [página oficial de aspirantes](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/) es la referencia operativa y el [comunicado institucional 240](https://dsp.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-abre-inscripciones-para-estudiar-un-pregrado-presencial-a-distancia-o-virtual-el-proximo-semestre/) sirve como confirmación pública de apertura y fechas principales.
+
+### Convocatorias versionadas: consulta, revisión y publicación
+
+Este flujo administra calendarios públicos completos; no tramita una inscripción ni ejecuta selección. La agenda estática 2027-I sigue visible si la API no devuelve una convocatoria publicada o no está disponible. La consulta entrega hasta 100 convocatorias y permite elegir una. En desarrollo local no hay proveedor OIDC ni permisos semilla, así que la consola queda cerrada.
+
+```mermaid
+sequenceDiagram
+  actor Visitante as Aspirante o visitante
+  actor Operador as Operador autorizado
+  participant UI as React: ruta de admisiones
+  participant API as Spring Boot: AdmissionsCallController
+  participant Auth as Spring Security
+  participant Service as AdmissionsCallService
+  participant Identity as Directorio de identidad canónica
+  participant DB as MySQL 8.4
+
+  Visitante->>UI: abre agenda pública
+  UI->>API: GET /api/v1/admissions/calls
+  API->>DB: CTE limita 100 convocatorias y carga revisión/hitos completos
+  DB-->>API: solo revisiones publicadas
+  API-->>UI: calendario y metadatos públicos
+  UI-->>Visitante: ofrece selector y muestra título, fechas y fuentes
+  Note over UI,DB: Borradores, actores y datos de aspirantes no se exponen
+  Note over UI: Si no hay publicación o la consulta falla, se conserva la agenda 2027-I de referencia
+
+  Operador->>UI: abre consola con read/write confirmados por /api/v1/me
+  UI->>API: GET /api/v1/admin/admissions/calls
+  API->>Auth: exige admissions:calendar:read
+  Auth-->>API: token y permiso válido
+  API->>Service: listar borradores y revisiones actuales
+  Service->>DB: consulta administrativa acotada a 100 convocatorias
+  DB-->>UI: snapshot administrativo sin PII
+
+  Operador->>UI: crea convocatoria o revisión borrador completa
+  UI->>API: POST /calls o POST /calls/{id}/revisions
+  API->>Auth: exige admissions:calendar:write
+  API->>Service: resolver actor y validar contenido
+  Service->>Identity: issuer + subject registrados
+  Identity-->>Service: user_id canónico + identity_id
+  Service->>DB: guardar revisión DRAFT e hitos
+  Service->>DB: agregar evento CALL_CREATED / REVISION_CREATED
+  DB-->>UI: borrador y draftVersion
+
+  Operador->>UI: edita contenido y solicita publicar con referencia
+  UI->>API: PUT revisión y luego POST publish con versiones esperadas
+  API->>Auth: exige admissions:calendar:write
+  API->>Service: compara draftVersion y expectedPublishedRevisionId
+  Service->>DB: bloquea convocatoria, valida estado y referencia
+  Service->>DB: publica snapshot, avanza puntero y agrega auditoría
+  DB-->>UI: revisión publicada o 409 sin cambio parcial
+  UI->>API: relee GET /api/v1/admissions/calls
+  API-->>UI: nueva revisión publicada
+  UI-->>Visitante: muestra la agenda actualizada
+```
+
+Cada publicación exige confirmación explícita, una referencia institucional y las dos versiones observadas; no hay reintento automático en React. Una revisión publicada no se modifica: la corrección crea una revisión completa nueva. El actor se resuelve contra un vínculo federado ya registrado al usuario canónico; si no existe, la mutación falla cerrada. La auditoría y el cambio de puntero público comparten transacción. Los gates G0–G3 de la [especificación de admisiones](../superpowers/specs/2026-09-30-pregrado-admissions-process-discovery.md) siguen pendientes antes de conectar inscripción, documentos, PIN, reglas, resultados o datos reales.
 
 ### Flujo público de inscripción y selección para 2027-I
 

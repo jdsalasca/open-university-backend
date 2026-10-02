@@ -69,6 +69,7 @@ public class SecurityConfiguration {
                                 "/api/v1/academic-catalog/programs",
                                 "/api/v1/academic-structure",
                                 "/api/v1/academic-periods",
+                                "/api/v1/admissions/calls",
                                 "/api/v1/academic-catalog/curriculum-template",
                                 "/api/v1/academic-catalog/programs/*/curricula",
                                 "/api/v1/academic-catalog/curricula/*",
@@ -100,6 +101,10 @@ public class SecurityConfiguration {
                         .requestMatchers(GET, "/api/v1/admin/academic-periods/*/history")
                                 .hasAuthority(ApplicationPermission.ACADEMIC_PERIOD_READ.authority())
                         .requestMatchers(GET,
+                                "/api/v1/admin/admissions/calls",
+                                "/api/v1/admin/admissions/calls/*")
+                        .hasAuthority(ApplicationPermission.ADMISSIONS_CALENDAR_READ.authority())
+                        .requestMatchers(GET,
                                 "/api/v1/admin/academic-structure",
                                 "/api/v1/admin/academic-structure/audit-events")
                         .hasAuthority(ApplicationPermission.ACADEMIC_STRUCTURE_READ.authority())
@@ -108,6 +113,13 @@ public class SecurityConfiguration {
                                 "/api/v1/admin/access/identities",
                                 "/api/v1/admin/access/assignments")
                         .hasAuthority(ApplicationPermission.IDENTITY_ROLES_READ.authority())
+                        .requestMatchers(POST,
+                                "/api/v1/admin/admissions/calls",
+                                "/api/v1/admin/admissions/calls/*/revisions",
+                                "/api/v1/admin/admissions/calls/*/revisions/*/publish")
+                        .hasAuthority(ApplicationPermission.ADMISSIONS_CALENDAR_WRITE.authority())
+                        .requestMatchers(PUT, "/api/v1/admin/admissions/calls/*/revisions/*")
+                        .hasAuthority(ApplicationPermission.ADMISSIONS_CALENDAR_WRITE.authority())
                         .requestMatchers(POST,
                                 "/api/v1/admin/academic-periods",
                                 "/api/v1/admin/academic-periods/*/calendars",

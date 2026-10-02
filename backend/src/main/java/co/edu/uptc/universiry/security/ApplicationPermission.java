@@ -9,6 +9,8 @@ public enum ApplicationPermission {
     ACADEMIC_STRUCTURE_WRITE("academic:structure:write"),
     ACADEMIC_PERIOD_READ("academic:period:read"),
     ACADEMIC_PERIOD_WRITE("academic:period:write"),
+    ADMISSIONS_CALENDAR_READ("admissions:calendar:read"),
+    ADMISSIONS_CALENDAR_WRITE("admissions:calendar:write"),
     IDENTITY_ROLES_READ("identity:roles:read"),
     IDENTITY_ROLES_WRITE("identity:roles:write");
 
