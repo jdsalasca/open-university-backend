@@ -171,6 +171,45 @@ sequenceDiagram
 
 Cada publicación exige confirmación explícita, una referencia institucional y las dos versiones observadas; no hay reintento automático en React. Una revisión publicada no se modifica: la corrección crea una revisión completa nueva. El actor se resuelve contra un vínculo federado ya registrado al usuario canónico; si no existe, la mutación falla cerrada. La auditoría y el cambio de puntero público comparten transacción. Los gates G0–G3 de la [especificación de admisiones](../superpowers/specs/2026-09-30-pregrado-admissions-process-discovery.md) siguen pendientes antes de conectar inscripción, documentos, PIN, reglas, resultados o datos reales.
 
+### Laboratorio local de experiencia de admisiones (solo DEV)
+
+Al ejecutar Vite en modo desarrollo, `/#admisiones` inicia en una vista sintética de aspirante. La persona elige dos programas ficticios diferentes y confirma que leyó el aviso; el formulario no pide identidad, contacto, PIN ni soportes. La ficha se crea en un store Zustand no persistido que se comparte con la bandeja demo del equipo mientras la pantalla permanece montada. Allí solo se puede iniciar y cerrar una revisión de muestra: no se representa admisión, rechazo, puntaje o selección. La tercera pestaña conserva el calendario y su API actual; la consola de calendarios sigue dependiendo de sus permisos reales. Al recargar, el store local vuelve a los dos casos sintéticos iniciales.
+
+```mermaid
+sequenceDiagram
+  actor Aspirante as Persona que explora el prototipo
+  actor Equipo as Persona que explora la bandeja
+  participant Browser as Navegador local
+  participant Lab as React: laboratorio DEV
+  participant Form as React Hook Form
+  participant Store as Zustand efímero
+  participant Calendar as Vista pública del calendario
+  participant API as API de convocatorias publicadas
+
+  Aspirante->>Browser: abre #admisiones con Vite DEV
+  Browser->>Lab: importa bajo import.meta.env.DEV
+  Lab->>Store: crea el baseline sintético en memoria
+  Lab-->>Aspirante: ofrece pestañas de aspirante, equipo y calendario
+  Aspirante->>Form: selecciona dos opciones ficticias
+  Form->>Form: valida elecciones distintas y confirmaciones demo
+  Form->>Store: agrega DEMO-0003 sin salir del navegador
+  Aspirante->>Lab: cambia a Equipo de admisiones · demo
+  Lab->>Store: lee la misma ficha local
+  Lab-->>Equipo: muestra referencia, opciones ficticias y estado
+  Equipo->>Store: inicia o cierra solo una revisión de demostración
+  Store-->>Lab: avanza el estado DEMO_RECEIVED → DEMO_REVIEWING → DEMO_REVIEW_COMPLETE
+  Lab-->>Equipo: actualiza la tarjeta sin decidir admisión
+  Aspirante->>Lab: cambia a Calendario público
+  Lab->>Calendar: conserva la agenda y la consola existentes
+  Calendar->>API: GET /api/v1/admissions/calls
+  API-->>Calendar: solo convocatorias publicadas
+  Note over Browser,Store: Al recargar, el store efímero se descarta y reaparece el baseline sintético
+  Note over Form,Store: Sin PII, API de postulaciones, persistencia, PIN, pago ni documentos
+  Note over Lab,API: El bundle de producción excluye el laboratorio; solo el calendario permanece
+```
+
+Este prototipo de recorrido no es un formulario oficial ni concede identidad, rol o permiso administrativo. Las decisiones de admisión, expedientes, integraciones y reglas siguen sujetas a los gates G0–G3 y a la aprobación del dueño institucional del proceso.
+
 ### Flujo público de inscripción y selección para 2027-I
 
 El mapa separa fechas y reglas que aparecen en actos públicos de los puntos operativos pendientes. Es una guía para el taller, no una máquina de estados ni autorización para automatizar decisiones. UPTC reportó la implementación de «Inscríbete» para 2026-II; la Resolución 111/2026 nombra SIRA en el proceso 2027-I. El diagrama conserva esos nombres separados: no afirma que sean el mismo sistema ni que el portal descrito en el comunicado sea el de 2027-I. ISE, pago y matrícula/asignaturas quedan fuera del primer corte funcional.
