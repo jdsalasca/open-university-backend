@@ -1193,7 +1193,7 @@ sequenceDiagram
   API->>Catalog: consulta PublicSpaceDirectory.snapshot()
   Catalog-->>API: 21 ubicaciones y 5 rutas oficiales con sus fuentes
   API-->>React: instantánea de solo lectura
-  React->>React: busca texto sin tildes y aplica filtro a las ubicaciones
+  React->>React: busca texto sin tildes y filtra por tipo y municipio publicado
   React-->>Visitor: ubicaciones publicadas y tarjetas de rutas institucionales
   Visitor->>Source: activa enlace de una fuente UPTC
   Source-->>Visitor: confirma ubicación y detalles actuales
