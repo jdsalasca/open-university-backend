@@ -242,7 +242,41 @@ sequenceDiagram
   Note over Shell,StudentDemo: El manifest de producción bloquea el módulo demo
 ```
 
-La ruta es una evaluación visual, no la consulta real de materias de una persona. Los datos son constantes ficticias con códigos `DEMO-*`; la semana y la vista de asignaturas comparten una sola estructura para que una materia con varios encuentros no aparezca duplicada. El shell conserva su contexto global de identidad e identidad visual, pero la vista no usa sus permisos ni solicita datos académicos. El módulo no añade formularios de matrícula/notas ni una fuente oficial de horarios. La futura consulta propia exige una fuente maestra, autorización por usuario, aislamiento verificable y aprobación institucional.
+La ruta es una evaluación visual, no la consulta real de materias de una persona. Los datos son constantes ficticias con códigos `DEMO-*`; la semana y la vista de asignaturas comparten una sola estructura para que una materia con varios encuentros no aparezca duplicada. El shell conserva su contexto global de identidad e identidad visual, pero la vista no usa sus permisos ni solicita datos académicos. La consulta estudiantil no añade formularios de matrícula/notas ni una fuente oficial de horarios. La futura consulta propia exige una fuente maestra, autorización por usuario, aislamiento verificable y aprobación institucional.
+
+### Captura de calificaciones de ejemplo (solo DEV)
+
+```mermaid
+sequenceDiagram
+  actor Reviewer as Persona que revisa la interfaz
+  participant Browser as Navegador local
+  participant Shell as React: shell Vite DEV
+  participant Gradebook as Captura de notas · demo
+  participant Fixtures as Dos grupos y referencias DEMO-*
+  participant Draft as Estado React en memoria
+
+  Reviewer->>Browser: abre #calificaciones-demo
+  Browser->>Shell: resuelve la ruta solo en desarrollo
+  Shell->>Gradebook: importa dinámicamente el componente
+  Gradebook->>Fixtures: carga el grupo ficticio inicial
+  Gradebook-->>Reviewer: muestra referencias anónimas y aviso de alcance
+  Reviewer->>Gradebook: selecciona grupo e ingresa valores
+  Gradebook->>Gradebook: valida presencia y rango provisional 0–5
+  alt todos los valores son válidos
+    Gradebook->>Draft: conserva el borrador volátil
+    Draft-->>Gradebook: confirma cantidad de referencias
+    Gradebook-->>Reviewer: muestra acuse local sin publicar
+  else hay entradas vacías o fuera del rango
+    Gradebook-->>Reviewer: señala campos y solicita corrección
+  end
+  Reviewer->>Gradebook: cambia de grupo
+  Gradebook->>Draft: descarta entradas y acuse del grupo anterior
+  Note over Gradebook,Fixtures: Sin matrícula ni nombres reales; la escala no ha sido validada por UPTC
+  Note over Gradebook,Draft: Sin API, identidad/permisos, promedio, resultado definitivo ni persistencia
+  Note over Shell,Gradebook: El manifest de producción bloquea el módulo demo
+```
+
+Este laboratorio muestra captura de muestra, no registro de notas oficial. Las referencias y grupos son ficticios y se mantienen locales; guardar conserva únicamente un acuse en memoria. No calcula promedios, aprobación, reprobación ni nota definitiva. El rango 0–5 sirve solo para probar la interacción y requiere validación institucional antes de diseñar escritura real. La futura operación debe confirmar sistema fuente, asignación docente-grupo, periodo/calendario, escala, precisión, intentos, cierres, reclamos y auditoría con los responsables de UPTC.
 
 ### Flujo público de inscripción y selección para 2027-I
 
