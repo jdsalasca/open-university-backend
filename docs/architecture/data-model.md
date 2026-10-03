@@ -155,6 +155,20 @@ El préstamo **no inventa plazo**: `due_on` es la fecha que entrega la unidad pr
 
 La API administrativa exige `library:read`/`library:write`; `GET /titles?query=` filtra por nombre sin distinguir mayúsculas y trata `%` y `_` como literales; `GET /open-loans` ordena por vencimiento y calcula `overdue` con el `Clock` institucional. La consola `/#biblioteca` revalida la sesión ante 401/403. No hay búsqueda autorizada del `user_id` del lector, así que el alta de préstamos no se ofrece en la interfaz y no se publican cupos ni disponibilidad.
 
+## Notificaciones institucionales
+
+La migración `V24__institutional_notices.sql` agrega tres tablas; no siembra avisos, no captura datos de contacto y no implementa entrega por canal.
+
+| Tabla | Responsabilidad | Claves y restricciones |
+|---|---|---|
+| `institutional_notice` | Aviso inmutable con vigencia, referencia y actor | PK `notice_id`; `ck_institutional_notice_window` exige `published_through >= published_from`; título, cuerpo, referencia y actor no vacíos; índice por publicación. |
+| `institutional_notice_audience` | Audiencias del aviso | PK `(notice_id, audience_kind, scope_reference)`; FK al aviso; `audience_kind` limitado a `UNIVERSITY`, `SITE`, `FACULTY`, `PROGRAM`. |
+| `institutional_notice_audit_event` | Evento de publicación append-only | PK `audit_event_id`; FK al aviso; la acción se limita a `NOTICE_PUBLISHED`; conserva actor opaco, referencia y número de audiencias. |
+
+La clave primaria implica `NOT NULL` en MySQL, así que el alcance universitario usa la cadena vacía en vez de `NULL`: `ck_institutional_notice_audience_scope` exige `''` para `UNIVERSITY` y un valor no vacío para el resto, de modo que un aviso de toda la comunidad nunca apunta a una unidad, sede o programa concretos. El aviso se publica completo y no se edita; una corrección es otro aviso.
+
+`POST /api/v1/admin/notices` exige `notices:write` y referencia institucional, y la auditoría se escribe en la misma transacción. `GET /api/v1/notices` devuelve lo que puede leer la persona autenticada: resuelve sus audiencias desde las asignaciones de rol activas a la fecha del `Clock` institucional, así que un aviso `SITE`, `FACULTY` o `PROGRAM` solo alcanza a quien tiene ese ámbito vigente, y `JOB_APPOINTMENT` queda excluido. Ninguna tabla guarda correo, teléfono ni identificadores del lector, y no existe preferencia, acuse de lectura ni vencimiento automático.
+
 ## Mensajes del backend
 
 Los textos de respuesta se mantienen en `messages.properties` (español predeterminado) y `messages_en.properties`. El API negocia `Accept-Language`; los catálogos son recursos de aplicación, no filas de configuración institucional ni datos de negocio.

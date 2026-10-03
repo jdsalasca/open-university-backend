@@ -1429,3 +1429,29 @@ sequenceDiagram
 ```
 
 Cada escritura exige referencia institucional y registra actor y fecha. El adaptador bloquea la fila del ejemplar antes de prestar o retirar, y exige que el cierre del préstamo afecte exactamente una fila para no reportar como exitosa una devolución que otra transacción ya ganó. La búsqueda trata `%` y `_` como literales, y el retiro conserva la traza completa (actor, referencia e instante) con una restricción que liga el rastro al estado de circulación. No hay inventario UPTC ni sistema bibliotecario conectado, no se publican cupos ni disponibilidad, y las reglas de préstamo, renovación y multas deben validarse con el responsable institucional antes de operar. Ver [el alcance ampliado](../discovery/sponsor-university-platform-scope-2026-10.md).
+
+## Notificaciones institucionales
+
+Un aviso se publica completo y queda inmutable; una corrección es otro aviso. La escritura exige `notices:write` con referencia institucional, y la consulta de «mis avisos» resuelve las audiencias de la persona desde sus asignaciones de rol activas a la fecha del reloj institucional.
+
+```mermaid
+sequenceDiagram
+  actor Editor as Editor institucional
+  participant Console as Consola administrativa
+  participant API as API admin notices
+  participant DB as MySQL institutional_notice_*
+  actor Person as Persona autenticada
+  participant Mine as Consulta de mis avisos
+
+  Editor->>Console: redacta título, cuerpo, vigencia y audiencias
+  Console->>API: POST /admin/notices con referencia institucional
+  API->>DB: inserta aviso, audiencias y evento NOTICE_PUBLISHED
+  API-->>Console: aviso publicado e inmutable
+
+  Person->>Mine: abre sus avisos
+  Mine->>DB: resuelve asignaciones de rol activas a la fecha institucional
+  Mine-->>Person: avisos UNIVERSITY más los de sus ámbitos vigentes
+  Note over Mine,Person: no expone quién publicó ni datos de contacto
+```
+
+Un ámbito `SITE`, `FACULTY` o `PROGRAM` solo alcanza a quien tiene ese ámbito vigente, y `JOB_APPOINTMENT` queda excluido; un aviso dirigido a toda la comunidad no puede apuntar a una unidad, sede o programa concretos, porque el alcance universitario se guarda como referencia vacía. Ninguna tabla almacena correo, teléfono ni identificadores del lector, y no existe preferencia, acuse de lectura ni vencimiento automático: la entrega por canal y el responsable editorial todavía no están decididos.
