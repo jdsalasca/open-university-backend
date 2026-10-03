@@ -11,6 +11,7 @@ import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumDraftCursor;
 import co.edu.uptc.universiry.academics.application.CurriculumDraftsPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumPublishResult;
+import co.edu.uptc.universiry.academics.application.CurriculumProgramIdentity;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumVersionConflictException;
 import co.edu.uptc.universiry.academics.application.ValidatedCurriculum;
@@ -175,6 +176,28 @@ public class JdbcAcademicCatalogRepositoryAdapter implements AcademicCatalogRepo
                 CURRICULUM_ENTRY_SUMMARY_MAPPER,
                 curriculumId.toString());
         return Optional.of(new AcademicCurriculumDetails(summaries.getFirst(), entries));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<AcademicCurriculumDetails> findLatestPublishedCurriculum(CurriculumProgramIdentity identity) {
+        Objects.requireNonNull(identity, "identity");
+        List<UUID> curriculumIds = jdbcTemplate.query("""
+                SELECT c.curriculum_id
+                FROM academic_curriculum c
+                JOIN academic_program p ON p.program_id = c.program_id
+                WHERE c.status = 'PUBLISHED'
+                  AND p.program_code = ?
+                  AND p.academic_level = ?
+                  AND p.study_modality = ?
+                  AND p.campus_code = ?
+                ORDER BY c.published_at DESC, c.curriculum_id ASC
+                LIMIT 1
+                """,
+                (resultSet, rowNumber) -> uuid(resultSet.getString("curriculum_id")),
+                identity.programCode(), identity.academicLevel().name(),
+                identity.studyModality().name(), identity.campusCode());
+        return curriculumIds.stream().findFirst().flatMap(this::findCurriculum);
     }
 
     @Override

@@ -365,8 +365,23 @@ sequenceDiagram
     API-->>UI: 400 o 413; sin escritura en MySQL
   else Archivo válido
     CSV-->>UseCase: contrato tipado completo + SHA-256 del origen
-    UseCase-->>UI: 200 con metadata, conteo, semestres y muestra de hasta 10 filas
-    Note over UseCase,DB: La prevalidación no invoca el repositorio ni crea auditoría
+    UseCase->>Repo: buscar el último currículo publicado para código, nivel, modalidad y sede exactos
+    Repo->>DB: SELECT PUBLISHED por identidad exacta; ORDER BY published_at DESC, curriculum_id ASC; LIMIT 1
+    alt No existe referencia publicada
+      DB-->>Repo: 0 filas
+      Repo-->>UseCase: Optional.empty
+      UseCase->>UseCase: producir comparison NO_REFERENCE sin conteos ni muestras
+    else Existe referencia
+      DB-->>Repo: UUID determinista del currículo publicado
+      Repo->>DB: leer metadata y todas las asignaturas en transacción de solo lectura
+      DB-->>Repo: cohorte, fecha de publicación y entradas completas
+      Repo-->>UseCase: referencia publicada del mismo programa, nivel, modalidad y sede
+      UseCase->>UseCase: emparejar códigos normalizados y comparar nombre, créditos, semestre, orden, espacio, componente y grupo opcional
+      Note over UseCase: Los cuatro conteos cubren todas las filas; muestras en orden estable, máximo 10 por categoría
+    end
+    Note over UseCase,DB: El preview no persiste borrador ni evento de auditoría
+    UseCase-->>API: 200 con metadata, semestres, hasta 10 filas CSV y comparison
+    API-->>UI: NO_REFERENCE o COMPARED; sin comparación no se infieren ceros
     Operador->>UI: revisa la muestra y confirma crear borrador
     UI->>API: POST /api/v1/admin/academic-catalog/imports (multipart file)
     API->>Auth: autentica y exige academic:catalog:write otra vez
@@ -446,6 +461,8 @@ sequenceDiagram
 ```
 
 La API pública lista programas con un plan publicado y ofrece sus versiones por programa; nunca expone borradores. Para mostrar la organización actual, React carga en paralelo esa lista y `GET /api/v1/academic-structure`, enlaza afiliación, unidad y sede mediante `programId`, y no usa `faculty`, `campus_name` ni `campus_code` del CSV como ubicación actual. Si la afiliación no es única o resoluble, muestra "Adscripción pendiente de validar"; si falla la consulta de estructura, bloquea el catálogo y permite reintentar. El detalle público obtiene metadata separada de entradas y consulta páginas filtradas por código/nombre o semestre; solo `PUBLISHED` puede producir conteos o filas, y borradores y UUID inexistentes comparten 404 en ambos endpoints. La consulta de página fija el tamaño máximo en 100, enlaza parámetros, escapa los comodines SQL y mantiene orden `(semester, row_order)`. La interfaz pide la metadata y su primera página en paralelo; espera 250 ms para búsqueda de texto, vuelve a página 1 al cambiar filtros y cancela solicitudes anteriores con `AbortSignal`. `GET` administrativo de borradores y detalle requiere `academic:catalog:read`; la cola de revisión usa cursores anclados en fecha y UUID para que publicar una fila anterior no desplace borradores pendientes. La prevalidación, importación y publicación requieren `academic:catalog:write`. `POST /import-previews` valida el mismo contrato, devuelve metadata, semestres y como máximo 10 filas sin persistir datos ni eventos; `POST /imports` vuelve a validar antes de la transacción de escritura. Durante una vista previa, el cliente entrega `AbortSignal`; al perder `academic:catalog:write` o desmontarse el panel, aborta la espera, borra el archivo y el resultado local, e ignora respuestas tardías. Cada método/ruta administrativa debe estar allowlisted y probado; un token de lectura no permite escritura. Los nombres actuales son permisos internos de producto, no mapeos aprobados de grupos UPTC. Sin issuer, audience y grupos institucionales el Compose local no puede importar ni publicar. La ruta React `/#programas` está disponible como vista previa, mientras `programs.available` continúa `false`; eso no activa el módulo ni demuestra autorización para operación.
+
+El objeto `comparison` compara el archivo validado con la última versión `PUBLISHED` de la identidad exacta `(programCode, academicLevel, studyModality, campusCode)`; el desempate usa `published_at DESC, curriculum_id ASC`. Los códigos de asignatura se emparejan tras quitar espacios externos y normalizar mayúsculas. La comparación cubre nombre, créditos (sin distinguir escala decimal), semestre, orden, espacio de formación, componente y grupo opcional. Devuelve conteos completos, hasta diez ejemplos estables por categoría y los metadatos de la referencia; no produce equivalencias ni modifica planes. Sin referencia, responde `NO_REFERENCE` con conteos nulos. La interfaz oculta el bloque si una versión anterior del backend no entrega `comparison`; el parser y el panel se cargan de forma diferida. El preview consulta el repositorio para esta lectura, pero no escribe en MySQL ni genera auditoría.
 
 ## Orden organizacional y periodos académicos
 

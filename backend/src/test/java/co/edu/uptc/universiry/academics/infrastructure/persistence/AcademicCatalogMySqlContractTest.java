@@ -11,6 +11,7 @@ import co.edu.uptc.universiry.academics.application.CurriculumEntriesPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumDraftsPageQuery;
 import co.edu.uptc.universiry.academics.application.CurriculumPublishResult;
 import co.edu.uptc.universiry.academics.application.CurriculumPublicationService;
+import co.edu.uptc.universiry.academics.application.CurriculumProgramIdentity;
 import co.edu.uptc.universiry.academics.application.CurriculumSummary;
 import co.edu.uptc.universiry.academics.application.CurriculumCsvSchema;
 import co.edu.uptc.universiry.academics.application.AcademicOfferingDraftAuditAction;
@@ -129,6 +130,50 @@ class AcademicCatalogMySqlContractTest {
 
         // Assert
         assertTrue(usesExpectedVersion, () -> "Expected MySQL 8.4 but connected to " + version);
+    }
+
+    @Test
+    void latest_published_curriculum_uses_exact_identity_publication_time_and_uuid_tie_break() {
+        // Arrange
+        String programCode = "COMPARE-" + UUID.randomUUID().toString().replace("-", "")
+                .substring(0, 12).toUpperCase(Locale.ROOT);
+        CurriculumSummary first = importDraft(programCode, "V1", "SUB-V1");
+        publicationService.publish(first.id(), ACTOR);
+        CurriculumSummary second = importDraft(programCode, "V2", "SUB-V2");
+        publicationService.publish(second.id(), ACTOR);
+        String otherCampusCsv = String.join("\r\n", CSV_HEADER,
+                row(programCode, "V1", "2026-1", "SUB-OTHER-CAMPUS", "Synthetic other campus", "1")
+                        .replace("TUNJA,Tunja", "SOGAMOSO,Sogamoso"), "");
+        CurriculumSummary otherCampus = publicationService.importCsv(
+                new ByteArrayInputStream(otherCampusCsv.getBytes(StandardCharsets.UTF_8)), ACTOR);
+        publicationService.publish(otherCampus.id(), ACTOR);
+        CurriculumSummary draft = importDraft(programCode, "V3", "SUB-DRAFT");
+
+        Timestamp tiedPublicationTime = Timestamp.from(Instant.parse("2026-09-01T12:00:00Z"));
+        jdbcTemplate.update("UPDATE academic_curriculum SET published_at = ? WHERE curriculum_id = ?",
+                tiedPublicationTime, first.id().toString());
+        jdbcTemplate.update("UPDATE academic_curriculum SET published_at = ? WHERE curriculum_id = ?",
+                tiedPublicationTime, second.id().toString());
+        jdbcTemplate.update("UPDATE academic_curriculum SET published_at = ? WHERE curriculum_id = ?",
+                Timestamp.from(Instant.parse("2026-12-01T12:00:00Z")), otherCampus.id().toString());
+        String expectedId = first.id().toString().compareTo(second.id().toString()) < 0
+                ? first.id().toString()
+                : second.id().toString();
+        String expectedVersion = expectedId.equals(first.id().toString()) ? "V1" : "V2";
+        CurriculumProgramIdentity identity = new CurriculumProgramIdentity(programCode,
+                co.edu.uptc.universiry.academics.domain.AcademicLevel.PREGRADO,
+                co.edu.uptc.universiry.academics.domain.StudyModality.PRESENCIAL, "TUNJA");
+
+        // Act
+        var result = catalogRepository.findLatestPublishedCurriculum(identity).orElseThrow();
+
+        // Assert
+        assertEquals(expectedId, result.curriculum().id().toString());
+        assertEquals(expectedVersion, result.curriculum().curriculumVersion());
+        assertEquals(1, result.entries().size());
+        assertEquals(expectedId.equals(first.id().toString()) ? "SUB-V1" : "SUB-V2",
+                result.entries().getFirst().subjectCode());
+        assertNotEquals(draft.id(), result.curriculum().id());
     }
 
     @Test

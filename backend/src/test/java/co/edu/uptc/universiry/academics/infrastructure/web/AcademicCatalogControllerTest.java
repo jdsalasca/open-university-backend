@@ -20,9 +20,12 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -216,7 +219,14 @@ class AcademicCatalogControllerTest {
                 .andExpect(jsonPath("$.semesters[1]").value(2))
                 .andExpect(jsonPath("$.sampleEntries.length()").value(3))
                 .andExpect(jsonPath("$.sampleEntries[0].sourceRowNumber").value(2))
-                .andExpect(jsonPath("$.sampleEntries[0].subjectName").value("Álgebra"));
+                .andExpect(jsonPath("$.sampleEntries[0].subjectName").value("Álgebra"))
+                .andExpect(jsonPath("$.comparison.status").value("NO_REFERENCE"))
+                .andExpect(jsonPath("$.comparison.reference").value(nullValue()))
+                .andExpect(jsonPath("$.comparison.counts").value(nullValue()))
+                .andExpect(jsonPath("$.comparison.addedSamples").isEmpty())
+                .andExpect(jsonPath("$.comparison.removedSamples").isEmpty())
+                .andExpect(jsonPath("$.comparison.modifiedSamples").isEmpty())
+                .andExpect(jsonPath("$.comparison.unchangedSamples").isEmpty());
 
         org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM academic_program WHERE program_code = ?", Integer.class, programCode));
@@ -224,6 +234,101 @@ class AcademicCatalogControllerTest {
                 "SELECT COUNT(*) FROM academic_curriculum", Integer.class));
         org.junit.jupiter.api.Assertions.assertEquals(0, jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM academic_catalog_audit_event", Integer.class));
+    }
+
+    @Test
+    @WithAcademicCatalogPermissions
+    void catalog_admin_preview_compares_with_the_published_curriculum_for_the_same_program() throws Exception {
+        // Arrange
+        String programCode = programCode();
+        importAndPublish(programCode, curriculumCsv(programCode, "V1", new String[][]{
+                {"1", "SUB-KEEP", "Álgebra", "3"},
+                {"2", "SUB-REMOVE", "Química", "4"},
+                {"3", "SUB-CHANGE", "Física", "2"},
+        }));
+        String candidateCsv = curriculumCsv(programCode, "V2", new String[][]{
+                {"1", "SUB-KEEP", "Álgebra", "3.00"},
+                {"2", "SUB-ADD", "Biología", "4"},
+                {"4", "SUB-CHANGE", "Física moderna", "2"},
+        });
+        Integer curriculaBefore = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM academic_curriculum", Integer.class);
+        Integer auditsBefore = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM academic_catalog_audit_event", Integer.class);
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews").file(upload(candidateCsv)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.comparison.status").value("COMPARED"))
+                .andExpect(jsonPath("$.comparison.reference.curriculumVersion").value("V1"))
+                .andExpect(jsonPath("$.comparison.counts.added").value(1))
+                .andExpect(jsonPath("$.comparison.counts.removed").value(1))
+                .andExpect(jsonPath("$.comparison.counts.modified").value(1))
+                .andExpect(jsonPath("$.comparison.counts.unchanged").value(1))
+                .andExpect(jsonPath("$.comparison.addedSamples[0].subjectCode").value("SUB-ADD"))
+                .andExpect(jsonPath("$.comparison.removedSamples[0].subjectCode").value("SUB-REMOVE"))
+                .andExpect(jsonPath("$.comparison.modifiedSamples[0].subjectCode").value("SUB-CHANGE"))
+                .andExpect(jsonPath("$.comparison.modifiedSamples[0].changedFields")
+                        .value(org.hamcrest.Matchers.containsInAnyOrder("NAME", "SEMESTER")))
+                .andExpect(jsonPath("$.comparison.unchangedSamples[0].subjectCode").value("SUB-KEEP"));
+        org.junit.jupiter.api.Assertions.assertEquals(curriculaBefore, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_curriculum", Integer.class));
+        org.junit.jupiter.api.Assertions.assertEquals(auditsBefore, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM academic_catalog_audit_event", Integer.class));
+    }
+
+    @Test
+    @WithAcademicCatalogPermissions
+    void catalog_admin_preview_uses_latest_publication_for_exact_identity_and_breaks_ties_by_uuid() throws Exception {
+        // Arrange
+        String programCode = programCode();
+        String firstId = importAndPublish(programCode, curriculumCsv(programCode, "V1", new String[][]{
+                {"1", "SUB-V1", "Versión uno", "3"},
+        }));
+        String secondId = importAndPublish(programCode, curriculumCsv(programCode, "V2", new String[][]{
+                {"1", "SUB-V2", "Versión dos", "3"},
+        }));
+        String otherCampusCsv = curriculumCsv(programCode, "V1", new String[][]{
+                {"1", "SUB-OTHER-CAMPUS", "Otra sede", "3"},
+        }).replace(",TUNJA,Tunja,V1,", ",SOGAMOSO,Sogamoso,V1,");
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports")
+                        .file(upload(otherCampusCsv))
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isCreated());
+        String otherCampusProgramId = jdbcTemplate.queryForObject(
+                "SELECT program_id FROM academic_program WHERE program_code = ? AND campus_code = 'SOGAMOSO'",
+                String.class, programCode);
+        String otherCampusId = curriculumIdFor(otherCampusProgramId);
+        mockMvc.perform(post("/api/v1/admin/academic-catalog/curricula/{id}/publish", otherCampusId)
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isOk());
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/imports")
+                        .file(upload(curriculumCsv(programCode, "V3", new String[][]{
+                                {"1", "SUB-DRAFT", "Borrador", "3"},
+                        })))
+                        .with(catalogAdminJwt()))
+                .andExpect(status().isCreated());
+
+        Timestamp samePublicationTime = Timestamp.from(Instant.parse("2026-09-01T12:00:00Z"));
+        jdbcTemplate.update("UPDATE academic_curriculum SET published_at = ? WHERE curriculum_id = ?",
+                samePublicationTime, firstId);
+        jdbcTemplate.update("UPDATE academic_curriculum SET published_at = ? WHERE curriculum_id = ?",
+                samePublicationTime, secondId);
+        jdbcTemplate.update("UPDATE academic_curriculum SET published_at = ? WHERE curriculum_id = ?",
+                Timestamp.from(Instant.parse("2026-12-01T12:00:00Z")), otherCampusId);
+        String expectedId = firstId.compareTo(secondId) < 0 ? firstId : secondId;
+        String expectedVersion = expectedId.equals(firstId) ? "V1" : "V2";
+
+        // Act + Assert
+        mockMvc.perform(multipart("/api/v1/admin/academic-catalog/import-previews")
+                        .file(upload(curriculumCsv(programCode, "V99", new String[][]{
+                                {"1", "SUB-V1", "Versión uno", "3"},
+                        }))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.comparison.status").value("COMPARED"))
+                .andExpect(jsonPath("$.comparison.reference.curriculumId").value(expectedId))
+                .andExpect(jsonPath("$.comparison.reference.curriculumVersion").value(expectedVersion))
+                .andExpect(jsonPath("$.comparison.counts.added").value(expectedVersion.equals("V1") ? 0 : 1))
+                .andExpect(jsonPath("$.comparison.counts.removed").value(expectedVersion.equals("V1") ? 0 : 1))
+                .andExpect(jsonPath("$.comparison.counts.unchanged").value(expectedVersion.equals("V1") ? 1 : 0));
     }
 
     @Test
@@ -687,7 +792,12 @@ class AcademicCatalogControllerTest {
                         .file(upload(csv))
                         .with(catalogAdminJwt()))
                 .andExpect(status().isCreated());
-        String curriculumId = curriculumIdFor(programIdFor(programCode));
+        String curriculumId = jdbcTemplate.queryForObject("""
+                SELECT curriculum_id FROM academic_curriculum
+                WHERE program_id = ? AND status = 'DRAFT'
+                ORDER BY created_at DESC, curriculum_id DESC
+                LIMIT 1
+                """, String.class, programIdFor(programCode));
         mockMvc.perform(post("/api/v1/admin/academic-catalog/curricula/{id}/publish", curriculumId)
                         .with(catalogAdminJwt()))
                 .andExpect(status().isOk());

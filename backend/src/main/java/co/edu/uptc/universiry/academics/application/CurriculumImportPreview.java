@@ -21,7 +21,8 @@ public record CurriculumImportPreview(
         String approvalReference,
         int entryCount,
         List<Integer> semesters,
-        List<Entry> sampleEntries
+        List<Entry> sampleEntries,
+        CurriculumVersionComparison comparison
 ) {
 
     private static final int MAX_SAMPLE_ENTRIES = 10;
@@ -34,7 +35,10 @@ public record CurriculumImportPreview(
         }
     }
 
-    public static CurriculumImportPreview from(ValidatedCurriculum curriculum) {
+    public static CurriculumImportPreview from(
+            ValidatedCurriculum curriculum,
+            CurriculumVersionComparison comparison
+    ) {
         ValidatedProgram program = curriculum.program();
         List<ValidatedCurriculumEntry> entries = curriculum.entries();
         List<Integer> semesters = entries.stream()
@@ -62,7 +66,8 @@ public record CurriculumImportPreview(
                 curriculum.approvalReference(),
                 entries.size(),
                 semesters,
-                sample);
+                sample,
+                comparison);
     }
 
     public record Entry(

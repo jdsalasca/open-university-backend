@@ -28,7 +28,11 @@ public class DefaultCurriculumPublicationService implements CurriculumPublicatio
         AcademicCatalogActorSub.require(actorSub);
         ParsedCurriculum parsed = parser.parse(Objects.requireNonNull(source, "source"));
         ValidatedCurriculum validated = importService.validate(parsed);
-        return CurriculumImportPreview.from(validated);
+        CurriculumVersionComparison comparison = repository
+                .findLatestPublishedCurriculum(CurriculumProgramIdentity.from(validated.program()))
+                .map(reference -> CurriculumVersionComparison.compare(validated, reference))
+                .orElseGet(CurriculumVersionComparison::noReference);
+        return CurriculumImportPreview.from(validated, comparison);
     }
 
     @Override
