@@ -91,4 +91,19 @@ class LibraryDomainTest {
         return new LibraryCopy.Loan("l-1", "c-1", "4b1f9c2a-5d3e-4a76-9b8c-2f0e7d1a4c55",
                 LENT_ON, dueOn, null, "Acta de préstamo 1");
     }
+
+    @Test
+    void a_copy_keeps_its_withdrawal_trail_in_step_with_its_circulation_state() {
+        // Arrange: a circulating copy has no trail; a withdrawn one must carry the whole trail.
+        java.time.Instant leftCirculation = java.time.Instant.EPOCH;
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class, () -> new LibraryCopy(
+                "c-1", "t-1", "BC-1", "Estante 1", true, "Acta 1", "actor", "Resolución 1", null));
+        assertThrows(IllegalArgumentException.class, () -> new LibraryCopy(
+                "c-1", "t-1", "BC-1", "Estante 1", false, "Acta 1", null, null, null));
+        assertEquals("actor", new LibraryCopy(
+                "c-1", "t-1", "BC-1", "Estante 1", false, "Acta 1", "actor", "Resolución 1", leftCirculation)
+                .withdrawnBy());
+    }
 }

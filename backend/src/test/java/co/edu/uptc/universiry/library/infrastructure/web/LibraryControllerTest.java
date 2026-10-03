@@ -218,6 +218,14 @@ class LibraryControllerTest {
         mockMvc.perform(post(LIBRARY + "/loans").contentType(MediaType.APPLICATION_JSON)
                         .content(lendBody(copyId, borrower(), "2026-10-03", "2026-10-17", "Préstamo 9 de 2026")))
                 .andExpect(status().isConflict());
+
+        // The persisted trail is queryable through the API, not only in the database.
+        mockMvc.perform(get(LIBRARY + "/titles/" + titleId + "/copies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].active").value(false))
+                .andExpect(jsonPath("$[0].withdrawnBy").value("librarian"))
+                .andExpect(jsonPath("$[0].withdrawnReference").value("Resolución de descarte 7 de 2026"))
+                .andExpect(jsonPath("$[0].withdrawnAt").isNotEmpty());
     }
 
     @Test

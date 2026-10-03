@@ -90,7 +90,8 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     @Override
     public List<LibraryCopy> copiesOf(String titleId) {
         return jdbcTemplate.query("""
-                SELECT copy_id, title_id, barcode, location, active, source_reference
+                SELECT copy_id, title_id, barcode, location, active, source_reference,
+                       withdrawn_by, withdrawn_reference, withdrawn_at
                 FROM library_copy
                 WHERE title_id = ?
                 ORDER BY barcode
@@ -100,7 +101,8 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     @Override
     public Optional<LibraryCopy> lockCopy(String copyId) {
         return jdbcTemplate.query("""
-                SELECT copy_id, title_id, barcode, location, active, source_reference
+                SELECT copy_id, title_id, barcode, location, active, source_reference,
+                       withdrawn_by, withdrawn_reference, withdrawn_at
                 FROM library_copy
                 WHERE copy_id = ?
                 FOR UPDATE
@@ -189,8 +191,11 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     }
 
     private static LibraryCopy copy(ResultSet rs) throws SQLException {
+        Timestamp withdrawnAt = rs.getTimestamp("withdrawn_at");
         return new LibraryCopy(rs.getString("copy_id"), rs.getString("title_id"), rs.getString("barcode"),
-                rs.getString("location"), rs.getBoolean("active"), rs.getString("source_reference"));
+                rs.getString("location"), rs.getBoolean("active"), rs.getString("source_reference"),
+                rs.getString("withdrawn_by"), rs.getString("withdrawn_reference"),
+                withdrawnAt == null ? null : withdrawnAt.toInstant());
     }
 
     private static LibraryCopy.Loan loan(ResultSet rs) throws SQLException {

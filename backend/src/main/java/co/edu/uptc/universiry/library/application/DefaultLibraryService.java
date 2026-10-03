@@ -99,8 +99,9 @@ public class DefaultLibraryService implements LibraryService {
             throw new IllegalStateException("the copy is already withdrawn from circulation");
         }
         repository.markCopyWithdrawn(copyId, actorSub, sourceReference, clock.instant());
-        return new LibraryCopy(copy.copyId(), copy.titleId(), copy.barcode(), copy.location(), false,
-                copy.sourceReference());
+        // Re-read the row so the response carries the persisted withdrawal trail instead of a local guess.
+        return repository.lockCopy(copyId)
+                .orElseThrow(() -> new LibraryCopyNotFoundException(copyId));
     }
 
     @Override

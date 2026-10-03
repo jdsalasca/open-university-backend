@@ -1,5 +1,6 @@
 package co.edu.uptc.universiry.library.domain;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 import static co.edu.uptc.universiry.library.domain.LibraryText.required;
@@ -11,7 +12,10 @@ public record LibraryCopy(
         String barcode,
         String location,
         boolean active,
-        String sourceReference
+        String sourceReference,
+        String withdrawnBy,
+        String withdrawnReference,
+        Instant withdrawnAt
 ) {
 
     public LibraryCopy {
@@ -20,6 +24,23 @@ public record LibraryCopy(
         barcode = required(barcode, 48, "barcode");
         location = required(location, 120, "location");
         sourceReference = required(sourceReference, 240, "sourceReference");
+        // A circulating copy carries no withdrawal trail; the trail is mandatory once it leaves circulation.
+        if (active && (withdrawnBy != null || withdrawnReference != null || withdrawnAt != null)) {
+            throw new IllegalArgumentException("a circulating copy cannot carry a withdrawal trail");
+        }
+        if (!active) {
+            withdrawnBy = required(withdrawnBy, 255, "withdrawnBy");
+            withdrawnReference = required(withdrawnReference, 240, "withdrawnReference");
+            if (withdrawnAt == null) {
+                throw new IllegalArgumentException("a withdrawn copy requires the instant it left circulation");
+            }
+        }
+    }
+
+    /** A copy that is still circulating, so it has no withdrawal trail yet. */
+    public LibraryCopy(String copyId, String titleId, String barcode, String location, boolean active,
+                       String sourceReference) {
+        this(copyId, titleId, barcode, location, active, sourceReference, null, null, null);
     }
 
     /**
