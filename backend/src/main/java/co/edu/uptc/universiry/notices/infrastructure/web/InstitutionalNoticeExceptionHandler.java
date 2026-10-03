@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Locale;
 
-@RestControllerAdvice(assignableTypes = InstitutionalNoticeController.class)
+// Both notice endpoints share the same mapping: the reader endpoint validates the page size too, and an
+// out-of-range value must be a bad request rather than an unhandled failure.
+@RestControllerAdvice(assignableTypes = {InstitutionalNoticeController.class, MyInstitutionalNoticeController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class InstitutionalNoticeExceptionHandler {
 

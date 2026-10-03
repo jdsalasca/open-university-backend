@@ -87,6 +87,17 @@ class InstitutionalNoticeAudienceTest {
                 "my notices describe content, not who published them");
     }
 
+    @Test
+    void an_out_of_range_page_size_is_rejected_as_a_bad_request() throws Exception {
+        // Arrange + Act + Assert: a client-triggerable mistake must not surface as a server failure.
+        mockMvc.perform(get(MY_NOTICES).param("limit", "0").with(readerSession()))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get(MY_NOTICES).param("limit", "101").with(readerSession()))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get(MY_NOTICES).param("limit", "100").with(readerSession()))
+                .andExpect(status().isOk());
+    }
+
     private static org.springframework.test.web.servlet.request.RequestPostProcessor readerSession() {
         return jwt().jwt(token -> token.issuer("https://identity.example.edu").subject("reader"));
     }
