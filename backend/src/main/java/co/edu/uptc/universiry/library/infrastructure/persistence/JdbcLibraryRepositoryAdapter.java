@@ -159,6 +159,19 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
                 """, (rs, index) -> loan(rs), borrowerUserId, limit);
     }
 
+    @Override
+    public void markCopyWithdrawn(String copyId, String actorSub, String reference, java.time.Instant at) {
+        int changed = jdbcTemplate.update("""
+                UPDATE library_copy
+                SET active = FALSE, withdrawn_by = ?, withdrawn_reference = ?, withdrawn_at = ?
+                WHERE copy_id = ? AND active = TRUE
+                """,
+                actorSub, reference, Timestamp.from(at), copyId);
+        if (changed != 1) {
+            throw new IllegalStateException("the copy was already withdrawn");
+        }
+    }
+
     private static LibraryCopy copy(ResultSet rs) throws SQLException {
         return new LibraryCopy(rs.getString("copy_id"), rs.getString("title_id"), rs.getString("barcode"),
                 rs.getString("location"), rs.getBoolean("active"), rs.getString("source_reference"));

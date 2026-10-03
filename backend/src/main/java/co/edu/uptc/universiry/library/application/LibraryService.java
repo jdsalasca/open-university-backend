@@ -16,6 +16,8 @@ public interface LibraryService {
 
     LibraryCopy.Loan returnCopy(String loanId, LocalDate returnedOn, String sourceReference, String actorSub);
 
+    LibraryCopy withdrawCopy(String copyId, String sourceReference, String actorSub);
+
     List<LibraryTitle> titles(int limit);
 
     List<LibraryCopy> copiesOf(String titleId, int limit);

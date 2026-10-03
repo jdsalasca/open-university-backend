@@ -87,6 +87,23 @@ public class DefaultLibraryService implements LibraryService {
     }
 
     @Override
+    @Transactional
+    public LibraryCopy withdrawCopy(String copyId, String sourceReference, String actorSub) {
+        requireActor(actorSub);
+        requireReference(sourceReference);
+        // Locking the copy row serializes withdrawal against lending, so a loan cannot be opened on a copy that is
+        // leaving circulation in the same instant.
+        LibraryCopy copy = repository.lockCopy(copyId)
+                .orElseThrow(() -> new LibraryCopyNotFoundException(copyId));
+        if (!copy.active()) {
+            throw new IllegalStateException("the copy is already withdrawn from circulation");
+        }
+        repository.markCopyWithdrawn(copyId, actorSub, sourceReference, clock.instant());
+        return new LibraryCopy(copy.copyId(), copy.titleId(), copy.barcode(), copy.location(), false,
+                copy.sourceReference());
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<LibraryTitle> titles(int limit) {
         return repository.titles(pageSize(limit));
@@ -107,6 +124,12 @@ public class DefaultLibraryService implements LibraryService {
     private static void requireActor(String actorSub) {
         if (actorSub == null || actorSub.isBlank()) {
             throw new IllegalArgumentException("a library action requires an authenticated actor");
+        }
+    }
+
+    private static void requireReference(String reference) {
+        if (reference == null || reference.isBlank()) {
+            throw new IllegalArgumentException("a library action requires an institutional reference");
         }
     }
 

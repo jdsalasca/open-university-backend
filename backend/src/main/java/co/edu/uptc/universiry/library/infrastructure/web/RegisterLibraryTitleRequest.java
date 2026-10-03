@@ -37,4 +37,7 @@ public record RegisterLibraryTitleRequest(
 
     public record ReturnLibraryCopyRequest(LocalDate returnedOn, @NotBlank @Size(max = 240) String sourceReference) {
     }
+
+    public record WithdrawLibraryCopyRequest(@NotBlank @Size(max = 240) String sourceReference) {
+    }
 }

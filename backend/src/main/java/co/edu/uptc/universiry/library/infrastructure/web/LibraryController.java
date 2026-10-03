@@ -7,6 +7,7 @@ import co.edu.uptc.universiry.library.application.LibraryService.RegisterTitleCo
 import co.edu.uptc.universiry.library.infrastructure.web.RegisterLibraryTitleRequest.LendLibraryCopyRequest;
 import co.edu.uptc.universiry.library.infrastructure.web.RegisterLibraryTitleRequest.RegisterLibraryCopyRequest;
 import co.edu.uptc.universiry.library.infrastructure.web.RegisterLibraryTitleRequest.ReturnLibraryCopyRequest;
+import co.edu.uptc.universiry.library.infrastructure.web.RegisterLibraryTitleRequest.WithdrawLibraryCopyRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -82,5 +83,14 @@ public class LibraryController {
             Authentication authentication) {
         return LibraryLoanResponse.from(library.returnCopy(
                 loanId, request.returnedOn(), request.sourceReference(), authentication.getName()));
+    }
+
+    @PostMapping("/api/v1/admin/library/copies/{copyId}/withdraw")
+    public LibraryCopyResponse withdrawCopy(
+            @PathVariable String copyId,
+            @Valid @RequestBody WithdrawLibraryCopyRequest request,
+            Authentication authentication) {
+        return LibraryCopyResponse.from(
+                library.withdrawCopy(copyId, request.sourceReference(), authentication.getName()));
     }
 }

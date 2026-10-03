@@ -27,6 +27,9 @@ public interface LibraryRepository {
     /** Opens the loan recording the acting subject, so lending is auditable and not only returning is. */
     void appendLoan(LibraryCopy.Loan loan, String actorSub);
 
+    /** Removes a circulating copy from circulation recording who acted and under which institutional reference. */
+    void markCopyWithdrawn(String copyId, String actorSub, String reference, java.time.Instant at);
+
     /** Closes the loan recording the acting subject separately from the institutional reference. */
     void closeLoan(LibraryCopy.Loan loan, String actorSub);
 

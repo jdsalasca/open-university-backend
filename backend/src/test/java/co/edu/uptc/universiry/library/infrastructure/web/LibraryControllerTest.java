@@ -197,6 +197,45 @@ class LibraryControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @WithLibraryPermissions
+    void withdrawing_a_copy_records_the_librarian_and_blocks_further_lending() throws Exception {
+        // Arrange
+        String titleId = registerTitle();
+        String copyId = registerCopy(titleId);
+
+        // Act
+        mockMvc.perform(post(LIBRARY + "/copies/" + copyId + "/withdraw").contentType(MediaType.APPLICATION_JSON).content("""
+                {"sourceReference":"Resolución de descarte 7 de 2026"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.active").value(false));
+
+        // Assert: leaving circulation is auditable and the withdrawn copy can no longer be lent.
+        org.junit.jupiter.api.Assertions.assertEquals("librarian", jdbcTemplate.queryForObject(
+                "SELECT withdrawn_by FROM library_copy WHERE copy_id = ?", String.class, copyId));
+        org.junit.jupiter.api.Assertions.assertEquals("Resolución de descarte 7 de 2026", jdbcTemplate.queryForObject(
+                "SELECT withdrawn_reference FROM library_copy WHERE copy_id = ?", String.class, copyId));
+        mockMvc.perform(post(LIBRARY + "/loans").contentType(MediaType.APPLICATION_JSON)
+                        .content(lendBody(copyId, borrower(), "2026-10-03", "2026-10-17", "Préstamo 9 de 2026")))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    @WithLibraryPermissions
+    void a_copy_cannot_be_withdrawn_twice() throws Exception {
+        // Arrange
+        String titleId = registerTitle();
+        String copyId = registerCopy(titleId);
+        mockMvc.perform(post(LIBRARY + "/copies/" + copyId + "/withdraw").contentType(MediaType.APPLICATION_JSON).content("""
+                {"sourceReference":"Resolución de descarte 7 de 2026"}"""))
+                .andExpect(status().isOk());
+
+        // Act + Assert
+        mockMvc.perform(post(LIBRARY + "/copies/" + copyId + "/withdraw").contentType(MediaType.APPLICATION_JSON).content("""
+                {"sourceReference":"Resolución de descarte 8 de 2026"}"""))
+                .andExpect(status().isConflict());
+    }
+
     private String registerTitle() throws Exception {
         var created = mockMvc.perform(post(LIBRARY + "/titles")
                         .contentType(MediaType.APPLICATION_JSON).content(titleBody()))
