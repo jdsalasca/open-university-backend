@@ -140,12 +140,17 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
 
     @Override
     public void closeLoan(LibraryCopy.Loan loan, String actorSub) {
-        jdbcTemplate.update("""
+        int changed = jdbcTemplate.update("""
                 UPDATE library_loan
                 SET returned_on = ?, closed_by = ?, closed_reference = ?
                 WHERE loan_id = ? AND returned_on IS NULL
                 """,
                 Date.valueOf(loan.returnedOn()), actorSub, loan.sourceReference(), loan.loanId());
+        // A competing return may have closed the same row between the service read and this write. Reporting success
+        // then would hand the caller a return that was never persisted, so the lost update is surfaced as a conflict.
+        if (changed != 1) {
+            throw new IllegalStateException("the loan was already returned");
+        }
     }
 
     @Override
