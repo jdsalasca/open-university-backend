@@ -1,7 +1,7 @@
 # Inscripción y selección de aspirantes — descubrimiento inicial
 
 **Fuentes normativas:** consultadas al 30 de septiembre de 2026<br>
-**Calendario público:** verificado en la página ACRA el 1 de octubre de 2026<br>
+**Calendario público:** verificado en la página ACRA el 2 de octubre de 2026<br>
 **Fuentes de sistema y gobierno de datos:** revisión complementaria del 1 de octubre de 2026<br>
 **Estado:** investigación normativa pública ampliada; reglas y contratos aún no aprobados por los responsables institucionales<br>
 **Ruta:** pregrado presencial<br>
