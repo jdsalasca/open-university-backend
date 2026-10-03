@@ -24,7 +24,8 @@ public interface LibraryRepository {
     /** Finds a loan whatever its state, so closing an already returned loan is reported as a conflict, not as a miss. */
     Optional<LibraryCopy.Loan> findLoan(String loanId);
 
-    void appendLoan(LibraryCopy.Loan loan);
+    /** Opens the loan recording the acting subject, so lending is auditable and not only returning is. */
+    void appendLoan(LibraryCopy.Loan loan, String actorSub);
 
     /** Closes the loan recording the acting subject separately from the institutional reference. */
     void closeLoan(LibraryCopy.Loan loan, String actorSub);

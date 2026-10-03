@@ -138,6 +138,21 @@ class LibraryControllerTest {
 
     @Test
     @WithLibraryPermissions
+    void a_new_loan_records_the_acting_librarian() throws Exception {
+        // Arrange
+        String titleId = registerTitle();
+        String copyId = registerCopy(titleId);
+
+        // Act
+        String loanId = registerLoan(copyId);
+
+        // Assert: who opened the loan is auditable, not only who closed it.
+        org.junit.jupiter.api.Assertions.assertEquals("librarian", jdbcTemplate.queryForObject(
+                "SELECT created_by FROM library_loan WHERE loan_id = ?", String.class, loanId));
+    }
+
+    @Test
+    @WithLibraryPermissions
     void a_copy_with_an_open_loan_cannot_be_lent_again() throws Exception {
         // Arrange
         String titleId = registerTitle();

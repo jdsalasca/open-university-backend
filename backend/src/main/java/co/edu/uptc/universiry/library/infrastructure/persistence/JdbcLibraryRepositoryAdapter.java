@@ -128,14 +128,14 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     }
 
     @Override
-    public void appendLoan(LibraryCopy.Loan loan) {
+    public void appendLoan(LibraryCopy.Loan loan, String actorSub) {
         jdbcTemplate.update("""
                 INSERT INTO library_loan
-                    (loan_id, copy_id, borrower_user_id, lent_on, due_on, returned_on, source_reference, created_at)
-                VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
+                    (loan_id, copy_id, borrower_user_id, lent_on, due_on, returned_on, source_reference, created_by, created_at)
+                VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?)
                 """,
                 loan.loanId(), loan.copyId(), loan.borrowerUserId(), Date.valueOf(loan.lentOn()),
-                Date.valueOf(loan.dueOn()), loan.sourceReference(), Timestamp.from(clock.instant()));
+                Date.valueOf(loan.dueOn()), loan.sourceReference(), actorSub, Timestamp.from(clock.instant()));
     }
 
     @Override

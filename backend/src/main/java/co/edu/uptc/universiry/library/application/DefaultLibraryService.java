@@ -70,7 +70,7 @@ public class DefaultLibraryService implements LibraryService {
         });
         LibraryCopy.Loan loan = new LibraryCopy.Loan(newIdentifier(), copy.copyId(), command.borrowerUserId(),
                 command.lentOn(), command.dueOn(), null, command.sourceReference());
-        repository.appendLoan(loan);
+        repository.appendLoan(loan, actorSub);
         return loan;
     }
 
