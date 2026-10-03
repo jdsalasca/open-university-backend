@@ -67,3 +67,7 @@ Consulta [desarrollo local](docs/runbook/local-development.md) y [el cronograma]
 ## Latencia de desarrollo
 
 La [línea base local](docs/performance-baseline.md) registra promedio, mediana, P95 y máximo de rutas públicas con el snapshot vacío. Repite la lectura con `powershell -NoProfile -File .\tools\measure-api-latency.ps1`; no representa carga institucional ni un SLA de producción.
+
+## Portada y consultas públicas
+
+`/#resumen` es la portada predeterminada y muestra herramientas administrativas únicamente según los permisos efectivos que devuelve `/api/v1/me`; el backend revalida cada operación. `/#inicio` sigue siendo el Centro de Identidad Visual. `/#programas` separa el directorio informativo estático de la sección curricular interna, que inicia vacía hasta que exista una carga autorizada. `/#estudiantes` enlaza fuentes institucionales sin consultar matrícula, horarios o calificaciones personales. La procedencia de la instantánea pública de pregrado está en [su ficha de fuente](docs/discovery/uptc-undergraduate-directory-snapshot-2026-10.md). Los módulos sintéticos no se montan desde `frontend/src/App.tsx` ni aparecen como rutas de producto.

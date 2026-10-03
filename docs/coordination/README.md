@@ -6,8 +6,9 @@ volátil**; este documento es el contrato estable de convivencia.
 
 ## Reglas anti-colisión
 
-1. **Un agente = un worktree/rama.** Nadie trabaja en `develop` directo. Cada agente crea
-   su worktree/rama y solo integra cuando su `status` está limpio.
+1. **Un responsable = un worktree detached desde `origin/develop`.** No se crean ramas de
+   funcionalidad ni PRs. La única rama remota es `develop`; los commits verificados se
+   publican con fast-forward a esa rama solo después de autorización explícita del usuario.
 2. **Claim por carpeta.** Reclama tu ámbito antes de editar: OpenCode reclama `backend/`
    e infraestructura; Luna reclama `frontend/` y `frontend/.../features`. No editar
    archivos fuera del claim activo.
@@ -18,16 +19,18 @@ volátil**; este documento es el contrato estable de convivencia.
 4. **Orden de integración frontend-gitlink-primero.** Se integra primero el `frontend`
    (submódulo/gitlink) y luego se actualiza el gitlink en el repo padre. El orden inverso
    deja el padre apuntando a un commit inexistente.
-5. **Gate de status limpio.** Antes de commit/push/integrar: `git status -sb` debe estar
-   limpio en tu worktree. No commitear el `develop` sucio de otra sesión; stagea solo tus
-   archivos.
+5. **Gate de revisión local.** Antes del commit, revisa `git status -sb`, `git diff --check`
+   y el diff staged; incluye solo archivos del ámbito reclamado y excluye secretos y
+   artefactos generados. Después del commit, verifica estado limpio, fast-forward y SHA de
+   `origin/develop`.
 
 ## Ownership
 
 | Agente | Ámbito | No toca |
 | --- | --- | --- |
-| OpenCode | `backend/`, infraestructura, esquema, CI backend | `frontend/` |
-| Luna | `frontend/`, `frontend/src/features/` | `backend/` |
+| Responsable actual | Ámbito | Estado |
+| --- | --- | --- |
+| Codex | `frontend/` y documentación de `backend/`; sin cambios de dominio backend | Solo esta integración secuencial; el siguiente trabajo se reclama en Harness |
 
 ## Sincronización con Harness Moon (sin duplicar estado)
 

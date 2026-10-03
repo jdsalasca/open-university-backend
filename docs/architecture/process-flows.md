@@ -171,9 +171,11 @@ sequenceDiagram
 
 Cada publicación exige confirmación explícita, una referencia institucional y las dos versiones observadas; no hay reintento automático en React. Una revisión publicada no se modifica: la corrección crea una revisión completa nueva. El actor se resuelve contra un vínculo federado ya registrado al usuario canónico; si no existe, la mutación falla cerrada. La auditoría y el cambio de puntero público comparten transacción. Los gates G0–G3 de la [especificación de admisiones](../superpowers/specs/2026-09-30-pregrado-admissions-process-discovery.md) siguen pendientes antes de conectar inscripción, documentos, PIN, reglas, resultados o datos reales.
 
-### Laboratorio local de experiencia de admisiones (solo DEV)
+### Laboratorio heredado de admisiones — desconectado del producto
 
-Al ejecutar Vite en modo desarrollo, `/#admisiones` inicia en una vista sintética de aspirante. La persona elige dos programas ficticios diferentes y confirma que leyó el aviso; el formulario no pide identidad, contacto, PIN ni soportes. La ficha se crea en un store Zustand no persistido que se comparte con la bandeja demo del equipo mientras la pantalla permanece montada. El equipo puede filtrar por referencia/estado, abrir el detalle, iniciar revisión, solicitar uno de dos ajustes fijos y finalizar el ejercicio. Desde la perspectiva aspirante se confirma la respuesta ficticia; el equipo puede reanudar y cerrar la revisión. No se representa admisión, rechazo, puntaje o selección. La tercera pestaña conserva el calendario y su API actual; la consola de calendarios sigue dependiendo de sus permisos reales. Al recargar, el store local vuelve a los casos sintéticos iniciales.
+**Estado actual:** `App.tsx` ya no monta este laboratorio; `/#admisiones` muestra el calendario público y su consola autorizada. El diagrama siguiente conserva el prototipo como referencia histórica y no representa una ruta disponible para aspirantes u operadores.
+
+En el prototipo histórico de Vite DEV, `/#admisiones` iniciaba en una vista sintética de aspirante. La persona elegía dos programas ficticios diferentes y confirmaba que leyó el aviso; el formulario no pedía identidad, contacto, PIN ni soportes. La ficha se creaba en un store Zustand no persistido compartido con la bandeja demo del equipo mientras la pantalla permanecía montada. El equipo podía filtrar por referencia/estado, abrir el detalle, iniciar revisión, solicitar uno de dos ajustes fijos y finalizar el ejercicio. Desde la perspectiva aspirante se confirmaba una respuesta ficticia; el equipo podía reanudar y cerrar la revisión. No se representaba admisión, rechazo, puntaje o selección. El calendario y su consola autorizada continúan como la única experiencia vigente de la ruta.
 
 ```mermaid
 sequenceDiagram
@@ -217,7 +219,9 @@ sequenceDiagram
 
 Este prototipo de recorrido no es un formulario oficial ni concede identidad, rol o permiso administrativo. Las decisiones de admisión, expedientes, integraciones y reglas siguen sujetas a los gates G0–G3 y a la aprobación del dueño institucional del proceso.
 
-### Consulta de semana académica de ejemplo (solo DEV)
+### Semana y asignaturas sintéticas — módulo desconectado
+
+**Estado actual:** `/#estudiante-demo` no está registrada como ruta; el componente y sus fixtures no se montan desde `App.tsx`. El diagrama siguiente describe solo el prototipo histórico.
 
 ```mermaid
 sequenceDiagram
@@ -242,9 +246,11 @@ sequenceDiagram
   Note over Shell,StudentDemo: El manifest de producción bloquea el módulo demo
 ```
 
-La ruta es una evaluación visual, no la consulta real de materias de una persona. Los datos son constantes ficticias con códigos `DEMO-*`; la semana y la vista de asignaturas comparten una sola estructura para que una materia con varios encuentros no aparezca duplicada. El shell conserva su contexto global de identidad e identidad visual, pero la vista no usa sus permisos ni solicita datos académicos. La consulta estudiantil no añade formularios de matrícula/notas ni una fuente oficial de horarios. La futura consulta propia exige una fuente maestra, autorización por usuario, aislamiento verificable y aprobación institucional.
+El prototipo era una evaluación visual, no la consulta real de materias de una persona. Sus datos constantes ficticios usaban códigos `DEMO-*`; la semana y la vista de asignaturas compartían una estructura para que una materia con varios encuentros no apareciera duplicada. El módulo no consulta permisos académicos, horarios ni matrícula. Una futura consulta propia exige fuente maestra, autorización por usuario, aislamiento verificable y aprobación institucional.
 
-### Captura de calificaciones de ejemplo (solo DEV)
+### Captura de calificaciones sintética — módulo desconectado
+
+**Estado actual:** `/#calificaciones-demo` no está registrada como ruta; el componente y las pruebas aisladas no representan carga o registro institucional. El diagrama siguiente describe solo el prototipo histórico.
 
 ```mermaid
 sequenceDiagram
@@ -276,7 +282,7 @@ sequenceDiagram
   Note over Shell,Gradebook: El manifest de producción bloquea el módulo demo
 ```
 
-Este laboratorio muestra captura de muestra, no registro de notas oficial. Las referencias y grupos son ficticios y se mantienen locales; guardar conserva únicamente un acuse en memoria. No calcula promedios, aprobación, reprobación ni nota definitiva. El rango 0–5 sirve solo para probar la interacción y requiere validación institucional antes de diseñar escritura real. La futura operación debe confirmar sistema fuente, asignación docente-grupo, periodo/calendario, escala, precisión, intentos, cierres, reclamos y auditoría con los responsables de UPTC.
+El prototipo mostraba captura sintética, no registro de notas oficial. Sus referencias y grupos eran ficticios y locales; el acuse permanecía en memoria. No calculaba promedios ni resultados. El rango 0–5 no es una escala institucional validada. Una operación real exige confirmar fuente, asignación docente-grupo, periodo/calendario, escala, precisión, intentos, cierres, reclamos y auditoría con UPTC.
 
 ### Flujo público de inscripción y selección para 2027-I
 
@@ -1375,6 +1381,70 @@ sequenceDiagram
 ```
 
 El primer corte enumera 6 sedes, 11 CREAD y 4 puntos de servicio, además de cinco rutas de orientación pública respaldadas por páginas y actos oficiales; es un catálogo parcial. Las tarjetas enlazan a fuentes distintas para préstamo/alquiler académico, deporte, bibliotecas, aulas de informática y Break Room de personal. No se consolidan reglas incompatibles ni se presentan cupos o reservas. Departamento y fecha de actualización quedan nulos cuando la fuente no los declara. En Rondón, la fuente describe un segundo piso dentro de la biblioteca municipal, pero no publica dirección postal: la ficha muestra esa referencia y omite el enlace cartográfico. Branding `spaces.available/visible` controla la navegación lateral, no la lectura pública directa. Los errores de API ofrecen reintento, el catálogo vacío informa que no hay coincidencias y una búsqueda sin resultado permite limpiar los filtros. La lista de fuentes y sus fechas están en [la especificación](../superpowers/specs/2026-10-01-space-guide-design.md).
+
+## Portada unificada y navegación por capacidades
+
+`/#resumen` es la entrada predeterminada. El shell reutiliza la configuración pública de identidad visual para construir enlaces institucionales y mostrar el banner vigente. Si existe una sesión autenticada, usa los permisos efectivos de `/api/v1/me`; React no infiere permisos por rol, nombre o datos de la persona. Cada destino vuelve a autorizar en el backend.
+
+```mermaid
+sequenceDiagram
+  actor Persona
+  participant Browser as Shell React
+  participant Branding as API pública de marca
+  participant Identity as GET /api/v1/me
+  participant Home as WorkspaceHomePage
+  participant Module as Ruta de módulo
+  participant Security as Spring Security
+
+  Persona->>Browser: abre la plataforma sin fragmento o visita #resumen
+  Browser->>Branding: reutiliza la configuración pública ya cargada
+  Branding-->>Browser: nombres, visibilidad, activos y fechas de banners
+  opt Existe sesión institucional
+    Browser->>Identity: consulta identidad y permisos efectivos
+    Identity-->>Browser: userId opaco y permisos de la sesión
+  end
+  Browser->>Home: entrega branding, permisos y estado de preview local
+  Home-->>Persona: presenta accesos públicos configurados
+  opt La respuesta contiene una capacidad de lectura
+    Home-->>Persona: muestra el enlace administrativo correspondiente
+  end
+  Persona->>Module: abre un enlace
+  Module->>Security: realiza su solicitud
+  Security-->>Module: valida el permiso en el servidor
+
+  Note over Persona,Home: La portada orienta la navegación; nunca concede permisos
+```
+
+`/#inicio` continúa siendo el Centro de Identidad Visual. OIDC puede conservar `#resumen` como retorno interno. Sin sesión, la portada omite los enlaces administrativos. Los módulos sintéticos desconectados no aparecen en la portada ni en la navegación.
+
+## Consulta del directorio público de pregrado UPTC
+
+`/#programas` carga un asset JSON estático con hash desde el mismo origen. La instantánea consultada el 2 de octubre de 2026 contiene 79 programas en 11 facultades; 72 registros llevan literalmente la marca «Programa ofertado» de la fuente. La página oficial indica actualización el 15 de septiembre de 2026. Estos datos son informativos y no se incorporan al maestro académico, a una migración ni a MySQL.
+
+```mermaid
+sequenceDiagram
+  actor Persona as Visitante
+  participant Browser as Navegador
+  participant Route as React: #programas
+  participant Snapshot as Asset JSON estático con hash
+  participant Source as Catálogo público y fichas UPTC
+
+  Persona->>Browser: abre #programas
+  Browser->>Route: monta el directorio y la sección curricular separada
+  Route->>Snapshot: solicita el asset versionado del mismo origen
+  Snapshot-->>Route: programas, fuente y fechas
+  Route-->>Persona: presenta resultados, filtros y aviso sobre el marcador
+  Persona->>Route: busca y combina filtros
+  Route->>Route: normaliza acentos y filtra en memoria
+  Route-->>Persona: actualiza resultados o comunica que no hay coincidencias
+  Persona->>Browser: activa una ficha oficial
+  Browser->>Source: abre el enlace publicado
+
+  Note over Route,Snapshot: Sin API backend, MySQL, seed ni consulta runtime al sitio UPTC
+  Note over Persona,Source: La marca no confirma convocatoria abierta, fechas, cupos ni admisión
+```
+
+El [registro de procedencia](../discovery/uptc-undergraduate-directory-snapshot-2026-10.md) documenta conteos, fuente y actualización. La sección de currículos continúa separada y usa el API interno de versiones publicadas.
 
 ## Directorio público de servicios estudiantiles
 

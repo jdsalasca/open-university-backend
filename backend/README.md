@@ -37,7 +37,7 @@ El catálogo conserva programa, asignatura, revisiones inmutables, plan y entrad
 | `POST` | `/api/v1/admin/academic-catalog/imports` | `academic:catalog:write`; multipart field `file` |
 | `POST` | `/api/v1/admin/academic-catalog/curricula/{curriculumId}/publish` | `academic:catalog:write` |
 
-La consulta paginada valida página, tamaño (1–100), texto (máximo 120 puntos de código Unicode) y semestre (1–32767), devuelve conteos filtrados y ordena por semestre/orden original. Estas lecturas no agregan tablas; el frontend solicita la primera página en paralelo con la metadata, cancela peticiones obsoletas y conserva un máximo de 100 filas visibles. Estos permisos son contratos internos, no nombres de grupos ni roles oficiales de UPTC. Compose no tiene proveedor OIDC ni usuarios de prueba; por ello, un desarrollador anónimo puede consultar un catálogo vacío pero no importar o publicar. La vista React `/#programas` es preview local, y `programs.available` permanece `false`.
+La consulta paginada valida página, tamaño (1–100), texto (máximo 120 puntos de código Unicode) y semestre (1–32767), devuelve conteos filtrados y ordena por semestre/orden original. Estas lecturas no agregan tablas; el frontend solicita la primera página en paralelo con la metadata, cancela peticiones obsoletas y conserva un máximo de 100 filas visibles. Estos permisos son contratos internos, no nombres de grupos ni roles oficiales de UPTC. En `/#programas`, el directorio informativo usa un asset estático público separado; la sección curricular interna inicia vacía y `programs.available` permanece en `false`. Compose no tiene proveedor OIDC ni usuarios de prueba, por lo que un desarrollador anónimo no puede importar o publicar currículos.
 
 ## Integración local y documentos
 

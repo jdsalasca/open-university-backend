@@ -3,10 +3,9 @@
 Reflejo humano del estado en Harness Moon. Ver `README.md` para el protocolo completo.
 No duplicar contratos ni criterios de aceptación: eso vive en Harness.
 
-| Dueño | Ámbito / claim | Rama | Hot-files en uso | Estado | Siguiente acción |
+| Dueño | Ámbito / claim | Checkout | Hot-files en uso | Estado | Siguiente acción |
 | --- | --- | --- | --- | --- | --- |
-| OpenCode | `backend/`, infraestructura | `agent/*` | — | listo | integrar tras status limpio |
-| Luna | `frontend/`, `frontend/src/features/` | `agent/*` | — | pendiente | esperar gitlink del frontend |
+| Codex | Integración frontend y documentación de integración backend | Worktree detached desde `origin/develop`, `develop-delivery-20261003` | `AGENTS.md`, `docs/PROJECT.md`, `docs/ROADMAP.md`, C4, flujos y gitlink `frontend/` | Frontend publicado en `develop` hasta `ca10b71`; tests/build/lint locales aprobados. Documentación y gitlink backend en preparación; sin rama remota adicional. | Verificar documentos y diff, actualizar gitlink, publicar fast-forward solo en backend `develop` y consultar CI. |
 
 ## Orden de integración
 
