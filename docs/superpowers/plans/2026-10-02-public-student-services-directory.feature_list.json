@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "feature": "Directorio público de servicios estudiantiles",
+  "route": "/#estudiantes",
+  "scope": "Información pública, lectura local y enlaces a fuentes institucionales",
+  "requirements": [
+    {
+      "id": "STUD-SVC-001",
+      "description": "La ruta muestra tarjetas de Bienestar y Biblioteca con atribución y fuente oficial.",
+      "acceptance": "Se muestran cuatro fichas tipadas; cada una enlaza por HTTPS a uptc.edu.co, declara que abre el portal oficial y usa noopener noreferrer."
+    },
+    {
+      "id": "STUD-SVC-002",
+      "description": "La búsqueda local tolera mayúsculas y diacríticos en nombres y texto asociado.",
+      "acceptance": "La consulta PRESTAMO encuentra Préstamo y consulta bibliográfica."
+    },
+    {
+      "id": "STUD-SVC-003",
+      "description": "El filtro de categoría se combina con la consulta local.",
+      "acceptance": "Biblioteca más PRESTAMO devuelve únicamente la tarjeta bibliográfica y excluye las fichas de Bienestar."
+    },
+    {
+      "id": "STUD-SVC-004",
+      "description": "El contador accesible refleja las coincidencias y los resultados vacíos ofrecen recuperación.",
+      "acceptance": "Cero resultados anuncia un estado vacío; Limpiar búsqueda y filtros restaura las cuatro fichas, activa Todos y devuelve el foco al campo de búsqueda."
+    },
+    {
+      "id": "STUD-SVC-005",
+      "description": "La página no recopila credenciales ni datos personales.",
+      "acceptance": "Solo existe el campo de búsqueda; no hay formularios, solicitudes API, persistencia ni acciones transaccionales."
+    }
+  ],
+  "risks": [
+    "Las páginas oficiales pueden cambiar después de la consulta; los enlaces abren la fuente institucional, que prevalece sobre el resumen.",
+    "El usuario puede interpretar un enlace de biblioteca como una reserva; el directorio es orientador y no ejecuta préstamos ni reservas.",
+    "Un texto personal escrito en la búsqueda no se envía ni se guarda; se elimina al abandonar la pantalla."
+  ],
+  "outOfScope": [
+    "Autenticación o acceso a SIRA/UPTConecta.",
+    "Expedientes, aspirantes, matrícula, horarios o notas personales.",
+    "Trámites, reservas, préstamos, pagos, disponibilidad o backend.",
+    "Carga de información oficial maestra o cambios de arquitectura."
+  ]
+}

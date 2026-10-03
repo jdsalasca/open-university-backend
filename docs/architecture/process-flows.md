@@ -1358,3 +1358,30 @@ sequenceDiagram
 ```
 
 El primer corte enumera 6 sedes, 11 CREAD y 4 puntos de servicio, además de cinco rutas de orientación pública respaldadas por páginas y actos oficiales; es un catálogo parcial. Las tarjetas enlazan a fuentes distintas para préstamo/alquiler académico, deporte, bibliotecas, aulas de informática y Break Room de personal. No se consolidan reglas incompatibles ni se presentan cupos o reservas. Departamento y fecha de actualización quedan nulos cuando la fuente no los declara. En Rondón, la fuente describe un segundo piso dentro de la biblioteca municipal, pero no publica dirección postal: la ficha muestra esa referencia y omite el enlace cartográfico. Branding `spaces.available/visible` controla la navegación lateral, no la lectura pública directa. Los errores de API ofrecen reintento, el catálogo vacío informa que no hay coincidencias y una búsqueda sin resultado permite limpiar los filtros. La lista de fuentes y sus fechas están en [la especificación](../superpowers/specs/2026-10-01-space-guide-design.md).
+
+## Directorio público de servicios estudiantiles
+
+El directorio `/#estudiantes` combina cuatro fichas estáticas de Bienestar y Biblioteca. La búsqueda y el filtro por categoría operan en memoria del navegador; ningún texto de búsqueda se envía al backend o se persiste. La persona abre una fuente UPTC oficial solo al activar su enlace.
+
+```mermaid
+sequenceDiagram
+  actor Visitor as Visitante
+  participant React as React: #estudiantes
+  participant Source as Portal oficial UPTC
+
+  Visitor->>React: abre el directorio
+  React->>React: presenta cuatro fichas tipadas con fuente y fecha
+  React-->>Visitor: muestra Bienestar y Biblioteca
+  Visitor->>React: escribe texto o elige una categoría
+  React->>React: normaliza tildes y mayúsculas; filtra localmente
+  React-->>Visitor: anuncia el total de coincidencias
+  alt Sin coincidencias
+    React-->>Visitor: explica el estado vacío y ofrece limpiar filtros
+    Visitor->>React: restablece búsqueda y categoría
+    React-->>Visitor: vuelve a mostrar las cuatro fichas y enfoca la búsqueda
+  end
+  Visitor->>Source: activa el enlace HTTPS de una ficha
+  Source-->>Visitor: presenta la información institucional vigente
+```
+
+Las fichas orientan y no confirman requisitos, cupos ni disponibilidad. Aunque el título mencione préstamo o consulta, Universiry no presta recursos ni reserva espacios. El navegador abre las páginas públicas en otra pestaña con `noopener noreferrer`. La revisión de fuentes registra que el contenido se comprobó en resultados indexados oficiales y que no se pudo recuperar directamente cada página en esta sesión; las áreas de Bienestar y Biblioteca deben validar el catálogo y su mantenimiento antes de tratarlo como contenido institucional vigente. Ver [el registro de fuentes](../discovery/uptc-student-services-directory-2026-10.md).
