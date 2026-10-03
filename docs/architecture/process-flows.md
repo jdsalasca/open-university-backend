@@ -1432,7 +1432,7 @@ Cada escritura exige referencia institucional y registra actor y fecha. El adapt
 
 ## Notificaciones institucionales
 
-Un aviso se publica completo y queda inmutable; una corrección es otro aviso. La escritura exige `notices:write` con referencia institucional, y la consulta de «mis avisos» resuelve las audiencias de la persona desde sus asignaciones de rol activas a la fecha del reloj institucional.
+Un aviso se publica completo y queda inmutable; una corrección es otro aviso. La escritura exige `notices:write` con referencia institucional, y la página `/#avisos` —solo lectura y solo con sesión— consulta «mis avisos», que resuelve las audiencias de la persona desde sus asignaciones de rol activas a la fecha del reloj institucional.
 
 ```mermaid
 sequenceDiagram
@@ -1441,17 +1441,17 @@ sequenceDiagram
   participant API as API admin notices
   participant DB as MySQL institutional_notice_*
   actor Person as Persona autenticada
-  participant Mine as Consulta de mis avisos
+  participant Mine as Página #avisos
 
   Editor->>Console: redacta título, cuerpo, vigencia y audiencias
   Console->>API: POST /admin/notices con referencia institucional
   API->>DB: inserta aviso, audiencias y evento NOTICE_PUBLISHED
   API-->>Console: aviso publicado e inmutable
 
-  Person->>Mine: abre sus avisos
+  Person->>Mine: abre #avisos
   Mine->>DB: resuelve asignaciones de rol activas a la fecha institucional
   Mine-->>Person: avisos UNIVERSITY más los de sus ámbitos vigentes
-  Note over Mine,Person: no expone quién publicó ni datos de contacto
+  Note over Mine,Person: la página es de solo lectura y no expone quién publicó
 ```
 
 Un ámbito `SITE`, `FACULTY` o `PROGRAM` solo alcanza a quien tiene ese ámbito vigente, y `JOB_APPOINTMENT` queda excluido; un aviso dirigido a toda la comunidad no puede apuntar a una unidad, sede o programa concretos, porque el alcance universitario se guarda como referencia vacía. Ninguna tabla almacena correo, teléfono ni identificadores del lector, y no existe preferencia, acuse de lectura ni vencimiento automático: la entrega por canal y el responsable editorial todavía no están decididos.
