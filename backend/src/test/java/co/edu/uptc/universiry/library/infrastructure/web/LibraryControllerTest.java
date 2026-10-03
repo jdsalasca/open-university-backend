@@ -296,6 +296,23 @@ class LibraryControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
+    @Test
+    @WithLibraryPermissions
+    void finds_a_copy_by_its_barcode_for_the_lending_desk() throws Exception {
+        // Arrange: the barcode is the physical label the desk scans.
+        String titleId = registerTitle();
+        String copyId = registerCopy(titleId);
+
+        // Act + Assert
+        mockMvc.perform(get(LIBRARY + "/copies/by-barcode/BC-0001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.copyId").value(copyId))
+                .andExpect(jsonPath("$.barcode").value("BC-0001"))
+                .andExpect(jsonPath("$.active").value(true));
+        mockMvc.perform(get(LIBRARY + "/copies/by-barcode/BC-9999"))
+                .andExpect(status().isNotFound());
+    }
+
     private String registerTitle() throws Exception {
         var created = mockMvc.perform(post(LIBRARY + "/titles")
                         .contentType(MediaType.APPLICATION_JSON).content(titleBody()))

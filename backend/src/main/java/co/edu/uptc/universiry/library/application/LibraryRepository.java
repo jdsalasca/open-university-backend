@@ -38,4 +38,7 @@ public interface LibraryRepository {
 
     /** Every loan still outstanding, ordered by the date it is due, so the lending desk can see what is out. */
     List<LibraryCopy.Loan> openLoans(int limit);
+
+    /** The copy carrying a barcode, which is the label the lending desk scans. */
+    Optional<LibraryCopy> copyOfBarcode(String barcode);
 }

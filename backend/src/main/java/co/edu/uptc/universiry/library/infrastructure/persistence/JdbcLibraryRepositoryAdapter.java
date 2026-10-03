@@ -193,6 +193,16 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     }
 
     @Override
+    public Optional<LibraryCopy> copyOfBarcode(String barcode) {
+        return jdbcTemplate.query("""
+                SELECT copy_id, title_id, barcode, location, active, source_reference,
+                       withdrawn_by, withdrawn_reference, withdrawn_at
+                FROM library_copy
+                WHERE barcode = ?
+                """, rs -> rs.next() ? Optional.of(copy(rs)) : Optional.<LibraryCopy>empty(), barcode);
+    }
+
+    @Override
     public void markCopyWithdrawn(String copyId, String actorSub, String reference, java.time.Instant at) {
         int changed = jdbcTemplate.update("""
                 UPDATE library_copy

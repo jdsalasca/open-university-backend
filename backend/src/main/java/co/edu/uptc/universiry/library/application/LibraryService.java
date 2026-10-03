@@ -18,6 +18,8 @@ public interface LibraryService {
 
     LibraryCopy withdrawCopy(String copyId, String sourceReference, String actorSub);
 
+    LibraryCopy copyOfBarcode(String barcode);
+
     List<LibraryTitle> titles(String query, int limit);
 
     List<LibraryCopy> copiesOf(String titleId, int limit);

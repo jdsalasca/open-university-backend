@@ -98,6 +98,11 @@ public class LibraryController {
                 loanId, request.returnedOn(), request.sourceReference(), authentication.getName()));
     }
 
+    @GetMapping("/api/v1/admin/library/copies/by-barcode/{barcode}")
+    public LibraryCopyResponse copyOfBarcode(@PathVariable String barcode) {
+        return LibraryCopyResponse.from(library.copyOfBarcode(barcode));
+    }
+
     @PostMapping("/api/v1/admin/library/copies/{copyId}/withdraw")
     public LibraryCopyResponse withdrawCopy(
             @PathVariable String copyId,

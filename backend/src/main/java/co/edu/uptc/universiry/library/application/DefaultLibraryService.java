@@ -106,6 +106,16 @@ public class DefaultLibraryService implements LibraryService {
 
     @Override
     @Transactional(readOnly = true)
+    public LibraryCopy copyOfBarcode(String barcode) {
+        if (barcode == null || barcode.isBlank()) {
+            throw new IllegalArgumentException("a barcode is required");
+        }
+        return repository.copyOfBarcode(barcode.trim())
+                .orElseThrow(() -> new LibraryCopyNotFoundException(barcode));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<LibraryTitle> titles(String query, int limit) {
         return repository.titles(query, pageSize(limit));
     }
