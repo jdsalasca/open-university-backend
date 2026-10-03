@@ -272,6 +272,30 @@ class LibraryControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
+    @Test
+    @WithLibraryPermissions
+    void searches_titles_without_letting_wildcards_leak_into_the_query() throws Exception {
+        // Arrange: two titles, one of them with a different case and no accent overlap.
+        mockMvc.perform(post(LIBRARY + "/titles").contentType(MediaType.APPLICATION_JSON).content(titleBody()))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post(LIBRARY + "/titles").contentType(MediaType.APPLICATION_JSON).content("""
+                {"title":"Física universitaria","authors":["Autor tres"],"edition":"2a",
+                 "publicationYear":2020,"sourceReference":"Acta 2 de 2026"}"""))
+                .andExpect(status().isCreated());
+
+        // Act + Assert: the search ignores case and a typed wildcard is a literal, not a pattern.
+        mockMvc.perform(get(LIBRARY + "/titles").param("query", "LINEAL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].title").value("Álgebra lineal"));
+        mockMvc.perform(get(LIBRARY + "/titles").param("query", "física"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+        mockMvc.perform(get(LIBRARY + "/titles").param("query", "%"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
     private String registerTitle() throws Exception {
         var created = mockMvc.perform(post(LIBRARY + "/titles")
                         .contentType(MediaType.APPLICATION_JSON).content(titleBody()))

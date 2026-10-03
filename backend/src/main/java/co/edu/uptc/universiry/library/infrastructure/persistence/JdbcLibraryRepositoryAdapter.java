@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -59,7 +60,7 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     }
 
     @Override
-    public List<LibraryTitle> titles(int limit) {
+    public List<LibraryTitle> titles(String query, int limit) {
         Map<String, TitleAccumulator> titles = new LinkedHashMap<>();
         RowCallbackHandler collector = rs -> {
             String titleId = rs.getString("title_id");
@@ -78,13 +79,27 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
                 FROM (
                     SELECT title_id, title, edition, publication_year, source_reference
                     FROM library_title
+                    WHERE LOWER(title) LIKE ? ESCAPE '!'
                     ORDER BY title, title_id
                     LIMIT ?
                 ) t
                 LEFT JOIN library_title_author a ON a.title_id = t.title_id
                 ORDER BY t.title, t.title_id, a.author_order
-                """, collector, limit);
+                """, collector, titlePattern(query), limit);
         return titles.values().stream().map(TitleAccumulator::toTitle).toList();
+    }
+
+    /**
+     * A blank query keeps the first page. A typed '%' or '_' is a literal, never a pattern, so a search box cannot
+     * turn into a full-table scan by accident.
+     */
+    private static String titlePattern(String query) {
+        if (query == null || query.isBlank()) return "%";
+        String escaped = query.trim().toLowerCase(Locale.ROOT)
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_");
+        return "%" + escaped + "%";
     }
 
     @Override

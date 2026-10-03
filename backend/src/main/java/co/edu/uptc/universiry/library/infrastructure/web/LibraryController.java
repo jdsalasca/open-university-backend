@@ -36,8 +36,9 @@ public class LibraryController {
     }
 
     @GetMapping("/api/v1/admin/library/titles")
-    public List<LibraryTitleResponse> titles(@RequestParam(defaultValue = "25") int limit) {
-        return library.titles(limit).stream().map(LibraryTitleResponse::from).toList();
+    public List<LibraryTitleResponse> titles(@RequestParam(required = false) String query,
+                                             @RequestParam(defaultValue = "25") int limit) {
+        return library.titles(query, limit).stream().map(LibraryTitleResponse::from).toList();
     }
 
     @GetMapping("/api/v1/admin/library/titles/{titleId}/copies")

@@ -12,7 +12,8 @@ public interface LibraryRepository {
 
     void appendCopy(LibraryCopy copy, String actorSub);
 
-    List<LibraryTitle> titles(int limit);
+    /** Titles whose name matches the query, or the first page when the query is blank. */
+    List<LibraryTitle> titles(String query, int limit);
 
     List<LibraryCopy> copiesOf(String titleId);
 

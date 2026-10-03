@@ -106,8 +106,8 @@ public class DefaultLibraryService implements LibraryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LibraryTitle> titles(int limit) {
-        return repository.titles(pageSize(limit));
+    public List<LibraryTitle> titles(String query, int limit) {
+        return repository.titles(query, pageSize(limit));
     }
 
     @Override
