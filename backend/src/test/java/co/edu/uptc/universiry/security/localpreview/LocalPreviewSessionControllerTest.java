@@ -45,7 +45,7 @@ class LocalPreviewSessionControllerTest {
         mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.subject").value("local-preview-developer"))
-                .andExpect(jsonPath("$.permissions.length()").value(16))
+                .andExpect(jsonPath("$.permissions.length()").value(18))
                 .andExpect(jsonPath("$.permissions", hasItems("academic:offerings:read", "academic:offerings:write")));
         mockMvc.perform(get("/api/v1/admin/academic-structure/audit-events")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))

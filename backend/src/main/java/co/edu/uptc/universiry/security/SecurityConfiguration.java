@@ -138,6 +138,10 @@ public class SecurityConfiguration {
                         .hasAuthority(ApplicationPermission.NOTICES_READ.authority())
                         .requestMatchers(POST, "/api/v1/admin/notices")
                         .hasAuthority(ApplicationPermission.NOTICES_WRITE.authority())
+                        .requestMatchers(GET, "/api/v1/admin/library/**")
+                        .hasAuthority(ApplicationPermission.LIBRARY_READ.authority())
+                        .requestMatchers(POST, "/api/v1/admin/library/**")
+                        .hasAuthority(ApplicationPermission.LIBRARY_WRITE.authority())
                         .requestMatchers(POST,
                                 "/api/v1/admin/admissions/calls",
                                 "/api/v1/admin/admissions/calls/*/revisions",
