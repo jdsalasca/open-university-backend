@@ -1449,12 +1449,12 @@ Cada escritura exige referencia institucional y registra actor y fecha. El adapt
 
 ## Notificaciones institucionales
 
-Un aviso se publica completo y queda inmutable; una corrección es otro aviso. La escritura exige `notices:write` con referencia institucional, y la página `/#avisos` —solo lectura y solo con sesión— consulta «mis avisos», que resuelve las audiencias de la persona desde sus asignaciones de rol activas a la fecha del reloj institucional.
+Un aviso se publica completo y queda inmutable; una corrección es otro aviso. La consola `/#avisos-admin` publica con `notices:write` y una referencia institucional, y oculta el formulario sin ese permiso; la página `/#avisos` —solo lectura y solo con sesión— consulta «mis avisos», que resuelve las audiencias de la persona desde sus asignaciones de rol activas a la fecha del reloj institucional.
 
 ```mermaid
 sequenceDiagram
   actor Editor as Editor institucional
-  participant Console as Consola administrativa
+  participant Console as Consola #avisos-admin
   participant API as API admin notices
   participant DB as MySQL institutional_notice_*
   actor Person as Persona autenticada
