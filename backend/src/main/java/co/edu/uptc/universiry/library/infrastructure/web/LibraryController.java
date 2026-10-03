@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -26,9 +28,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class LibraryController {
 
     private final LibraryService library;
+    private final Clock clock;
 
-    public LibraryController(LibraryService library) {
+    public LibraryController(LibraryService library, Clock clock) {
         this.library = library;
+        this.clock = clock;
     }
 
     @GetMapping("/api/v1/admin/library/titles")
@@ -46,6 +50,14 @@ public class LibraryController {
     public List<LibraryLoanResponse> loansOf(@RequestParam String borrowerUserId,
                                             @RequestParam(defaultValue = "25") int limit) {
         return library.loansOf(borrowerUserId, limit).stream().map(LibraryLoanResponse::from).toList();
+    }
+
+    @GetMapping("/api/v1/admin/library/open-loans")
+    public List<LibraryLoanResponse> openLoans(@RequestParam(defaultValue = "50") int limit) {
+        LocalDate today = LocalDate.now(clock);
+        return library.openLoans(limit).stream()
+                .map(loan -> LibraryLoanResponse.from(loan, today))
+                .toList();
     }
 
     @PostMapping("/api/v1/admin/library/titles")

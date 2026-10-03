@@ -24,6 +24,8 @@ public interface LibraryService {
 
     List<LibraryCopy.Loan> loansOf(String borrowerUserId, int limit);
 
+    List<LibraryCopy.Loan> openLoans(int limit);
+
     record RegisterTitleCommand(
             String title,
             List<String> authors,

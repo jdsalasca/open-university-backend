@@ -121,6 +121,12 @@ public class DefaultLibraryService implements LibraryService {
         return repository.loansOf(borrowerUserId, pageSize(limit));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<LibraryCopy.Loan> openLoans(int limit) {
+        return repository.openLoans(pageSize(limit));
+    }
+
     private static void requireActor(String actorSub) {
         if (actorSub == null || actorSub.isBlank()) {
             throw new IllegalArgumentException("a library action requires an authenticated actor");

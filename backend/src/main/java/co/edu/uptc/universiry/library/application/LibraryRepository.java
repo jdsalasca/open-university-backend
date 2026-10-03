@@ -34,4 +34,7 @@ public interface LibraryRepository {
     void closeLoan(LibraryCopy.Loan loan, String actorSub);
 
     List<LibraryCopy.Loan> loansOf(String borrowerUserId, int limit);
+
+    /** Every loan still outstanding, ordered by the date it is due, so the lending desk can see what is out. */
+    List<LibraryCopy.Loan> openLoans(int limit);
 }

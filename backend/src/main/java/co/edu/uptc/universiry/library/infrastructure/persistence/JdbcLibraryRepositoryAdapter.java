@@ -165,6 +165,17 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     }
 
     @Override
+    public List<LibraryCopy.Loan> openLoans(int limit) {
+        return jdbcTemplate.query("""
+                SELECT loan_id, copy_id, borrower_user_id, lent_on, due_on, returned_on, source_reference
+                FROM library_loan
+                WHERE returned_on IS NULL
+                ORDER BY due_on, loan_id
+                LIMIT ?
+                """, (rs, index) -> loan(rs), limit);
+    }
+
+    @Override
     public void markCopyWithdrawn(String copyId, String actorSub, String reference, java.time.Instant at) {
         int changed = jdbcTemplate.update("""
                 UPDATE library_copy

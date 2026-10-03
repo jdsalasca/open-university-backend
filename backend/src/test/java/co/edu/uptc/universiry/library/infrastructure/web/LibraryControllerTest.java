@@ -236,6 +236,34 @@ class LibraryControllerTest {
                 .andExpect(status().isConflict());
     }
 
+    @Test
+    @WithLibraryPermissions
+    void open_loans_lists_outstanding_copies_and_flags_the_overdue_ones() throws Exception {
+        // Arrange: a loan whose due date is already behind the institutional clock.
+        String titleId = registerTitle();
+        String copyId = registerCopy(titleId);
+        mockMvc.perform(post(LIBRARY + "/loans").contentType(MediaType.APPLICATION_JSON)
+                        .content(lendBody(copyId, borrower(), "2020-01-01", "2020-02-01", "Préstamo 1 de 2026")))
+                .andExpect(status().isCreated());
+        String loanId = jdbcTemplate.queryForObject(
+                "SELECT loan_id FROM library_loan WHERE returned_on IS NULL", String.class);
+
+        // Act + Assert
+        mockMvc.perform(get(LIBRARY + "/open-loans"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].loanId").value(loanId))
+                .andExpect(jsonPath("$[0].overdue").value(true));
+
+        // A returned copy is no longer outstanding.
+        mockMvc.perform(post(LIBRARY + "/loans/" + loanId + "/return").contentType(MediaType.APPLICATION_JSON).content("""
+                {"returnedOn":"2020-02-05","sourceReference":"Devolución 1 de 2026"}"""))
+                .andExpect(status().isOk());
+        mockMvc.perform(get(LIBRARY + "/open-loans"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
     private String registerTitle() throws Exception {
         var created = mockMvc.perform(post(LIBRARY + "/titles")
                         .contentType(MediaType.APPLICATION_JSON).content(titleBody()))
