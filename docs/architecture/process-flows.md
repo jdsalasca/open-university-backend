@@ -1385,3 +1385,47 @@ sequenceDiagram
 ```
 
 Las fichas orientan y no confirman requisitos, cupos ni disponibilidad. Aunque el título mencione préstamo o consulta, Universiry no presta recursos ni reserva espacios. El navegador abre las páginas públicas en otra pestaña con `noopener noreferrer`. La revisión de fuentes registra que el contenido se comprobó en resultados indexados oficiales y que no se pudo recuperar directamente cada página en esta sesión; las áreas de Bienestar y Biblioteca deben validar el catálogo y su mantenimiento antes de tratarlo como contenido institucional vigente. Ver [el registro de fuentes](../discovery/uptc-student-services-directory-2026-10.md).
+
+## Catálogo y circulación de biblioteca
+
+La consola `/#biblioteca` es administrativa y separada: solo se monta con `library:read` de `/api/v1/me` y revalida la sesión ante 401/403. El alta de títulos y ejemplares, el retiro de circulación y la devolución exigen además `library:write`. El préstamo no se ofrece en la interfaz porque no existe una búsqueda autorizada del `user_id` del lector.
+
+```mermaid
+sequenceDiagram
+  actor Librarian as Bibliotecario
+  participant React as React: #biblioteca
+  participant API as API /api/v1/admin/library
+  participant DB as MySQL library_*
+  participant Clock as Clock institucional
+
+  Librarian->>React: abre la consola
+  React->>API: GET /open-loans y GET /titles
+  API->>DB: lee préstamos abiertos y catálogo
+  API-->>React: pendientes ordenados por vencimiento
+  React-->>Librarian: muestra pendientes y catálogo
+
+  Librarian->>React: escribe y envía una búsqueda
+  React->>API: GET /titles?query=...
+  API->>DB: LIKE sin distinguir mayúsculas, comodines literales
+  API-->>React: títulos coincidentes
+  React-->>Librarian: limita el catálogo a las coincidencias
+
+  Librarian->>React: registra una devolución con referencia
+  React->>API: POST /loans/{id}/return
+  API->>Clock: sella la fecha con el reloj institucional
+  API->>DB: UPDATE ... WHERE returned_on IS NULL
+  alt El préstamo ya fue devuelto
+    API-->>React: 409 conflicto, sin reintento automático
+  else Cierre confirmado
+    API-->>React: préstamo devuelto con actor y referencia
+  end
+  React->>API: relee GET /open-loans
+  API-->>React: pendientes actualizados
+
+  Librarian->>React: retira un ejemplar con referencia
+  React->>API: POST /copies/{id}/withdraw
+  API->>DB: bloquea la fila y escribe el rastro de retiro
+  React-->>Librarian: muestra el ejemplar retirado y su referencia
+```
+
+Cada escritura exige referencia institucional y registra actor y fecha. El adaptador bloquea la fila del ejemplar antes de prestar o retirar, y exige que el cierre del préstamo afecte exactamente una fila para no reportar como exitosa una devolución que otra transacción ya ganó. La búsqueda trata `%` y `_` como literales, y el retiro conserva la traza completa (actor, referencia e instante) con una restricción que liga el rastro al estado de circulación. No hay inventario UPTC ni sistema bibliotecario conectado, no se publican cupos ni disponibilidad, y las reglas de préstamo, renovación y multas deben validarse con el responsable institucional antes de operar. Ver [el alcance ampliado](../discovery/sponsor-university-platform-scope-2026-10.md).
