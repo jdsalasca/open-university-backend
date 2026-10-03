@@ -1,0 +1,30 @@
+{
+  "feature": "Fechas institucionales deterministas en pruebas backend",
+  "scope": "Pruebas de integración que validan avisos institucionales y asignaciones de rol activas",
+  "requirements": [
+    {
+      "id": "TIME-001",
+      "description": "Las pruebas de avisos derivan las ventanas de publicación del Clock de Spring.",
+      "acceptance": "InstitutionalNoticeAudienceTest usa el mismo reloj America/Bogota que el controlador al publicar y consultar avisos."
+    },
+    {
+      "id": "TIME-002",
+      "description": "La prueba de asignaciones crea el perfil desde la fecha institucional vigente.",
+      "acceptance": "RoleAssignmentControllerTest usa el Clock institucional para validFrom y /api/v1/me ve la asignación vigente."
+    },
+    {
+      "id": "TIME-003",
+      "description": "La suite no depende de la zona por defecto de la JVM.",
+      "acceptance": "Las dos pruebas enfocadas y la suite backend pasan con -Duser.timezone=UTC."
+    }
+  ],
+  "risks": [
+    "El test debe usar el Clock configurado por Spring para mantener la misma definición de día que producción.",
+    "El runner de CI puede quedar entre medianoche UTC y medianoche de Bogotá; ese caso debe seguir cubierto."
+  ],
+  "outOfScope": [
+    "Cambiar reglas productivas de visibilidad, permisos o vigencia.",
+    "Cambiar base de datos, migraciones, API o datos institucionales.",
+    "Ajustar la zona horaria del computador o del runner global."
+  ]
+}

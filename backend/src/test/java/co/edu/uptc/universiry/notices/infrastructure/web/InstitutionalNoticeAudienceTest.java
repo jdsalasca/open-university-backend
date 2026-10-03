@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,10 +29,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class InstitutionalNoticeAudienceTest {
 
     private static final String MY_NOTICES = "/api/v1/notices";
-    private static final LocalDate TODAY = LocalDate.now();
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private Clock clock;
 
     @Autowired
     private InstitutionalNoticeService service;
@@ -59,9 +62,10 @@ class InstitutionalNoticeAudienceTest {
     @Test
     void a_notice_outside_its_availability_window_is_not_visible() throws Exception {
         // Arrange
+        LocalDate today = LocalDate.now(clock);
         service.publish(new PublishInstitutionalNoticeCommand(
                 "Aviso de un periodo futuro", "Cuerpo", "Resolución 1 de 2026",
-                TODAY.plusDays(5), TODAY.plusDays(9),
+                today.plusDays(5), today.plusDays(9),
                 List.of(new NoticeAudience(NoticeAudienceKind.UNIVERSITY, null))), "editor");
 
         // Act + Assert
@@ -87,9 +91,10 @@ class InstitutionalNoticeAudienceTest {
         return jwt().jwt(token -> token.issuer("https://identity.example.edu").subject("reader"));
     }
 
-    private static PublishInstitutionalNoticeCommand command(String title, NoticeAudienceKind kind, String reference) {
+    private PublishInstitutionalNoticeCommand command(String title, NoticeAudienceKind kind, String reference) {
+        LocalDate today = LocalDate.now(clock);
         return new PublishInstitutionalNoticeCommand(
                 title, "Cuerpo del aviso", "Resolución 1 de 2026",
-                TODAY, TODAY.plusDays(7), List.of(new NoticeAudience(kind, reference)));
+                today, today.plusDays(7), List.of(new NoticeAudience(kind, reference)));
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -33,6 +34,9 @@ class RoleAssignmentControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private Clock clock;
 
     @Test
     void read_permission_can_list_the_fixed_role_profile_catalog() throws Exception {
@@ -92,7 +96,7 @@ class RoleAssignmentControllerTest {
                   "validThrough": null,
                   "sourceReference": "Acta sintética 2026-42"
                 }
-                """.formatted(teacherUserId, LocalDate.now().toString());
+                """.formatted(teacherUserId, LocalDate.now(clock).toString());
 
         // Act
         MvcResult created = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
