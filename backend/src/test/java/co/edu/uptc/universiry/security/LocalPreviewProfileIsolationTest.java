@@ -5,9 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -37,5 +39,13 @@ class LocalPreviewProfileIsolationTest {
 
         // Assert
         assertTrue(matchingBeans.isEmpty());
+    }
+
+    @Test
+    @WithMockUser(username = "developer")
+    void api_documentation_description_is_not_reachable_outside_its_profile() throws Exception {
+        // Arrange + Act + Assert
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isForbidden());
     }
 }

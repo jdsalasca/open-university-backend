@@ -70,7 +70,10 @@ public class SecurityConfiguration {
                     if (environment.acceptsProfiles(Profiles.of("local-preview"))) {
                         authorize.requestMatchers(POST, "/api/v1/dev/local-preview-session").permitAll()
                                 .requestMatchers(DELETE, "/api/v1/dev/local-preview-session").authenticated()
-                                .requestMatchers(POST, "/api/v1/dev/room-allocation/proposals").authenticated();
+                                .requestMatchers(POST, "/api/v1/dev/room-allocation/proposals").authenticated()
+                                // The generated API description is a developer surface: it documents the product,
+                                // never an anonymous public resource, and disappears with the preview profile.
+                                .requestMatchers(GET, "/v3/api-docs", "/v3/api-docs/**").authenticated();
                     }
                     authorize
                         .requestMatchers(

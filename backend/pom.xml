@@ -26,10 +26,12 @@
 		<tag/>
 		<url/>
 	</scm>
-	<properties>
-		<java.version>25</java.version>
-		<twelvemonkeys.version>3.15.0</twelvemonkeys.version>
-	</properties>
+<properties>
+			<java.version>25</java.version>
+			<twelvemonkeys.version>3.15.0</twelvemonkeys.version>
+			<!-- springdoc-openapi 3.x is the line built for Spring Boot 4; 4.x releases move in lockstep with Boot majors. -->
+			<springdoc.version>3.1.1</springdoc.version>
+		</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -54,6 +56,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
