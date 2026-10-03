@@ -13,7 +13,7 @@ Eliminar dos fallos intermitentes de CI causados porque las pruebas calculan fec
 ## Secuencia TDD
 
 1. **RED:** ejecutar ambas pruebas con `-Duser.timezone=UTC` en una hora en que UTC y Bogotá tengan fechas distintas; confirmar los fallos observados en CI.
-2. **GREEN:** sustituir `LocalDate.now()` de las pruebas afectadas por la fecha derivada de `ZoneId.of("America/Bogota")`; repetir las pruebas enfocadas en UTC.
+2. **GREEN:** usar `LocalDate.now(clock)` con el `Clock` institucional inyectado por Spring, configurado en `America/Bogota`; repetir las pruebas enfocadas en UTC.
 3. **REFACTOR/validación:** ejecutar las mismas pruebas con la zona por defecto, la suite backend y los contratos MySQL usados por CI.
 4. Revisar diff y `git diff --check`, integrar el pequeño arreglo en `develop`, verificar el SHA remoto y el resultado de CI.
 
@@ -22,7 +22,7 @@ Eliminar dos fallos intermitentes de CI causados porque las pruebas calculan fec
 - La prueba de avisos encuentra el aviso institucional publicado para la fecha local de Bogotá, también cuando la JVM está en UTC.
 - La prueba de asignaciones observa el perfil vigente desde `/api/v1/me` bajo ambas zonas.
 - Las dos pruebas enfocadas y la suite backend pasan.
-- El diff contiene solo estas pruebas y este plan; no se altera comportamiento de producción.
+- El diff contiene solo estas pruebas y sus artefactos de planificación; no se altera comportamiento de producción.
 
 ## Riesgos y decisión
 
