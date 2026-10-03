@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.HexFormat;
 import java.util.UUID;
@@ -19,15 +20,18 @@ public class BrandAssetService {
     private final BrandImageValidator imageValidator;
     private final BrandAssetRepository assetRepository;
     private final AssetStorage assetStorage;
+    private final Clock clock;
 
     public BrandAssetService(
             BrandImageValidator imageValidator,
             BrandAssetRepository assetRepository,
-            AssetStorage assetStorage
+            AssetStorage assetStorage,
+            Clock clock
     ) {
         this.imageValidator = imageValidator;
         this.assetRepository = assetRepository;
         this.assetStorage = assetStorage;
+        this.clock = clock;
     }
 
     @Transactional
@@ -65,7 +69,7 @@ public class BrandAssetService {
             throw new BrandAssetNotFoundException();
         }
 
-        BrandAsset asset = assetRepository.findCurrentlyPublished(assetId, Instant.now())
+        BrandAsset asset = assetRepository.findCurrentlyPublished(assetId, clock.instant())
                 .orElseThrow(BrandAssetNotFoundException::new);
         try {
             byte[] content = assetStorage.read(asset.storageKey(), asset.sizeBytes());

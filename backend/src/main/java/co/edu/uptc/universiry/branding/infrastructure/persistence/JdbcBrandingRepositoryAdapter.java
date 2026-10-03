@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Types;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -38,9 +39,11 @@ public class JdbcBrandingRepositoryAdapter implements BrandingRepository {
     );
 
     private final JdbcTemplate jdbcTemplate;
+    private final Clock clock;
 
-    public JdbcBrandingRepositoryAdapter(JdbcTemplate jdbcTemplate) {
+    public JdbcBrandingRepositoryAdapter(JdbcTemplate jdbcTemplate, Clock clock) {
         this.jdbcTemplate = jdbcTemplate;
+        this.clock = clock;
     }
 
     @Override
@@ -52,19 +55,19 @@ public class JdbcBrandingRepositoryAdapter implements BrandingRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<BrandingConfiguration> findCurrentAdministrative() {
-        return currentRevision(false).flatMap(revision -> loadConfiguration(revision, Instant.now(), false));
+        return currentRevision(false).flatMap(revision -> loadConfiguration(revision, clock.instant(), false));
     }
 
     @Override
     @Transactional
     public Optional<BrandingConfiguration> lockCurrentAdministrative() {
-        return currentRevision(true).flatMap(revision -> loadConfiguration(revision, Instant.now(), false));
+        return currentRevision(true).flatMap(revision -> loadConfiguration(revision, clock.instant(), false));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<BrandingConfiguration> findRevision(long revision) {
-        return loadConfiguration(revision, Instant.now(), false);
+        return loadConfiguration(revision, clock.instant(), false);
     }
 
     @Override
