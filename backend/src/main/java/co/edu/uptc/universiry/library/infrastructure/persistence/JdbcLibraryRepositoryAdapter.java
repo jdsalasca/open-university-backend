@@ -139,13 +139,13 @@ public class JdbcLibraryRepositoryAdapter implements LibraryRepository {
     }
 
     @Override
-    public void closeLoan(LibraryCopy.Loan loan) {
+    public void closeLoan(LibraryCopy.Loan loan, String actorSub) {
         jdbcTemplate.update("""
                 UPDATE library_loan
                 SET returned_on = ?, closed_by = ?, closed_reference = ?
                 WHERE loan_id = ? AND returned_on IS NULL
                 """,
-                Date.valueOf(loan.returnedOn()), loan.sourceReference(), loan.sourceReference(), loan.loanId());
+                Date.valueOf(loan.returnedOn()), actorSub, loan.sourceReference(), loan.loanId());
     }
 
     @Override

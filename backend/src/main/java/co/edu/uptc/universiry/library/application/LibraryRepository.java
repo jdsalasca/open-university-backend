@@ -26,7 +26,8 @@ public interface LibraryRepository {
 
     void appendLoan(LibraryCopy.Loan loan);
 
-    void closeLoan(LibraryCopy.Loan loan);
+    /** Closes the loan recording the acting subject separately from the institutional reference. */
+    void closeLoan(LibraryCopy.Loan loan, String actorSub);
 
     List<LibraryCopy.Loan> loansOf(String borrowerUserId, int limit);
 }

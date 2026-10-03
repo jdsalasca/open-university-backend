@@ -118,6 +118,26 @@ class LibraryControllerTest {
 
     @Test
     @WithLibraryPermissions
+    void a_returned_loan_records_the_acting_actor_and_the_reference_separately() throws Exception {
+        // Arrange
+        String titleId = registerTitle();
+        String copyId = registerCopy(titleId);
+        String loanId = registerLoan(copyId);
+
+        // Act
+        mockMvc.perform(post(LIBRARY + "/loans/" + loanId + "/return").contentType(MediaType.APPLICATION_JSON).content("""
+                {"returnedOn":"2026-10-09","sourceReference":"Devolución 1 de 2026"}"""))
+                .andExpect(status().isOk());
+
+        // Assert: the closure trail separates who acted from the institutional reference.
+        org.junit.jupiter.api.Assertions.assertEquals("librarian", jdbcTemplate.queryForObject(
+                "SELECT closed_by FROM library_loan WHERE loan_id = ?", String.class, loanId));
+        org.junit.jupiter.api.Assertions.assertEquals("Devolución 1 de 2026", jdbcTemplate.queryForObject(
+                "SELECT closed_reference FROM library_loan WHERE loan_id = ?", String.class, loanId));
+    }
+
+    @Test
+    @WithLibraryPermissions
     void a_copy_with_an_open_loan_cannot_be_lent_again() throws Exception {
         // Arrange
         String titleId = registerTitle();

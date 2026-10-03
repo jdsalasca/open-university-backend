@@ -82,7 +82,7 @@ public class DefaultLibraryService implements LibraryService {
                 .orElseThrow(() -> new LibraryLoanNotFoundException(loanId));
         LibraryCopy.Loan closed = loan.close(
                 returnedOn == null ? LocalDate.now(clock) : returnedOn, sourceReference);
-        repository.closeLoan(closed);
+        repository.closeLoan(closed, actorSub);
         return closed;
     }
 
