@@ -11,12 +11,14 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-final class AuthenticatedPrincipalWebMapper {
+/** Maps the authenticated request into the domain principal and permissions. Public because more than one module
+ *  reads the caller's own identity, and the mapping must not be duplicated per capability. */
+public final class AuthenticatedPrincipalWebMapper {
 
     private AuthenticatedPrincipalWebMapper() {
     }
 
-    static AuthenticatedPrincipal from(Authentication authentication) {
+    public static AuthenticatedPrincipal from(Authentication authentication) {
         if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
             throw new IllegalArgumentException("an OIDC authenticated principal is required");
         }
@@ -27,7 +29,7 @@ final class AuthenticatedPrincipalWebMapper {
         return new AuthenticatedPrincipal(token.getIssuer().toString(), token.getSubject());
     }
 
-    static Set<ApplicationPermission> applicationPermissions(Collection<? extends GrantedAuthority> authorities) {
+    public static Set<ApplicationPermission> applicationPermissions(Collection<? extends GrantedAuthority> authorities) {
         Set<String> granted = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toUnmodifiableSet());

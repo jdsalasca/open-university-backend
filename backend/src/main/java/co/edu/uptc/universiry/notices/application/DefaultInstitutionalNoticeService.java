@@ -1,8 +1,12 @@
 package co.edu.uptc.universiry.notices.application;
 
 import co.edu.uptc.universiry.notices.domain.InstitutionalNotice;
+import co.edu.uptc.universiry.notices.domain.NoticeAudience;
 
 import java.time.Clock;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -49,6 +53,16 @@ public class DefaultInstitutionalNoticeService implements InstitutionalNoticeSer
     @Transactional(readOnly = true)
     public InstitutionalNoticePage recent(int limit) {
         return new InstitutionalNoticePage(repository.recent(pageSize(limit)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InstitutionalNoticePage visibleOn(LocalDate date, Collection<NoticeAudience> audiences, int limit) {
+        if (date == null) {
+            throw new IllegalArgumentException("a visibility date is required");
+        }
+        List<NoticeAudience> scopes = audiences == null ? List.of() : List.copyOf(audiences);
+        return new InstitutionalNoticePage(repository.effectiveOn(date, scopes, pageSize(limit)));
     }
 
     private static int pageSize(int limit) {

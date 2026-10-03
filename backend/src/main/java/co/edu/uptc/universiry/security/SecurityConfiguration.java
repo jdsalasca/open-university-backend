@@ -95,6 +95,7 @@ public class SecurityConfiguration {
                                 "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers(GET, "/api/v1/me").authenticated()
+                        .requestMatchers(GET, "/api/v1/notices").authenticated()
                         .requestMatchers(GET, "/api/v1/admin/branding")
                         .hasAuthority(ApplicationPermission.BRANDING_READ.authority())
                         .requestMatchers(PUT, "/api/v1/admin/branding")
