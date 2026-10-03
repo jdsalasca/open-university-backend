@@ -13,6 +13,8 @@ public enum ApplicationPermission {
     ACADEMIC_OFFERINGS_WRITE("academic:offerings:write"),
     ADMISSIONS_CALENDAR_READ("admissions:calendar:read"),
     ADMISSIONS_CALENDAR_WRITE("admissions:calendar:write"),
+    NOTICES_READ("notices:read"),
+    NOTICES_WRITE("notices:write"),
     IDENTITY_ROLES_READ("identity:roles:read"),
     IDENTITY_ROLES_WRITE("identity:roles:write");
 
