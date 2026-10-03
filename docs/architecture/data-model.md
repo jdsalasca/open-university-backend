@@ -138,6 +138,23 @@ La API protegida expone los ocho perfiles de catálogo, permite buscar solo iden
 
 `GET /api/v1/me` registra, con autorización federada válida, la pareja opaca de la sesión y devuelve `userId`, el `subject` vigente, los permisos conocidos y un resumen mínimo de asignaciones activas; aplica `Cache-Control: no-store` y no devuelve atributos personales adicionales del token. La resolución combina únicamente mapeos explícitos de claims configurados y permisos de perfiles activos, y falla cerrada para identidad inválida o sin autorización. La consola `/#accesos` aplica permisos para presentar la experiencia, pero cada ruta del backend vuelve a autorizar la operación. El proveedor OIDC, los claims, la matriz funcional y la asignación inicial continúan pendientes de aprobación; una migración vacía no crea identidades ni administradores. Esta implementación no autoriza el uso institucional ni datos reales.
 
+## Catálogo y circulación de biblioteca
+
+La migración `V25__library_catalogue_and_loans.sql` agrega cuatro tablas nuevas; no crea registros iniciales ni se conecta a un sistema bibliotecario institucional, porque ese maestro todavía no está designado.
+
+| Tabla | Responsabilidad | Claves y restricciones |
+|---|---|---|
+| `library_title` | Obra con edición, año y referencia institucional | PK `title_id`; `created_by` con `CHECK` no vacío. |
+| `library_title_author` | Autores en orden de aparición | PK `(title_id, author_order)`; FK a `library_title`; el dominio limita a 20 autores. |
+| `library_copy` | Ejemplar físico prestable | PK `copy_id`; `uq_library_copy_barcode` único; `active` indica circulación. |
+| `library_loan` | Préstamo de un ejemplar a un usuario canónico | PK `loan_id`; FK `borrower_user_id` a `university_user`; FK a `library_copy`. |
+
+El préstamo **no inventa plazo**: `due_on` es la fecha que entrega la unidad prestadora y `ck_library_loan_window` solo exige `due_on >= lent_on`. La clausura es todo-o-nada (`ck_library_loan_closure`): un préstamo abierto no tiene rastro de cierre y uno devuelto lleva actor y referencia. Como `NULL` se distingue en un índice único de MySQL, «un solo préstamo abierto por ejemplar» no se expresa con una clave única: el repositorio bloquea la fila del ejemplar (`FOR UPDATE`) antes de prestar o retirar y rechaza un segundo préstamo en la misma transacción.
+
+`V26__library_loan_actor.sql` agrega `library_loan.created_by` para registrar quién abrió el préstamo —antes el préstamo era anónimo—, rellena las filas previas y añade `ck_library_loan_actor`. `V27__library_copy_withdrawal.sql` agrega `withdrawn_by`, `withdrawn_reference` y `withdrawn_at` con `ck_library_copy_withdrawal`: un ejemplar en circulación no puede tener rastro de retiro y uno retirado lo lleva completo. El servicio relee la fila tras el retiro para devolver la traza persistida, y el cierre del préstamo exige `changed == 1` para no reportar como exitosa una devolución que otra transacción ya ganó.
+
+La API administrativa exige `library:read`/`library:write`; `GET /titles?query=` filtra por nombre sin distinguir mayúsculas y trata `%` y `_` como literales; `GET /open-loans` ordena por vencimiento y calcula `overdue` con el `Clock` institucional. La consola `/#biblioteca` revalida la sesión ante 401/403. No hay búsqueda autorizada del `user_id` del lector, así que el alta de préstamos no se ofrece en la interfaz y no se publican cupos ni disponibilidad.
+
 ## Mensajes del backend
 
 Los textos de respuesta se mantienen en `messages.properties` (español predeterminado) y `messages_en.properties`. El API negocia `Accept-Language`; los catálogos son recursos de aplicación, no filas de configuración institucional ni datos de negocio.
