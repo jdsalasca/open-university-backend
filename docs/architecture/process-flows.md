@@ -1497,6 +1497,15 @@ sequenceDiagram
   API-->>React: títulos coincidentes
   React-->>Librarian: limita el catálogo a las coincidencias
 
+  Librarian->>React: escanea el código de barras de un ejemplar
+  React->>API: GET /copies/by-barcode/{barcode}
+  API->>DB: busca por el código único del ejemplar
+  alt El código no corresponde a ningún ejemplar
+    API-->>React: 404, sin inventar un ejemplar
+  else Ejemplar identificado
+    API-->>React: ejemplar con su título y estado de circulación
+  end
+
   Librarian->>React: registra una devolución con referencia
   React->>API: POST /loans/{id}/return
   API->>Clock: sella la fecha con el reloj institucional
@@ -1515,7 +1524,7 @@ sequenceDiagram
   React-->>Librarian: muestra el ejemplar retirado y su referencia
 ```
 
-Cada escritura exige referencia institucional y registra actor y fecha. El adaptador bloquea la fila del ejemplar antes de prestar o retirar, y exige que el cierre del préstamo afecte exactamente una fila para no reportar como exitosa una devolución que otra transacción ya ganó. La búsqueda trata `%` y `_` como literales, y el retiro conserva la traza completa (actor, referencia e instante) con una restricción que liga el rastro al estado de circulación. No hay inventario UPTC ni sistema bibliotecario conectado, no se publican cupos ni disponibilidad, y las reglas de préstamo, renovación y multas deben validarse con el responsable institucional antes de operar. Ver [el alcance ampliado](../discovery/sponsor-university-platform-scope-2026-10.md).
+Cada escritura exige referencia institucional y registra actor y fecha. El adaptador bloquea la fila del ejemplar antes de prestar o retirar, y exige que el cierre del préstamo afecte exactamente una fila para no reportar como exitosa una devolución que otra transacción ya ganó. La búsqueda trata `%` y `_` como literales, y el retiro conserva la traza completa (actor, referencia e instante) con una restricción que liga el rastro al estado de circulación. La lectura por código de barras identifica el ejemplar que la mesa escanea y responde `404` cuando el código no existe, sin crear ni adivinar un ejemplar. No hay inventario UPTC ni sistema bibliotecario conectado, no se publican cupos ni disponibilidad, y las reglas de préstamo, renovación y multas deben validarse con el responsable institucional antes de operar. Ver [el alcance ampliado](../discovery/sponsor-university-platform-scope-2026-10.md).
 
 ## Notificaciones institucionales
 
