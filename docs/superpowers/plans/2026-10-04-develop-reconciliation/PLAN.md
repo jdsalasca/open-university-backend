@@ -4,7 +4,7 @@
 
 Keep both remote repositories on `develop`, avoid overwriting newer work with stale local copies, and add service-level regression coverage for the approved read-only curriculum comparison preview.
 
-## Current evidence
+## Baseline at plan start
 
 - Backend remote `develop`: `421f7b2d6993ae4ffdf282ef54189e2566764c7d`.
 - Frontend remote `develop`: `95f6a0404fe6d03c216b252d3c795b6679b71a5a`.
@@ -45,4 +45,7 @@ Use the existing detached worktree after moving it to the latest `origin/develop
 
 ## Execution record
 
-- `2026-10-04`: Java 25 targeted test `DefaultCurriculumPublicationServiceTest` passed (2 tests, 0 failures). No production code, schema, frontend source, or gitlink changed. Remote push and CI verification remain pending.
+- `2026-10-04`: Java 25 targeted test `DefaultCurriculumPublicationServiceTest` passed (2 tests, 0 failures). No production code, schema, frontend source, or gitlink changed.
+- Commit `3482885ed292c3a7bf387e38be499440f08a6763` is present in local and remote backend `develop`; frontend remains at `95f6a0404fe6d03c216b252d3c795b6679b71a5a`. Both remotes expose only `develop`.
+- Backend CI run `37184155245` passed the full Maven suite and MySQL contract tests. The local frontend responds HTTP 200 on port 5175, and backend health responds HTTP 200 on port 8080.
+- Harness accepted the plan but kept the active task at `planning/write_plan`; its TDD evidence endpoint rejected the test result because the task phase had not advanced. A checkpoint records the verified test, push, CI, and next reconciliation action.
