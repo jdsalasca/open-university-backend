@@ -51,6 +51,76 @@ class AcademicStructureControllerTest {
     }
 
     @Test
+    void public_structure_excludes_explicit_demo_provenance_but_admin_retains_it_and_its_audit() throws Exception {
+        // Arrange
+        String demoUnitReference = "DEMO-2026-10-04-LOCAL-UNIT";
+        String demoSiteReference = "DEMO-2026-10-04-LOCAL-SITE";
+        String demoAffiliationReference = "DEMO-2026-10-04-LOCAL-AFFILIATION";
+        UUID demoFaculty = createUnit("DEMO-FAC-LOCAL", "FACULTY", "Facultad local de prueba", 1,
+                "2026-01-01", null, demoUnitReference);
+        UUID publicSchool = createUnit("SCHOOL-PUBLIC", "SCHOOL", "Escuela publicada", 2);
+        createOrganizationEdge(demoFaculty, publicSchool, "2026-01-01", null, 1);
+        UUID publicFaculty = createUnit("FAC-PUBLIC", "FACULTY", "Facultad publicada", 3);
+        createUnit("FAC-PUBLIC-NEAR-PREFIX", "FACULTY", "Facultad con referencia distinta", 4,
+                "2026-01-01", null, "DEMOX-2026-10-04-LOCAL");
+        UUID demoCentralSite = createSite("DEMO-SITE-CENTRAL", "CENTRAL", "Sede local de prueba", 1,
+                "2026-01-01", null, demoSiteReference);
+        UUID publicRegionalSite = createSite("SITE-REGIONAL-PUBLIC", "REGIONAL", "Seccional publicada", 2);
+        createSiteEdge(demoCentralSite, publicRegionalSite, 1);
+        UUID programId = UUID.randomUUID();
+        jdbcTemplate.update("""
+                INSERT INTO academic_program
+                    (program_id, program_code, academic_level, study_modality, campus_code, created_at)
+                VALUES (?, 'DEMO-AFFILIATION', 'PREGRADO', 'PRESENCIAL', 'TUNJA', CURRENT_TIMESTAMP)
+                """, programId.toString());
+        mockMvc.perform(post("/api/v1/admin/academic-structure/programs/{programId}/affiliations", programId)
+                        .with(writer()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"organizationUnitId\":\"" + publicFaculty + "\",\"siteId\":\""
+                                + publicRegionalSite + "\",\"displayOrder\":1,\"validFrom\":\"2026-01-01\","
+                                + "\"validThrough\":null,\"sourceReference\":\""
+                                + demoAffiliationReference + "\"}"))
+                .andExpect(status().isCreated());
+
+        // Act
+        MvcResult publicResult = mockMvc.perform(get("/api/v1/academic-structure"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.units.length()").value(3))
+                .andExpect(jsonPath("$.units[2].code").value("FAC-PUBLIC-NEAR-PREFIX"))
+                .andExpect(jsonPath("$.organizationRelations.length()").value(0))
+                .andExpect(jsonPath("$.sites.length()").value(1))
+                .andExpect(jsonPath("$.siteRelations.length()").value(0))
+                .andExpect(jsonPath("$.programAffiliations.length()").value(0))
+                .andReturn();
+        MvcResult adminResult = mockMvc.perform(get("/api/v1/admin/academic-structure")
+                        .with(jwt().authorities(new SimpleGrantedAuthority(READ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.units.length()").value(4))
+                .andExpect(jsonPath("$.organizationRelations.length()").value(1))
+                .andExpect(jsonPath("$.sites.length()").value(2))
+                .andExpect(jsonPath("$.siteRelations.length()").value(1))
+                .andExpect(jsonPath("$.programAffiliations.length()").value(1))
+                .andReturn();
+
+        // Assert
+        org.junit.jupiter.api.Assertions.assertFalse(
+                publicResult.getResponse().getContentAsString().contains("DEMO-"));
+        org.junit.jupiter.api.Assertions.assertTrue(
+                adminResult.getResponse().getContentAsString().contains("Facultad local de prueba"));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = 'UNIT_CREATED' AND source_reference = ?
+                """, Integer.class, demoFaculty.toString(), demoUnitReference));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_structure_audit_event
+                WHERE entity_id = ? AND action_key = 'SITE_CREATED' AND source_reference = ?
+                """, Integer.class, demoCentralSite.toString(), demoSiteReference));
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM academic_program_affiliation
+                WHERE program_id = ? AND source_reference = ?
+                """, Integer.class, programId.toString(), demoAffiliationReference));
+    }
+
+    @Test
     void authorized_operator_can_create_faculty_school_and_site_without_duplicate_labels() throws Exception {
         // Arrange
         UUID facultyId = createUnit("FAC-SCI", "FACULTY", "Facultad de Ciencias", 1);
@@ -1378,11 +1448,16 @@ class AcademicStructureControllerTest {
 
     private UUID createUnit(String code, String type, String name, int order,
                             String validFrom, String validThrough) throws Exception {
+        return createUnit(code, type, name, order, validFrom, validThrough, "Acuerdo");
+    }
+
+    private UUID createUnit(String code, String type, String name, int order,
+                            String validFrom, String validThrough, String sourceReference) throws Exception {
         String through = validThrough == null ? "null" : "\"" + validThrough + "\"";
         String body = "{\"code\":\"" + code + "\",\"type\":\"" + type + "\",\"displayName\":\""
                 + name + "\",\"displayOrder\":" + order
                 + ",\"validFrom\":\"" + validFrom + "\",\"validThrough\":" + through
-                + ",\"sourceReference\":\"Acuerdo\"}";
+                + ",\"sourceReference\":\"" + sourceReference + "\"}";
         MvcResult result = mockMvc.perform(post("/api/v1/admin/academic-structure/units")
                         .with(writer()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated()).andReturn();
@@ -1395,11 +1470,16 @@ class AcademicStructureControllerTest {
 
     private UUID createSite(String code, String type, String name, int order,
                             String validFrom, String validThrough) throws Exception {
+        return createSite(code, type, name, order, validFrom, validThrough, "Acuerdo");
+    }
+
+    private UUID createSite(String code, String type, String name, int order,
+                            String validFrom, String validThrough, String sourceReference) throws Exception {
         String through = validThrough == null ? "null" : "\"" + validThrough + "\"";
         String body = "{\"code\":\"" + code + "\",\"type\":\"" + type + "\",\"displayName\":\""
                 + name + "\",\"displayOrder\":" + order
                 + ",\"validFrom\":\"" + validFrom + "\",\"validThrough\":" + through
-                + ",\"sourceReference\":\"Acuerdo\"}";
+                + ",\"sourceReference\":\"" + sourceReference + "\"}";
         MvcResult result = mockMvc.perform(post("/api/v1/admin/academic-structure/sites")
                         .with(writer()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated()).andReturn();

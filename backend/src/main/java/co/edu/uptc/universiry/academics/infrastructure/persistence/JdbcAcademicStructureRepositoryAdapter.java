@@ -83,10 +83,13 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
         List<AcademicOrganizationUnit> units = jdbcTemplate.query("""
                 SELECT organization_unit_id, unit_code, unit_type, display_name, display_order, status,
                        valid_from, valid_through
-                FROM academic_organization_unit
-                WHERE status = 'ACTIVE' AND valid_from <= ? AND (valid_through IS NULL OR valid_through >= ?)
-                ORDER BY display_order, unit_type, unit_code
-                """, UNIT_MAPPER, asOf, asOf);
+                FROM academic_organization_unit u
+                WHERE u.status = 'ACTIVE' AND u.valid_from <= ?
+                  AND (u.valid_through IS NULL OR u.valid_through >= ?)
+                  AND %s
+                ORDER BY u.display_order, u.unit_type, u.unit_code
+                """.formatted(excludeExplicitDemoCreation("u.organization_unit_id", "UNIT_CREATED")),
+                UNIT_MAPPER, asOf, asOf);
         List<AcademicOrganizationRelation> organizationRelations = jdbcTemplate.query("""
                 SELECT r.parent_unit_id, r.child_unit_id, r.display_order, r.valid_from, r.valid_through
                 FROM academic_organization_relation r
@@ -96,14 +99,22 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                   AND p.valid_from <= ? AND (p.valid_through IS NULL OR p.valid_through >= ?)
                   AND c.valid_from <= ? AND (c.valid_through IS NULL OR c.valid_through >= ?)
                   AND r.valid_from <= ? AND (r.valid_through IS NULL OR r.valid_through >= ?)
+                  AND %s
+                  AND %s
                 ORDER BY p.display_order, p.unit_code, r.display_order, c.display_order, c.unit_code
-                """, ORGANIZATION_RELATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
+                """.formatted(
+                        excludeExplicitDemoCreation("p.organization_unit_id", "UNIT_CREATED"),
+                        excludeExplicitDemoCreation("c.organization_unit_id", "UNIT_CREATED")),
+                ORGANIZATION_RELATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
         List<AcademicSite> sites = jdbcTemplate.query("""
                 SELECT site_id, site_code, site_type, display_name, display_order, status, valid_from, valid_through
-                FROM academic_site
-                WHERE status = 'ACTIVE' AND valid_from <= ? AND (valid_through IS NULL OR valid_through >= ?)
-                ORDER BY display_order, site_type, site_code
-                """, SITE_MAPPER, asOf, asOf);
+                FROM academic_site s
+                WHERE s.status = 'ACTIVE' AND s.valid_from <= ?
+                  AND (s.valid_through IS NULL OR s.valid_through >= ?)
+                  AND %s
+                ORDER BY s.display_order, s.site_type, s.site_code
+                """.formatted(excludeExplicitDemoCreation("s.site_id", "SITE_CREATED")),
+                SITE_MAPPER, asOf, asOf);
         List<AcademicSiteRelation> siteRelations = jdbcTemplate.query("""
                 SELECT r.parent_site_id, r.child_site_id, r.display_order, r.valid_from, r.valid_through
                 FROM academic_site_relation r
@@ -113,8 +124,13 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                   AND p.valid_from <= ? AND (p.valid_through IS NULL OR p.valid_through >= ?)
                   AND c.valid_from <= ? AND (c.valid_through IS NULL OR c.valid_through >= ?)
                   AND r.valid_from <= ? AND (r.valid_through IS NULL OR r.valid_through >= ?)
+                  AND %s
+                  AND %s
                 ORDER BY p.display_order, p.site_code, r.display_order, c.display_order, c.site_code
-                """, SITE_RELATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
+                """.formatted(
+                        excludeExplicitDemoCreation("p.site_id", "SITE_CREATED"),
+                        excludeExplicitDemoCreation("c.site_id", "SITE_CREATED")),
+                SITE_RELATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
         List<AcademicProgramAffiliation> affiliations = jdbcTemplate.query("""
                 SELECT a.affiliation_id, a.program_id, a.organization_unit_id, a.site_id,
                        a.display_order, a.valid_from, a.valid_through, a.source_reference
@@ -126,9 +142,27 @@ public class JdbcAcademicStructureRepositoryAdapter implements AcademicStructure
                   AND u.valid_from <= ? AND (u.valid_through IS NULL OR u.valid_through >= ?)
                   AND s.valid_from <= ? AND (s.valid_through IS NULL OR s.valid_through >= ?)
                   AND a.valid_from <= ? AND (a.valid_through IS NULL OR a.valid_through >= ?)
+                  AND a.source_reference NOT LIKE 'DEMO-%%'
+                  AND %s
+                  AND %s
                 ORDER BY a.display_order, p.program_code, p.academic_level, p.study_modality, p.campus_code
-                """, AFFILIATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
+                """.formatted(
+                        excludeExplicitDemoCreation("u.organization_unit_id", "UNIT_CREATED"),
+                        excludeExplicitDemoCreation("s.site_id", "SITE_CREATED")),
+                AFFILIATION_MAPPER, asOf, asOf, asOf, asOf, asOf, asOf);
         return new AcademicStructureSnapshot(units, organizationRelations, sites, siteRelations, affiliations);
+    }
+
+    private static String excludeExplicitDemoCreation(String entityIdColumn, String actionKey) {
+        return """
+                NOT EXISTS (
+                    SELECT 1
+                    FROM academic_structure_audit_event e
+                    WHERE e.entity_id = %s
+                      AND e.action_key = '%s'
+                      AND e.source_reference LIKE 'DEMO-%%'
+                )
+                """.formatted(entityIdColumn, actionKey);
     }
 
     @Override

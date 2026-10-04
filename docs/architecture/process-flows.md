@@ -430,7 +430,8 @@ sequenceDiagram
   and estructura académica pública
     UI->>StructureAPI: GET /api/v1/academic-structure
     StructureAPI->>DB: lee unidades, lugares y afiliaciones vigentes ordenadas
-    DB-->>StructureAPI: relaciones vigentes por fecha institucional
+    DB-->>StructureAPI: snapshot vigente excluyendo origen explícito DEMO-
+    Note over StructureAPI,DB: filtra entidades con auditoría de alta DEMO- y afiliaciones con referencia DEMO-; la vista administrativa conserva filas y auditoría
     StructureAPI-->>UI: snapshot público, sin la línea temporal administrativa
   end
   UI->>UI: resuelve unidad y lugar por programId; omite facultad/sede del CSV
@@ -1201,6 +1202,9 @@ sequenceDiagram
   API->>DB: consulta vínculos del directorio y asignaciones por user_id
   DB-->>API: userId, subjects opacos y roles/ámbitos
   API-->>UI: resultados mínimos; seleccionar/query por userId, sin correo ni perfil personal
+  alt La página llega al tope de 100 coincidencias
+    UI-->>Operator: avisa que muestra las primeras 100 y pide afinar el prefijo
+  end
   opt Concesión o revocación autorizada
     Operator->>UI: confirma perfil, ámbito, vigencia y referencia
     UI->>API: POST asignación o PATCH revocación con versión esperada
