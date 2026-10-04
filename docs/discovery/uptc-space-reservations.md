@@ -24,6 +24,17 @@ La vista enlaza únicamente a los canales y normas publicados y explica que la v
 | Break Room de personal administrativo | [Comunicado UPTC sobre el Break Room](https://www.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-invierte-en-comodidad-y-productividad-para-sus-funcionarios-con-el-nuevo-Break-Room/) | El uso se gestiona con una solicitud previa a Talento Humano indicando motivo, fecha y hora; se menciona coordinación entre Talento Humano, Bienestar y Planeación y un formato de ingreso/salida. | Es un recurso de uso interno con autoridad local publicada. No extender esta política a visitantes, aulas, bibliotecas o alquiler externo. |
 | Aulas de informática | [Catálogo de servicios DTIC](https://www.uptc.edu.co/sitio/portal/sitios/universidad/rectoria/dtics/04_catserv/aulas.html) | La asignación semestral de aulas de informática se canaliza por Mesa de Servicio. | No define el proceso completo de horarios de clase, programación de salones ordinarios ni asignación de cupos por grupo. Requiere el inventario de servicios actual de DTIC. |
 
+## Revalidación de ubicación de Música — 2026-10-03
+
+La búsqueda de fuentes oficiales de UPTC consultada el 3 de octubre de 2026 conserva dos descripciones distintas:
+
+- El [comunicado del 24 de marzo de 2026 sobre la Biblioteca de Música y la sala de estudio](https://www.uptc.edu.co/sitio/mercury-demo/detail-pages/article/Escuela-de-Musica-de-la-UPTC-estrena-biblioteca-y-sala-de-estudio-nuevos-espacios-para-la-formacion-y-la-creacion-artistica/) ubica las áreas en el segundo piso del Edificio de Música. Anuncia por separado una zona teórico-histórica con capacidad para 30 estudiantes, atención central para 8 usuarios y una sala de estudio para 25 estudiantes.
+- La [página de Biblioteca Presencial](https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/bibl/4_bpd/blbl_pres.html) indexada en la misma consulta todavía ubica la Biblioteca Especializada en Música en el primer piso. La página no declara una fecha de actualización para este dato.
+
+La consulta directa de ambas URL devolvió HTTP 502 durante esta revalidación. Por tanto, el contraste se basa en el texto indexado de los dominios oficiales, no en una lectura directa completada ni en una confirmación de la unidad responsable. La página de pruebas de admisión que también menciona el primer piso se refiere al lugar de una prueba, no a la biblioteca, y no resuelve la discrepancia.
+
+La ubicación definitiva sigue sin confirmar. Las capacidades citadas son datos anunciados por el comunicado: no son cupos actuales, disponibilidad ni autorización de reserva. No inferir dirección postal, coordenadas, accesibilidad o recorrido interior a partir de estas fuentes.
+
 ## Flujo preliminar por familia
 
 ```mermaid
