@@ -10,7 +10,7 @@
     },
     {
       "id": "separate-socioeconomic-support",
-      "status": "verified-locally",
+      "status": "published-verified",
       "acceptance": "The public student services page has a separate official link for socioeconomic support and clearly identifies the visible source update date without claiming current availability."
     },
     {
@@ -20,7 +20,7 @@
     },
     {
       "id": "sync-backend-submodule",
-      "status": "pending-push",
+      "status": "published-verified",
       "acceptance": "Backend develop points to the published frontend develop SHA and backend verification passes before its fast-forward push."
     },
     {

@@ -38,7 +38,8 @@ No se integran migraciones de datos, expedientes, matrícula, selección de aspi
 ## Estado de ejecución
 
 - Frontend: el commit `bda3a2b61419bb5472b49fc1a5000986044636a4` está publicado en `Universiry-frontend/develop`; `git ls-remote` confirmó ese SHA. Suite Vitest (489 pruebas), 26 verificaciones Node, lint y build pasaron antes del push.
+- Frontend CI: run `37173565892` terminó `success` en `develop`.
 - Preview local: Compose responde en `http://localhost:5175`; el módulo Vite actualizado responde por HTTP 200. La vista es una previsualización local, no un despliegue institucional.
-- Backend: falta confirmar en el commit de integración el gitlink al SHA frontend publicado y los documentos de alcance/procedencia. Maven `verify` pasó en Java 25 con 412 pruebas, 0 fallos y 13 omitidas; 8 contratos MySQL se ejecutan en CI.
-- CI remoto: pendiente de consultar para los SHA publicados.
-- La verificación Git de Harness aún apunta al checkout registrado del proyecto y no encontró el commit del worktree activo. Se conserva la evidencia directa de GitHub y se continúa con la integración autorizada.
+- Backend: el commit `218c64e698be173b7b2f8c569a4cf4afe3f39863` está publicado en `Universiry-backend/develop`; su gitlink `frontend` apunta a `bda3a2b61419bb5472b49fc1a5000986044636a4`. Maven `verify` pasó en Java 25 con 412 pruebas, 0 fallos y 13 omitidas; 8 contratos MySQL corren en CI.
+- Backend CI: run `37173669032` terminó `success` con los contratos MySQL.
+- Harness verificó el SHA backend en `origin/develop`; la verificación del SHA frontend desde el root de backend no aplica al repositorio submódulo. Ambos SHA también se confirmaron directamente con `git ls-remote`.
