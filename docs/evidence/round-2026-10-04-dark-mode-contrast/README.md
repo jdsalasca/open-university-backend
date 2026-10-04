@@ -36,9 +36,12 @@ que es lo que exige el arreglo de accesibilidad. El presupuesto sigue cuadrando 
 
 ## Lo que esta ronda no cubre
 
-Las rutas `/#avisos`, `/#avisos-admin` y `/#biblioteca` requieren sesión institucional y no se
-pudieron medir sin el preview local autenticado. Ningún perfil concede todavía
-`notices:read/write` ni `library:read/write`, así que su estado en modo oscuro sigue sin
-verificar. El CLS de `/#programas` y la auditoría de la vista previa del Centro de Identidad
-Visual quedan como trabajo aparte: el texto principal de la vista previa usa los colores que
-publica el centro, no los del tema.
+Las rutas `/#avisos`, `/#avisos-admin` y `/#biblioteca` quedaron fuera de esta medición. La
+ronda siguiente lo corrige: el perfil `local-preview` concede los 18 permisos, así que esas
+tres rutas sí son auditables en local. Ver
+[`../round-2026-10-04-authenticated-routes/`](../round-2026-10-04-authenticated-routes/),
+donde se miden con 0 elementos bajo 4.5:1.
+
+Siguen pendientes el CLS de `/#programas` y la auditoría de la vista previa del Centro de
+Identidad Visual, cuyo texto principal usa los colores que publica el centro y no los del
+tema.
