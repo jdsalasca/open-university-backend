@@ -1,12 +1,12 @@
-# Universiry — checkout de integración
+# Universiry — Open University, checkout de integración
 
-Plataforma institucional UPTC en desarrollo. El frontend y el backend viven en repositorios privados independientes, con ramas `develop` coordinadas. Este repositorio contiene el backend Spring Boot, `compose.yaml`, documentación y el frontend como submódulo para desarrollo local.
+Plataforma para apoyar la digitalización de la UPTC y de otras universidades mediante servicios digitales robustos y confiables. El código se publica en dos repositorios coordinados: [`open-university-frontend`](https://github.com/jdsalasca/open-university-frontend) y [`open-university-backend`](https://github.com/jdsalasca/open-university-backend), ambos con `develop` como rama de integración. Este repositorio contiene el backend Spring Boot, `compose.yaml`, documentación y el frontend como submódulo para desarrollo local. La publicación del código no acredita aprobación institucional ni habilita datos o trámites reales.
 
 ## Clonar y levantar
 
 ```powershell
-gh repo clone jdsalasca/Universiry-backend
-Set-Location Universiry-backend
+gh repo clone jdsalasca/open-university-backend
+Set-Location open-university-backend
 git switch develop
 git submodule update --init --recursive
 docker compose up --build -d --wait
@@ -44,7 +44,7 @@ En `/#academia`, el panel protegido administra grupos en borrador para un period
 ## Estructura
 
 - `backend/`: Java 25 y Spring Boot; `.sdkmanrc` fija `25.0.4-tem` para el entorno host.
-- `frontend/`: submódulo al repositorio `Universiry-frontend`, Vite, React, TypeScript y SCSS.
+- `frontend/`: submódulo al repositorio `open-university-frontend`, Vite, React, TypeScript y SCSS.
 - `compose.yaml`: servicios locales frontend, backend y MySQL 8.4 con Compose Watch.
 - `docs/`: cronograma, alcance, modelo de datos, procesos, arquitectura C4 y runbooks.
 

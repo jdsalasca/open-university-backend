@@ -10,9 +10,9 @@ Lee `docs/PROJECT.md` para la misión, visión, objetivo, ficha técnica y prior
 
 ## Arquitectura acordada
 
-- Dos repositorios Git privados y coordinados: `Universiry-frontend` contiene el monolito Vite/React/TypeScript y `Universiry-backend` contiene el monolito Java/Spring Boot, Compose, SDKMAN y la documentación de integración. Ambos usan `develop` como rama de integración.
+- Dos repositorios Git públicos y coordinados: `open-university-frontend` contiene el monolito Vite/React/TypeScript y `open-university-backend` contiene el monolito Java/Spring Boot, Compose, SDKMAN y la documentación de integración. Ambos usan `develop` como rama de integración. La visibilidad pública del código no habilita datos ni operación institucional.
 - Política de ramas remotas: conserva únicamente `origin/develop` en ambos repositorios. No crees ni publiques ramas de funcionalidad ni PRs; si se necesita aislamiento local, usa un worktree detached iniciado desde `origin/develop`. Publica solo mediante fast-forward a `develop` con autorización explícita del usuario y verificación del SHA remoto.
-- El checkout de backend incorpora `Universiry-frontend` como submódulo en `frontend/` para que `compose.yaml` levante las dos aplicaciones y MySQL desde una carpeta. Actualizar el submódulo después de integrar cambios del frontend.
+- El checkout de backend incorpora `open-university-frontend` como submódulo en `frontend/` para que `compose.yaml` levante las dos aplicaciones y MySQL desde una carpeta. Actualizar el submódulo después de integrar cambios del frontend.
 - Backend monolítico modular organizado por capacidades del negocio. No introducir microservicios, brokers ni duplicación de bases de datos sin una decisión arquitectónica aprobada y evidencia de necesidad.
 - MySQL es la base relacional objetivo. Flyway versiona el esquema; la aplicación nunca crea ni actualiza el esquema en producción.
 - Los módulos se comunican mediante contratos internos explícitos. Las reglas de negocio viven en el backend; el frontend solo ofrece validación temprana de experiencia.

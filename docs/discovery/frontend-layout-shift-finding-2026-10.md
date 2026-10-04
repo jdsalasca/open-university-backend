@@ -1,6 +1,6 @@
 # Hallazgo: desplazamiento de diseño (CLS) en `/#programas`
 
-Fecha: 2026-10-03. Autor: agente OpenCode. Estado: **abierto, requiere decisión de producto**.
+Fecha: 2026-10-03. Estado: **abierto, requiere decisión de producto**.
 
 ## Qué se observó
 

@@ -21,7 +21,7 @@ Avanzar hacia una plataforma universitaria coherente que pueda reemplazar sistem
 | Institución objetivo | Universidad Pedagógica y Tecnológica de Colombia (UPTC) |
 | Nombre de trabajo | Universiry |
 | Objetivo | Unificar gradualmente servicios de la vida universitaria y reemplazar sistemas por dominio, tras inventario, contratos y aceptación institucional |
-| Repositorios | `jdsalasca/Universiry-frontend` y `jdsalasca/Universiry-backend`; ambos integran en `develop`. El backend contiene el frontend como submódulo para Compose local. |
+| Repositorios | `jdsalasca/open-university-frontend` y `jdsalasca/open-university-backend`; ambos publican el código e integran en `develop`. El backend contiene el frontend como submódulo para Compose local. |
 | Frontend | Monolito Vite, React, TypeScript y SCSS; pruebas Vitest con AAA; catálogo público y navegación separados de operaciones protegidas. |
 | Backend | Monolito modular Spring Boot sobre Java 25 administrado por SDKMAN; contratos/interfaces de aplicación, pruebas AAA, i18n y migraciones Flyway. |
 | Persistencia | MySQL objetivo con esquema versionado. La metadata pública de directorios informativos se conserva como contenido atribuido; no se carga como maestro institucional. |
@@ -36,7 +36,7 @@ Completar el descubrimiento del proceso de inscripción y selección de aspirant
 
 ## Decisiones confirmadas
 
-- Dos repositorios privados coordinados: `Universiry-frontend` (monolito Vite/React/TypeScript) y `Universiry-backend` (monolito Java/Spring Boot). Ambos integran en `develop`.
+- Dos repositorios públicos coordinados: `open-university-frontend` (monolito Vite/React/TypeScript) y `open-university-backend` (monolito Java/Spring Boot). Ambos integran en `develop`.
 - Integración remota solo en `develop`: no crear ramas de funcionalidad ni PRs; aislar cambios locales en worktrees detached desde `origin/develop`. Un push requiere autorización explícita, verificación y avance fast-forward.
 - El checkout backend incluye el frontend como submódulo para alojar el Compose local que levanta frontend, backend y MySQL. Esta relación de checkout no comparte código fuente ni despliegues entre las aplicaciones.
 - Frontend: Vite, React y TypeScript.

@@ -45,7 +45,7 @@ El API no devuelve actor, ruta física, MIME no validado ni historial de auditor
 ## Requisitos de calidad
 
 - Java 25, SDKMAN, Spring Boot estable compatible con Java 25; la versión se fija junto con Maven Wrapper.
-- Dos monolitos desplegables independientemente en repositorios privados `Universiry-frontend` y `Universiry-backend`, ramas `develop`.
+- Dos monolitos desplegables independientemente en repositorios públicos `open-university-frontend` y `open-university-backend`, ramas `develop`. El código público no habilita datos ni operación institucional.
 - Compose local levanta frontend, backend y MySQL; no se usa como manifiesto productivo.
 - El backend sirve bundles es-CO por defecto e inglés al negociar `Accept-Language`.
 - TDD/AAA obligatorio en reglas, API, persistencia, seguridad, validación de activos y UI.

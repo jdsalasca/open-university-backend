@@ -1,7 +1,6 @@
 # Directorio público de servicios UPTC — plan
 
 - **Fecha:** 2026-10-02 (America/Bogota)
-- **Task:** `task_72c166de-990a-41f2-95e2-1e10a22bdf2c`
 **Baseline:** backend develop `be32fbd`; frontend develop `4f875f6`.
 
 ## Objetivo

@@ -1245,8 +1245,8 @@ El encabezado `Accept-Language` elige el bundle del backend; sin preferencia, se
 ```mermaid
 flowchart TD
   Dev[Push o pull request a develop]
-  Dev --> FrontRepo[Repositorio Universiry-frontend]
-  Dev --> BackRepo[Repositorio Universiry-backend]
+  Dev --> FrontRepo[Repositorio open-university-frontend]
+  Dev --> BackRepo[Repositorio open-university-backend]
   FrontRepo --> CheckoutFront[Checkout de solo lectura]
   CheckoutFront --> Node[Node 24 y npm ci]
   Node --> FrontTests[npm test]

@@ -1,47 +1,37 @@
-# Coordinación entre agentes
+# Coordinación de contribuciones
 
-Espejo humano commiteado del protocolo de trabajo multi-agente. Sirve cuando un agente
-(por ejemplo Luna) no tiene acceso al MCP Harness Moon. **Harness Moon es la fuente
-volátil**; este documento es el contrato estable de convivencia.
+Este documento conserva convenciones técnicas estables. Harness Moon es el registro de
+tareas, asignaciones, bloqueos y checkpoints; no copies aquí identificadores personales,
+detalles de sesión, rutas locales ni evidencia de ejecución.
 
-## Reglas anti-colisión
+## Reglas de colaboración
 
-1. **Un responsable = un worktree detached desde `origin/develop`.** No se crean ramas de
-   funcionalidad ni PRs. La única rama remota es `develop`; los commits verificados se
-   publican con fast-forward a esa rama solo después de autorización explícita del usuario.
-2. **Claim por carpeta.** Reclama tu ámbito antes de editar: OpenCode reclama `backend/`
-   e infraestructura; Luna reclama `frontend/` y `frontend/.../features`. No editar
-   archivos fuera del claim activo.
-3. **Serializar hot-files.** Estos archivos los toca **un solo agente a la vez**, nunca en
-   paralelo: `AGENTS.md`, `docs/ROADMAP.md`, `docs/architecture/c4.md`,
-   `docs/architecture/process-flows.md`, `compose.yaml`, `.github/workflows/ci.yml`.
-   Si otro los está tocando, espera o pide handoff.
-4. **Orden de integración frontend-gitlink-primero.** Se integra primero el `frontend`
-   (submódulo/gitlink) y luego se actualiza el gitlink en el repo padre. El orden inverso
-   deja el padre apuntando a un commit inexistente.
-5. **Gate de revisión local.** Antes del commit, revisa `git status -sb`, `git diff --check`
-   y el diff staged; incluye solo archivos del ámbito reclamado y excluye secretos y
-   artefactos generados. Después del commit, verifica estado limpio, fast-forward y SHA de
-   `origin/develop`.
+1. Registra en Harness el objetivo, alcance, archivos esperados y criterios verificables
+   antes de reclamar trabajo. Un agente trabaja solo dentro de las rutas asignadas.
+2. Mantén los cambios en `develop`; no publiques ramas de funcionalidad ni PRs. Usa un
+   worktree local cuando se requiera aislamiento y sigue el flujo de integración autorizado.
+3. Serializa los archivos compartidos: `AGENTS.md`, `docs/ROADMAP.md`,
+   `docs/architecture/c4.md`, `docs/architecture/process-flows.md`, `compose.yaml`,
+   `.gitmodules` y `.github/workflows/ci.yml`.
+4. Integra frontend antes de actualizar el gitlink backend. El repositorio backend debe
+   apuntar a un commit frontend ya alcanzable desde `origin/develop`.
+5. Antes de integrar, revisa `git status -sb`, `git diff --check`, el diff staged, las
+   pruebas aplicables y la documentación que corresponda. Excluye secretos y artefactos
+   generados.
 
-## Ownership
+## Límites por capacidad
 
-| Agente | Ámbito | No toca |
+| Capacidad | Rutas principales | Regla |
 | --- | --- | --- |
-| Responsable actual | Ámbito | Estado |
-| --- | --- | --- |
-| Codex | `frontend/` y documentación de `backend/`; sin cambios de dominio backend | Solo esta integración secuencial; el siguiente trabajo se reclama en Harness |
+| Frontend | `frontend/src/features/` | React presenta contratos; permisos y decisiones se validan en backend. |
+| Backend | `backend/src/main/` y `backend/src/test/` | Dominio y casos de uso no dependen del framework; toda escritura autorizada y auditable. |
+| Arquitectura y operación | `docs/`, `compose.yaml`, `.gitmodules` | Actualiza diagramas si cambian límites, procesos, integraciones o datos. |
 
-## Sincronización con Harness Moon (sin duplicar estado)
+## Integración
 
-Harness es la fuente volátil de verdad; este espejo solo refleja el protocolo y el reparto.
-Reglas de sincronización:
+1. Publica primero el commit de frontend en `develop`.
+2. Actualiza el gitlink del submódulo en backend.
+3. Publica backend en `develop` y verifica ambos SHA remotos y sus CI.
 
-- **Handoff**: al cerrar una sesión, escribe el handoff en Harness y refleja la fila en
-  `active-tasks.md` (resumen, no copia de estado).
-- **Tasks**: el detalle de tareas/contratos vive en Harness; aquí solo va dueño, ámbito,
-  rama y bloqueos. No dupliques criterios de aceptación.
-- **Checkpoint**: guarda el checkpoint en Harness; en `active-tasks.md` actualiza estado y
-  "siguiente acción" de una línea.
-- Si Harness no está disponible para Luna, `active-tasks.md` es la única entrada manual y
-  debe reconciliarse al reconectar con Harness (Harness gana en conflicto).
+El estado de ejecución y los responsables activos se consultan en Harness Moon, no en
+este repositorio.

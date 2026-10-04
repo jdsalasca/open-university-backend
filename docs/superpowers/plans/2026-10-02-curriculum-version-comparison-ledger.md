@@ -26,9 +26,8 @@ Plan: [implementation plan](2026-10-02-curriculum-version-comparison.md)
 | Compose backend `/actuator/health` | `UP` |
 | Temporary contract database | stopped and removed; port 3317 verified closed; preview Compose database was not modified |
 
-## Coordination and integration
+## Coordination boundary
 
-- Harness project `project_2ac92f98-5605-4135-8c27-cee6d7144655`; requested task `task_be561bb9-9654-4554-b8fd-bf4382f0eea4`.
-- The Harness agent is assigned to a different task, and the curriculum task remains in `planning`; a claim was rejected because of the existing assignment, and `validation` evidence was rejected as out of phase. The unrelated Library task was left untouched. Harness has the plan evidence; implementation and validation continue independently until the task's ownership/phase is reconciled.
-- The current user-provided `AGENTS.md` forbids branch switching, merge and push without fresh approval. Work remains on its existing isolated feature branches. Local commits can be created and recorded; remote integration remains pending.
-- No official curriculum records, personal data, institutional rule changes or production cutover were used.
+Harness Moon stores task ownership, assignments and checkpoints. This historical ledger
+keeps only technical verification evidence. No official curriculum records, personal
+data, institutional rule changes or production cutover were used.
