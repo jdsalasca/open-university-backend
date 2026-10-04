@@ -1,8 +1,10 @@
 # Riesgos de integración
 
-- **Contenido cambiante:** las páginas UPTC pueden modificar texto, servicios o fechas. Conservar URL oficial y fecha de actualización visible; no deducir disponibilidad.
-- **Reglas institucionales:** no convertir un enlace público en elegibilidad, cupo, beneficio vigente, selección, matrícula o dato personal.
-- **Fuentes locales obsoletas:** el checkout fuente está muy detrás de `develop`; aplicar cambios puntuales solo después de comparar su comportamiento con el código remoto actual.
-- **Artefactos efímeros:** Harness local, capturas de Playwright, resultados de ejecución y trazas no son archivos de producto y no se suben.
-- **Integración entre repositorios:** publicar frontend primero y actualizar el gitlink backend después; verificar el SHA remoto antes del segundo push.
-- **Interrupción o rechazo remoto:** no usar force push ni crear una rama como atajo. Releer el remoto, reconciliar el avance y conservar los checkouts locales.
+- **Implementaciones locales desfasadas:** los checkouts antiguos están entre 51 y 80 commits detrás de sus `origin/develop` actuales. Sus copias pueden retirar mejoras recientes o romper contratos; comparar por archivo antes de portar.
+- **Artefactos efímeros:** `.harness-moon`, `.playwright-mcp`, capturas, registros, resultados de ejecución y trazas locales no forman parte del producto y no se suben.
+- **Datos institucionales no validados:** un enlace público no prueba elegibilidad, disponibilidad, reglas, cupos, autorización para automatizar ni designación de un área propietaria. Mantener el directorio como informativo.
+- **Información personal:** no incorporar identidad, horarios, notas, expedientes ni datos de aspirantes o estudiantes reales en código, pruebas, capturas o logs.
+- **Contenido que cambia:** conservar la fuente institucional y describir solo lo que respalda; la fecha de consulta no equivale a la actualización de la página.
+- **Integración coordinada:** publicar frontend primero, actualizar el gitlink después y confirmar ambos SHAs remotos y las CI asociadas.
+- **Trabajo local preservado:** existen archivos modificados y no seguidos en los checkouts antiguos. No hacer reset, limpieza masiva ni commit global mientras no se concilie cada cambio.
+- **Preview local:** Compose y Compose Watch solo respaldan la revisión de desarrollo. No representan despliegue, seguridad de producción, rendimiento institucional ni aceptación UPTC.

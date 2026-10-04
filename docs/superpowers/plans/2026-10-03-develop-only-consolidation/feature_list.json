@@ -6,27 +6,37 @@
     {
       "id": "keep-current-remote-capabilities",
       "status": "covered",
-      "acceptance": "Curriculum comparison, public undergraduate directory, workspace home, and the current student services directory remain at the newest remote develop versions."
+      "acceptance": "Curriculum comparison, public undergraduate directory, workspace home, and current student services behavior remain at the newest remote develop versions."
     },
     {
-      "id": "separate-socioeconomic-support",
+      "id": "expand-public-student-services",
       "status": "published-verified",
-      "acceptance": "The public student services page has a separate official link for socioeconomic support and clearly identifies the visible source update date without claiming current availability."
+      "acceptance": "The student services route links to official UPTC sources for UPTC Conecta, SIRA/Campus Virtual, student subject-registration options, and the undergraduate calendar without capturing credentials or personal academic data."
+    },
+    {
+      "id": "accessible-public-catalog-error",
+      "status": "published-verified",
+      "acceptance": "The initial public undergraduate directory load error is exposed through an accessible alert and covered by an AAA regression test."
     },
     {
       "id": "publish-frontend-first",
       "status": "published-verified",
-      "acceptance": "Frontend tests, lint, and build pass before a fast-forward push to origin/develop."
+      "acceptance": "Frontend tests, lint, build, and CI pass before its fast-forward push to origin/develop."
     },
     {
       "id": "sync-backend-submodule",
       "status": "published-verified",
-      "acceptance": "Backend develop points to the published frontend develop SHA and backend verification passes before its fast-forward push."
+      "acceptance": "Backend develop points to the published frontend develop SHA and backend CI passes before its fast-forward push."
     },
     {
       "id": "single-remote-branch",
-      "status": "verified-at-start",
+      "status": "verified",
       "acceptance": "Both GitHub remotes expose only refs/heads/develop."
+    },
+    {
+      "id": "preserve-and-reconcile-old-checkouts",
+      "status": "in-progress",
+      "acceptance": "Old worktrees remain unchanged; generated, obsolete, or conflicting changes are reviewed individually before any further integration."
     }
   ]
 }

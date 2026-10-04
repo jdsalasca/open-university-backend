@@ -1,45 +1,59 @@
 # Plan de reconciliación e integración en `develop`
 
-## Alcance
+## Objetivo
 
-Reconciliar los cambios sin commit del checkout local de Universiry con los HEAD remotos actuales. Integrar en las ramas `develop` de `Universiry-frontend` y `Universiry-backend` solo cambios útiles ausentes, sin crear ramas ni reemplazar implementaciones más recientes.
+Revisar el trabajo local pendiente de Universiry, incorporar a los dos repositorios `develop` las diferencias vigentes que aporten valor y conservar los cambios que aún requieran revisión. Integrar siempre el frontend primero y apuntar después el gitlink del backend a ese SHA. No publicar ramas adicionales, hacer force push ni reemplazar versiones actuales por copias antiguas.
 
-## Estado base
+## Reglas de alcance
 
-- Backend: `origin/develop` `bb844c881f215547071520519aaa719b4c85d824`.
-- Frontend: `origin/develop` `e7ad98eb88b67fcf59e2403235a9aef1d4a65f5a`.
-- Los remotos publican únicamente `develop`; el gitlink del backend apunta al SHA frontend indicado.
-- Los cambios locales de comparación curricular, catálogo de pregrado, portada y directorio base tienen equivalentes más recientes en `develop`.
-- Diferencia funcional pendiente elegida: separar el acceso público a apoyo socioeconómico del contenido general de Bienestar Virtual.
+- Usar los worktrees activos `develop` para integrar los cambios aceptados.
+- No editar, limpiar, resetear ni eliminar los checkouts antiguos mientras sus diferencias no estén conciliadas.
+- Excluir secretos, credenciales, `.harness-moon`, `.playwright-mcp`, capturas, resultados locales, trazas y archivos generados.
+- No incorporar reglas, datos personales, catálogos oficiales, selección, matrícula ni migraciones sin fuente, contrato y aprobación institucional verificables.
+- Cada cambio de código sigue TDD AAA y verificación del repositorio antes de commit y push.
 
-## Secuencia
+## Estado observado — 4 de octubre de 2026
 
-1. Mantener este plan y los riesgos en Harness Moon.
-2. Confirmar en fuentes UPTC el enlace, alcance informativo y fecha publicada del apoyo socioeconómico.
-3. Añadir primero pruebas AAA en el frontend `develop`; ejecutar el test focal y comprobar el fallo esperado.
-4. Modificar lo mínimo en la vista y sus pruebas. Mantener la búsqueda, filtros, atribución y límites de privacidad existentes.
-5. Añadir o actualizar la ficha de fuentes en backend y enlazarla desde la hoja de ruta.
-6. Ejecutar suite, lint y build frontend; `mvnw verify` y `git diff --check` en backend; revisar preview local.
-7. Commitear y hacer push fast-forward primero en frontend `develop`, luego actualizar y publicar el backend con el gitlink frontend.
-8. Verificar las referencias remotas y el estado de CI para ambos SHA. No crear ni publicar ramas adicionales.
+| Checkout | Estado activo | Diferencia del checkout antiguo |
+| --- | --- | --- |
+| Backend | `develop` `98950efbd13982d4d5058800ae1c5b1a24107126`, igual a `origin/develop` | `agent/coordination-espejo`: 80 commits detrás y 1 por delante; 16 cambios rastreados y 71 archivos sin seguimiento. |
+| Frontend | `develop` `16f3d81350d2bd4a1e2001ad5c95ed39575575b7`, igual a `origin/develop` | checkout `develop`: 51 commits detrás; 20 cambios rastreados y 21 archivos sin seguimiento. |
+
+Cada remoto anuncia solo `refs/heads/develop`. Los checkouts antiguos se mantienen preservados: no son un conjunto apto para commit en bloque, pues mezclan artefactos efímeros, documentación desfasada y copias anteriores de capacidades que ya evolucionaron en `develop`.
+
+## Entrega funcional integrada
+
+- Ampliar `/#estudiantes` de cinco a nueve fichas públicas con enlaces UPTC para UPTC Conecta, SIRA/Campus Virtual, opciones de inscripción de materias y calendario de pregrado. La página sigue siendo informativa: no consulta horarios/notas personales, no procesa inscripciones y no solicita credenciales.
+- Hacer accesible como `role="alert"` el error de la carga inicial del directorio público de pregrado.
+- Documentar las fuentes, su alcance editorial y los límites de interpretación en `docs/discovery/uptc-student-services-directory-2026-10.md`.
+
+## Secuencia verificada
+
+1. Comparar las implementaciones locales con las versiones vigentes de ambos `develop`; trasladar solo comportamiento útil que falte.
+2. Verificar pruebas AAA, lint y build del frontend; revisar el diff y excluir artefactos generados.
+3. Integrar el frontend mediante fast-forward en `develop` y confirmar el SHA remoto.
+4. Actualizar el gitlink y la documentación del backend; ejecutar su verificación CI y confirmar el SHA remoto.
+5. Mantener Compose y Compose Watch en preview local; comprobar HTTP y sincronización de archivos.
+6. Registrar los resultados y continuar la reconciliación por archivo, sin borrar los checkouts antiguos.
 
 ## Criterios de aceptación
 
-- La tarjeta de Bienestar Virtual no atribuye a esa ficha el catálogo de apoyo socioeconómico.
-- Una tarjeta propia enlaza la Línea de Apoyo Socioeconómico oficial y muestra su fecha visible de actualización como referencia de la página.
-- No se afirman elegibilidad, cupos, beneficios vigentes ni convocatoria abierta.
-- Las verificaciones frontend y backend pasan; el preview sigue identificándose como local.
-- Las referencias publicadas en los dos repositorios son `develop` y el gitlink backend coincide con el `develop` frontend.
+- Ambas referencias `origin/develop` coinciden con sus worktrees activos y el gitlink del backend coincide con `Universiry-frontend/develop`.
+- Las rutas nuevas apuntan a páginas institucionales HTTPS y no implican elegibilidad, vigencia, cupos, trámites ni acceso automatizado.
+- Las pruebas del directorio cubren consulta, enlaces y error accesible; la suite, lint y build completos del frontend pasan.
+- Backend CI pasa con su workflow normal; ningún dato personal o secreto se incorpora.
+- El preview sigue en `http://localhost:5175`, Compose Watch actualiza el contenedor y los archivos temporales de prueba quedan retirados.
+- Las únicas ramas remotas son `develop`; no se publica una rama ni se fuerza un ref.
 
-## Límites
+## Resultados observados
 
-No se integran migraciones de datos, expedientes, matrícula, selección de aspirantes, campos personales, secretos, capturas, logs ni snapshots del navegador. Los worktrees fuente permanecen intactos.
+- Frontend: commit `16f3d81350d2bd4a1e2001ad5c95ed39575575b7` publicado en `Universiry-frontend/develop`. `npm test`: 71 archivos y 491 pruebas aprobadas; `npm run lint` y `npm run build` terminaron con código 0.
+- Frontend CI: [run 37180088841](https://github.com/jdsalasca/Universiry-frontend/actions/runs/37180088841) terminó `success` para ese SHA.
+- Backend: commit `98950efbd13982d4d5058800ae1c5b1a24107126` publicado en `Universiry-backend/develop`; su gitlink apunta a `16f3d81350d2bd4a1e2001ad5c95ed39575575b7`.
+- Backend CI: [run 37180237877](https://github.com/jdsalasca/Universiry-backend/actions/runs/37180237877) terminó `success` para ese SHA.
+- Preview: Compose mantiene frontend, backend y MySQL en ejecución; `http://localhost:5175/` responde HTTP 200, backend reporta salud `UP` y MySQL aparece healthy. Compose Watch sincronizó el módulo actualizado; la sonda temporal se eliminó.
+- No cambió el diseño de componentes ni los límites entre servicios; C4 y diagramas de proceso no requieren modificación en este hito.
 
-## Estado de ejecución
+## Siguiente acción
 
-- Frontend: el commit `bda3a2b61419bb5472b49fc1a5000986044636a4` está publicado en `Universiry-frontend/develop`; `git ls-remote` confirmó ese SHA. Suite Vitest (489 pruebas), 26 verificaciones Node, lint y build pasaron antes del push.
-- Frontend CI: run `37173565892` terminó `success` en `develop`.
-- Preview local: Compose responde en `http://localhost:5175`; el módulo Vite actualizado responde por HTTP 200. La vista es una previsualización local, no un despliegue institucional.
-- Backend: el commit `218c64e698be173b7b2f8c569a4cf4afe3f39863` está publicado en `Universiry-backend/develop`; su gitlink `frontend` apunta a `bda3a2b61419bb5472b49fc1a5000986044636a4`. Maven `verify` pasó en Java 25 con 412 pruebas, 0 fallos y 13 omitidas; 8 contratos MySQL corren en CI.
-- Backend CI: run `37173669032` terminó `success` con los contratos MySQL.
-- Harness verificó el SHA backend en `origin/develop`; la verificación del SHA frontend desde el root de backend no aplica al repositorio submódulo. Ambos SHA también se confirmaron directamente con `git ls-remote`.
+Revisar individualmente los cambios pendientes del checkout antiguo y portar a `develop` solo aquellos que sigan siendo distintos, seguros, compatibles con los contratos vigentes y verificables. Mantener el resto preservado hasta resolver su procedencia o duplicación.
