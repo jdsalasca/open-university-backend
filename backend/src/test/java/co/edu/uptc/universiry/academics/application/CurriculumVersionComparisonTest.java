@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CurriculumVersionComparisonTest {
@@ -114,6 +115,96 @@ class CurriculumVersionComparisonTest {
         assertEquals(List.of(), comparison.unchangedSamples());
     }
 
+    @Test
+    void rejects_a_reference_that_is_not_published() {
+        // Arrange
+        ValidatedCurriculum incoming = incoming(List.of(incomingEntry("SUB-1", "Álgebra", "3", 1, 1)));
+        AcademicCurriculumDetails draft = reference(
+                "PRG-TEST", AcademicLevel.PREGRADO, StudyModality.PRESENCIAL, "TUNJA",
+                AcademicCurriculumStatus.DRAFT, 1, null,
+                List.of(referenceEntry("SUB-1", "Álgebra", "3", 1, 1)));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class, () -> CurriculumVersionComparison.compare(incoming, draft));
+    }
+
+    @Test
+    void rejects_a_published_reference_without_its_publication_timestamp() {
+        // Arrange
+        ValidatedCurriculum incoming = incoming(List.of(incomingEntry("SUB-1", "Álgebra", "3", 1, 1)));
+        AcademicCurriculumDetails missingTimestamp = reference(
+                "PRG-TEST", AcademicLevel.PREGRADO, StudyModality.PRESENCIAL, "TUNJA",
+                AcademicCurriculumStatus.PUBLISHED, 1, null,
+                List.of(referenceEntry("SUB-1", "Álgebra", "3", 1, 1)));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> CurriculumVersionComparison.compare(incoming, missingTimestamp));
+    }
+
+    @Test
+    void rejects_a_reference_for_another_program_identity() {
+        // Arrange
+        ValidatedCurriculum incoming = incoming(List.of(incomingEntry("SUB-1", "Álgebra", "3", 1, 1)));
+        AcademicCurriculumDetails otherCampus = reference(
+                "PRG-TEST", AcademicLevel.PREGRADO, StudyModality.PRESENCIAL, "SOGAMOSO",
+                AcademicCurriculumStatus.PUBLISHED, 1, PUBLISHED_AT,
+                List.of(referenceEntry("SUB-1", "Álgebra", "3", 1, 1)));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> CurriculumVersionComparison.compare(incoming, otherCampus));
+    }
+
+    @Test
+    void rejects_a_reference_with_another_program_code() {
+        // Arrange
+        ValidatedCurriculum incoming = incoming(List.of(incomingEntry("SUB-1", "Álgebra", "3", 1, 1)));
+        AcademicCurriculumDetails otherProgram = reference(
+                "PRG-OTHER", AcademicLevel.PREGRADO, StudyModality.PRESENCIAL, "TUNJA",
+                AcademicCurriculumStatus.PUBLISHED, 1, PUBLISHED_AT,
+                List.of(referenceEntry("SUB-1", "Álgebra", "3", 1, 1)));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> CurriculumVersionComparison.compare(incoming, otherProgram));
+    }
+
+    @Test
+    void rejects_a_reference_when_its_declared_entry_count_does_not_match_its_detail() {
+        // Arrange
+        ValidatedCurriculum incoming = incoming(List.of(incomingEntry("SUB-1", "Álgebra", "3", 1, 1)));
+        AcademicCurriculumDetails inconsistent = reference(
+                "PRG-TEST", AcademicLevel.PREGRADO, StudyModality.PRESENCIAL, "TUNJA",
+                AcademicCurriculumStatus.PUBLISHED, 2, PUBLISHED_AT,
+                List.of(referenceEntry("SUB-1", "Álgebra", "3", 1, 1)));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> CurriculumVersionComparison.compare(incoming, inconsistent));
+    }
+
+    @Test
+    void rejects_duplicate_subject_codes_after_normalization_on_either_side() {
+        // Arrange
+        ValidatedCurriculum duplicateIncoming = incoming(List.of(
+                incomingEntry("SUB-1", "Álgebra", "3", 1, 1),
+                incomingEntry(" sub-1 ", "Álgebra", "3", 1, 2)));
+        AcademicCurriculumDetails singleReference = reference(List.of(
+                referenceEntry("SUB-1", "Álgebra", "3", 1, 1)));
+        ValidatedCurriculum singleIncoming = incoming(List.of(
+                incomingEntry("SUB-1", "Álgebra", "3", 1, 1)));
+        AcademicCurriculumDetails duplicateReference = reference(List.of(
+                referenceEntry("SUB-1", "Álgebra", "3", 1, 1),
+                referenceEntry(" sub-1 ", "Álgebra", "3", 1, 2)));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> CurriculumVersionComparison.compare(duplicateIncoming, singleReference));
+        assertThrows(IllegalArgumentException.class,
+                () -> CurriculumVersionComparison.compare(singleIncoming, duplicateReference));
+    }
+
     private static ValidatedCurriculum incoming(List<ValidatedCurriculumEntry> entries) {
         return new ValidatedCurriculum(new ValidatedProgram("PRG-TEST", AcademicLevel.PREGRADO,
                 StudyModality.PRESENCIAL, "12345", "Programa de prueba", "Facultad sintética", "TUNJA", "Tunja"),
@@ -121,11 +212,25 @@ class CurriculumVersionComparisonTest {
     }
 
     private static AcademicCurriculumDetails reference(List<AcademicCurriculumEntrySummary> entries) {
-        CurriculumSummary summary = new CurriculumSummary(UUID.randomUUID(), UUID.randomUUID(), "PRG-TEST",
-                AcademicLevel.PREGRADO, StudyModality.PRESENCIAL, "TUNJA", "Programa de prueba",
+        return reference("PRG-TEST", AcademicLevel.PREGRADO, StudyModality.PRESENCIAL, "TUNJA",
+                AcademicCurriculumStatus.PUBLISHED, entries.size(), PUBLISHED_AT, entries);
+    }
+
+    private static AcademicCurriculumDetails reference(
+            String programCode,
+            AcademicLevel level,
+            StudyModality modality,
+            String campusCode,
+            AcademicCurriculumStatus status,
+            int declaredEntryCount,
+            Instant publishedAt,
+            List<AcademicCurriculumEntrySummary> entries
+    ) {
+        CurriculumSummary summary = new CurriculumSummary(UUID.randomUUID(), UUID.randomUUID(), programCode,
+                level, modality, campusCode, "Programa de prueba",
                 "Facultad sintética", "Tunja", "V1", "2026-1", "2028-2", "Referencia sintética",
-                AcademicCurriculumStatus.PUBLISHED, entries.size(), "b".repeat(64), PUBLISHED_AT, "actor",
-                "actor", PUBLISHED_AT);
+                status, declaredEntryCount, "b".repeat(64), PUBLISHED_AT, "actor",
+                status == AcademicCurriculumStatus.PUBLISHED ? "actor" : null, publishedAt);
         return new AcademicCurriculumDetails(summary, entries);
     }
 

@@ -121,4 +121,12 @@
 - [x] Mark this informative comparison as delivered in the roadmap without claiming official curriculum data or institutional acceptance; document the derived/no-migration data model.
 - [x] Run `npm test`, `npm run lint`, `npm run build`, and `.\mvnw.cmd test` (Java 25) in the respective repositories. Run the opt-in MySQL contract suite against a separate temporary MySQL 8.4 container.
 - [x] Review both repository diffs, verify the Compose preview and health endpoints, check for unrelated changes, and record outcomes in the [execution ledger](2026-10-02-curriculum-version-comparison-ledger.md).
-- [x] Commit the frontend milestone locally, advance the backend frontend submodule pointer, and commit the backend milestone locally. Do not switch branches, merge into `develop`, or push until the user gives fresh authorization under the current `AGENTS.md`; verify local SHAs after committing.
+- [x] The user later explicitly authorized direct fast-forward integration and push to `develop` in both repositories. This backend-only hardening preserves the already-published frontend SHA and does not create another remote branch.
+
+## Post-integration hardening — 2026-10-04
+
+- Reviewed the older local comparison implementation before integrating it. Kept the current HTTP contract and frontend parser; did not copy the incompatible response-shape rewrite.
+- Added AAA checks that reject draft or undated references, a different program/campus identity, inconsistent published-entry counts, and duplicate normalized subject codes on either side.
+- Test-first evidence: the first focused run had four expected failures in the new guard cases. After implementation, all 10 `CurriculumVersionComparisonTest` cases and all 29 `AcademicCatalogControllerTest` cases passed.
+- Full Java 25 `mvnw verify` passed: 420 tests, zero failures, zero errors, and 13 skipped.
+- No schema, API, frontend, institutional data or selection rules changed. The preview remains read-only and does not create a draft or audit event.

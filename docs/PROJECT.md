@@ -32,7 +32,7 @@ Avanzar hacia una plataforma universitaria coherente que pueda reemplazar sistem
 
 ### Misión de la próxima entrega
 
-Completar en `/#programas` la consulta atribuida de pregrado y posgrado, mantener desconectados los módulos sintéticos que carecen de contrato y registrar arquitectura, fuentes y evidencia de validación. El directorio de posgrados debe conservar las fechas de su fuente, filtros locales y la advertencia de que no confirma disponibilidad ni convocatoria.
+Completar el descubrimiento del proceso de inscripción y selección de aspirantes de pregrado presencial: consolidar normas y páginas públicas verificadas, separar los requisitos confirmados de las reglas internas pendientes y documentar sistemas fuente, responsables, permisos, privacidad e interfaces por acordar. Mantener desconectados los módulos sintéticos; no ejecutar selección ni tratar datos personales hasta contar con contratos y validación institucional verificables.
 
 ## Decisiones confirmadas
 
