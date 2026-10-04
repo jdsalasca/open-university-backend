@@ -24,8 +24,8 @@ Keep both remote repositories on `develop`, avoid overwriting newer work with st
 
 ## Out of scope
 
-- Bulk-commit or cleanup of legacy checkouts, screenshots, Harness exports, or generated output.
-- Cherry-picking stale feature branches or reverting current `develop` code.
+- Bulk-committing generated artifacts, screenshots, Harness exports, stale snapshots, or unchanged copies; deleting or cleaning legacy checkouts.
+- Cherry-picking stale feature branches without comparing them with current `develop`, or reverting newer remote code.
 - Changes to admissions, student records, identities, grades, offers, enrollment, official master data, schemas, or institutional operating rules.
 - Performance claims or production readiness claims.
 
@@ -45,7 +45,7 @@ Use the existing detached worktree after moving it to the latest `origin/develop
 
 ## Execution record
 
-- `2026-10-04`: Java 25 targeted test `DefaultCurriculumPublicationServiceTest` passed (2 tests, 0 failures). No production code, schema, frontend source, or gitlink changed.
-- Commit `3482885ed292c3a7bf387e38be499440f08a6763` is present in local and remote backend `develop`; frontend remains at `95f6a0404fe6d03c216b252d3c795b6679b71a5a`. Both remotes expose only `develop`.
-- Backend CI run `37184155245` passed the full Maven suite and MySQL contract tests. The local frontend responds HTTP 200 on port 5175, and backend health responds HTTP 200 on port 8080.
+- `2026-10-04`: Java 25 targeted test `DefaultCurriculumPublicationServiceTest` passed (2 tests, 0 failures). Commit `3482885ed292c3a7bf387e38be499440f08a6763` is present in local and remote backend `develop`; CI `37184155245` passed the full Maven suite and MySQL contract tests.
+- Follow-up documentation commit `7011319f29cf3b13a0e6f5de4f42d5914fd84129` is present in backend `origin/develop`; CI `37184484129` passed. Frontend `develop` is `95f6a0404fe6d03c216b252d3c795b6679b71a5a`, with CI `37181629590` passed. Both active repositories expose only `develop`; Compose frontend, backend health and MySQL were verified in the prior checkpoint.
+- `2026-10-04` re-audit after the user's develop-only integration request: both active worktrees are clean and match their remote `develop` SHAs; `git ls-remote --heads origin` returns only `develop` for both repositories. Checked the stale backend branch (`agent/coordination-espejo`, 86 commits behind and one unique coordination-only commit), stale frontend checkout (52 commits behind), and the existing clean worktrees for curriculum comparison, catalogue, and delivery. Current `develop` already has newer versions of the curriculum comparison, public catalogue, student-services directory, and unified home; no missing product delta was identified for transfer. The coordination-only commit and generated local artifacts remain untouched. No legacy worktree or branch was deleted or rewritten.
 - Harness accepted the plan but kept the active task at `planning/write_plan`; its TDD evidence endpoint rejected the test result because the task phase had not advanced. A checkpoint records the verified test, push, CI, and next reconciliation action.
