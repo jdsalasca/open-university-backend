@@ -1,0 +1,20 @@
+Verificacion local - ronda de contraste modo oscuro
+Frontend develop aa8376cd15c1b1c8ed49bdb0f635828e7dc1f2f3
+Node v24.18.0 | npm 11.16.0
+
+--- npm run build ---
+[32mÔ£ô built in 998ms[39m
+Bundles: entry 280933 B JS / 21970 B CSS; #resumen 286623 B JS / 26413 B CSS; #programas 343047 B JS / 53604 B CSS / 63921 B JSON; OIDC diferido 68637 B JS.
+
+--- guardas node (bundle + dark theme) ---
+Ôä╣ tests 35
+Ôä╣ pass 35
+Ôä╣ fail 0
+
+--- npm run lint ---
+Found 0 warnings and 0 errors.
+
+--- npx vitest run --maxWorkers=8 ---
+[2m Test Files [22m [1m[32m75 passed[39m[22m[90m (75)[39m
+[2m      Tests [22m [1m[32m508 passed[39m[22m[90m (508)[39m
+[2m   Duration [22m 24.61s[2m (tests 80%, environment 11%, setup 4%, worker 3%, import 2%)[22m
