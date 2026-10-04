@@ -1452,7 +1452,7 @@ El [registro de procedencia](../discovery/uptc-undergraduate-directory-snapshot-
 
 ## Directorio público de servicios estudiantiles
 
-El directorio `/#estudiantes` combina cinco fichas estáticas de Bienestar y Biblioteca; Bienestar Virtual y la Línea de Apoyo Socioeconómico son fichas separadas. La búsqueda y el filtro por categoría operan en memoria del navegador; ningún texto de búsqueda se envía al backend o se persiste. La persona abre una fuente UPTC oficial solo al activar su enlace.
+El directorio `/#estudiantes` presenta nueve fichas estáticas de Bienestar, Biblioteca, sistemas institucionales, gestiones académicas y calendario de pregrado. Bienestar Virtual y Apoyo socioeconómico permanecen como servicios separados. La búsqueda y el filtro por categoría operan en memoria del navegador; ningún texto se envía al backend o se persiste. Cada ficha documenta su procedencia y alcance en la [ficha del directorio](../discovery/uptc-student-services-directory-2026-10.md); la persona abre una fuente UPTC solo al activar su enlace.
 
 ```mermaid
 sequenceDiagram
@@ -1461,8 +1461,8 @@ sequenceDiagram
   participant Source as Portal oficial UPTC
 
   Visitor->>React: abre el directorio
-  React->>React: presenta cinco fichas tipadas con fuente y fecha
-  React-->>Visitor: muestra Bienestar y Biblioteca
+  React->>React: presenta nueve fichas tipadas con fuente y fecha
+  React-->>Visitor: muestra servicios institucionales en cinco categorías
   Visitor->>React: escribe texto o elige una categoría
   React->>React: normaliza tildes y mayúsculas; filtra localmente
   React-->>Visitor: anuncia el total de coincidencias
