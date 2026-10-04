@@ -98,11 +98,12 @@ public record AcademicCurriculumImportPreviewResponse(
         }
     }
 
-    public record Sample(String subjectCode, List<String> changedFields) {
+    public record Sample(String subjectCode, String subjectName, int semester, List<String> changedFields) {
         private static Sample from(
                 co.edu.uptc.universiry.academics.application.CurriculumVersionComparison.Sample sample
         ) {
-            return new Sample(sample.subjectCode(), sample.changedFields().stream().map(Enum::name).toList());
+            return new Sample(sample.subjectCode(), sample.subjectName(), sample.semester(),
+                    sample.changedFields().stream().map(Enum::name).toList());
         }
     }
 }

@@ -264,11 +264,19 @@ class AcademicCatalogControllerTest {
                 .andExpect(jsonPath("$.comparison.counts.modified").value(1))
                 .andExpect(jsonPath("$.comparison.counts.unchanged").value(1))
                 .andExpect(jsonPath("$.comparison.addedSamples[0].subjectCode").value("SUB-ADD"))
+                .andExpect(jsonPath("$.comparison.addedSamples[0].subjectName").value("Biología"))
+                .andExpect(jsonPath("$.comparison.addedSamples[0].semester").value(2))
                 .andExpect(jsonPath("$.comparison.removedSamples[0].subjectCode").value("SUB-REMOVE"))
+                .andExpect(jsonPath("$.comparison.removedSamples[0].subjectName").value("Química"))
+                .andExpect(jsonPath("$.comparison.removedSamples[0].semester").value(2))
                 .andExpect(jsonPath("$.comparison.modifiedSamples[0].subjectCode").value("SUB-CHANGE"))
+                .andExpect(jsonPath("$.comparison.modifiedSamples[0].subjectName").value("Física moderna"))
+                .andExpect(jsonPath("$.comparison.modifiedSamples[0].semester").value(4))
                 .andExpect(jsonPath("$.comparison.modifiedSamples[0].changedFields")
                         .value(org.hamcrest.Matchers.containsInAnyOrder("NAME", "SEMESTER")))
-                .andExpect(jsonPath("$.comparison.unchangedSamples[0].subjectCode").value("SUB-KEEP"));
+                .andExpect(jsonPath("$.comparison.unchangedSamples[0].subjectCode").value("SUB-KEEP"))
+                .andExpect(jsonPath("$.comparison.unchangedSamples[0].subjectName").value("Álgebra"))
+                .andExpect(jsonPath("$.comparison.unchangedSamples[0].semester").value(1));
         org.junit.jupiter.api.Assertions.assertEquals(curriculaBefore, jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM academic_curriculum", Integer.class));
         org.junit.jupiter.api.Assertions.assertEquals(auditsBefore, jdbcTemplate.queryForObject(

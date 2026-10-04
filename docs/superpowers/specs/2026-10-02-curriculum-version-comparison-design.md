@@ -48,3 +48,9 @@ Dentro de la tarjeta existente «Validación sin guardar», mostrar un bloque ac
 6. El preview sigue siendo de solo lectura y conserva autorización, cancelación y flujo actual de importación.
 7. Pruebas de contrato e interfaz cubren ambos estados y la presentación de campos modificados.
 8. Se actualiza el diagrama del flujo de importación; C4 no cambia porque no aparecen componentes o límites nuevos.
+
+## Ampliación de ejemplos — 4 de octubre de 2026
+
+Cada muestra incluye `subjectCode`, `subjectName`, `semester` y `changedFields`. Para asignaturas nuevas, modificadas o sin cambio, nombre y semestre provienen de la carga entrante; para una asignatura retirada, provienen de la versión publicada de referencia. El backend conserva el máximo de diez ejemplos por categoría y valida nombres de hasta 240 caracteres y semestres entre 1 y 32767.
+
+La ampliación es aditiva. El cliente acepta respuestas de backend anteriores que omitan ambos campos descriptivos; si recibe uno, exige el otro y valida ambos. La interfaz presenta código, nombre y semestre cuando están disponibles; con una respuesta anterior muestra el código que ya entregaba la API. No cambia conteos, reglas de comparación, persistencia, auditoría, permisos ni flujo de importación. Como no modifica los pasos del proceso ni incorpora componentes nuevos, esta ampliación no requiere otro cambio en C4 o en el diagrama de proceso.

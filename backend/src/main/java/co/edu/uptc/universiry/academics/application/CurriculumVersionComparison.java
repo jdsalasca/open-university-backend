@@ -87,16 +87,17 @@ public record CurriculumVersionComparison(
             String code = canonicalSubjectCode(entry.subjectCode());
             AcademicCurriculumEntrySummary previous = referenceByCode.get(code);
             if (previous == null) {
-                added.add(sample(code));
+                added.add(sample(code, entry.subjectName(), entry.semester()));
                 continue;
             }
             List<ChangedField> fields = changedFields(entry, previous);
-            (fields.isEmpty() ? unchanged : modified).add(new Sample(code, fields));
+            (fields.isEmpty() ? unchanged : modified).add(
+                    new Sample(code, entry.subjectName(), entry.semester(), fields));
         }
 
         List<Sample> removed = referenceEntries.stream()
                 .filter(entry -> !incomingByCode.containsKey(canonicalSubjectCode(entry.subjectCode())))
-                .map(entry -> sample(canonicalSubjectCode(entry.subjectCode())))
+                .map(entry -> sample(canonicalSubjectCode(entry.subjectCode()), entry.subjectName(), entry.semester()))
                 .toList();
 
         Reference metadata = new Reference(summary.id(), summary.curriculumVersion(), summary.cohortFrom(),
@@ -157,8 +158,8 @@ public record CurriculumVersionComparison(
         return List.copyOf(fields);
     }
 
-    private static Sample sample(String code) {
-        return new Sample(code, List.of());
+    private static Sample sample(String code, String subjectName, int semester) {
+        return new Sample(code, subjectName, semester, List.of());
     }
 
     private static List<Sample> bounded(List<Sample> samples) {
@@ -218,9 +219,14 @@ public record CurriculumVersionComparison(
         }
     }
 
-    public record Sample(String subjectCode, List<ChangedField> changedFields) {
+    public record Sample(String subjectCode, String subjectName, int semester, List<ChangedField> changedFields) {
         public Sample {
             subjectCode = canonicalSubjectCode(subjectCode);
+            subjectName = AcademicCatalogValueRules.requiredText(
+                    subjectName, AcademicCatalogLimits.MAX_SUBJECT_NAME_LENGTH, "subjectName");
+            if (semester < 1 || semester > AcademicCatalogLimits.MAX_SEMESTER_NUMBER) {
+                throw new IllegalArgumentException("Curriculum comparison sample semester is outside the allowed range.");
+            }
             changedFields = List.copyOf(changedFields);
             requireDistinctFields(changedFields);
         }

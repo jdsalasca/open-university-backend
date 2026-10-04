@@ -205,6 +205,26 @@ class CurriculumVersionComparisonTest {
                 () -> CurriculumVersionComparison.compare(singleIncoming, duplicateReference));
     }
 
+    @Test
+    void rejects_invalid_name_or_semester_in_a_removed_sample() {
+        // Arrange
+        ValidatedCurriculum incoming = incoming(List.of(incomingEntry("SUB-KEEP", "Álgebra", "3", 1, 1)));
+        AcademicCurriculumDetails blankNameReference = reference(List.of(
+                referenceEntry("SUB-OLD", "   ", "3", 2, 2)));
+        AcademicCurriculumDetails oversizedNameReference = reference(List.of(
+                referenceEntry("SUB-OLD", "N".repeat(241), "3", 2, 2)));
+        AcademicCurriculumDetails lowSemesterReference = reference(List.of(
+                referenceEntry("SUB-OLD", "Materia", "3", 0, 2)));
+        AcademicCurriculumDetails highSemesterReference = reference(List.of(
+                referenceEntry("SUB-OLD", "Materia", "3", 32768, 2)));
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class, () -> CurriculumVersionComparison.compare(incoming, blankNameReference));
+        assertThrows(IllegalArgumentException.class, () -> CurriculumVersionComparison.compare(incoming, oversizedNameReference));
+        assertThrows(IllegalArgumentException.class, () -> CurriculumVersionComparison.compare(incoming, lowSemesterReference));
+        assertThrows(IllegalArgumentException.class, () -> CurriculumVersionComparison.compare(incoming, highSemesterReference));
+    }
+
     private static ValidatedCurriculum incoming(List<ValidatedCurriculumEntry> entries) {
         return new ValidatedCurriculum(new ValidatedProgram("PRG-TEST", AcademicLevel.PREGRADO,
                 StudyModality.PRESENCIAL, "12345", "Programa de prueba", "Facultad sintética", "TUNJA", "Tunja"),
