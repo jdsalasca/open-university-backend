@@ -1,5 +1,8 @@
 .worktrees/
 .superpowers/sdd/
+.harness-moon/
+.playwright-mcp/
+output/playwright/
 node_modules/
 dist/
 coverage/
