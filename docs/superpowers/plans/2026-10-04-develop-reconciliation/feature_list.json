@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    {
+      "id": "curriculum-preview-exact-identity",
+      "status": "tested",
+      "description": "Cover the read-only curriculum preview lookup by exact program, level, modality, and campus identity.",
+      "acceptanceCriteria": [
+        "The service requests a comparison using the four validated program identity dimensions.",
+        "A published reference produces a comparison tied to that reference.",
+        "No published reference produces NO_REFERENCE without counts or sample rows."
+      ]
+    },
+    {
+      "id": "legacy-checkout-reconciliation",
+      "status": "in_progress",
+      "description": "Record which local branches and worktrees are already superseded by current develop and preserve unresolved files for individual review.",
+      "acceptanceCriteria": [
+        "Remote branches remain develop only.",
+        "No stale or generated files are committed as a batch.",
+        "Legacy worktrees remain unchanged."
+      ]
+    }
+  ]
+}
