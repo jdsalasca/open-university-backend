@@ -22,7 +22,7 @@ sequenceDiagram
     API->>Validator: valida firma, decodificación, tamaño y dimensiones
     Validator-->>API: MIME detectado, dimensiones y huella SHA-256
     API->>Asset: escribe con UUID en staging y publica archivo completo
-    Asset-->>API: clave generada; sin nombre original
+    Asset-->>API: clave generada, sin nombre original
     API->>DB: transacción: metadatos + evento de auditoría de carga
     DB-->>API: commit o rollback
     opt La escritura de metadatos falla
@@ -110,7 +110,7 @@ sequenceDiagram
   Aspirante->>ACRA: abre el calendario oficial para confirmar detalles
   Aspirante->>News: consulta el comunicado institucional enlazado
   Note over UI,File: La descarga es local y no sincroniza cambios ni contiene datos personales
-  Note over UI,Content: Este es el respaldo estático cuando no hay agenda administrada publicada; su consola se muestra en el flujo siguiente
+  Note over UI,Content: Este es el respaldo estático cuando no hay agenda administrada publicada, su consola se muestra en el flujo siguiente
 ```
 
 La fuente ACRA se marcaba como actualizada el 15 de septiembre de 2026 y se consultó el 1 de octubre de 2026; cualquier modificación posterior debe reflejarse en el contenido y en su fecha de consulta. La [página oficial de aspirantes](https://reportes.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/adm_reg/1aspi/pre/) es la referencia operativa y el [comunicado institucional 240](https://dsp.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-abre-inscripciones-para-estudiar-un-pregrado-presencial-a-distancia-o-virtual-el-proximo-semestre/) sirve como confirmación pública de apertura y fechas principales.
@@ -214,7 +214,7 @@ sequenceDiagram
   API-->>Calendar: solo convocatorias publicadas
   Note over Browser,Store: Al recargar, el store efímero se descarta y reaparece el baseline sintético
   Note over Form,Store: Sin PII, texto libre de ajustes, API de postulaciones, persistencia, PIN, pago ni documentos
-  Note over Lab,API: El bundle de producción excluye el laboratorio; solo el calendario permanece
+  Note over Lab,API: El bundle de producción excluye el laboratorio, solo el calendario permanece
 ```
 
 Este prototipo de recorrido no es un formulario oficial ni concede identidad, rol o permiso administrativo. Las decisiones de admisión, expedientes, integraciones y reglas siguen sujetas a los gates G0–G3 y a la aprobación del dueño institucional del proceso.
@@ -277,7 +277,7 @@ sequenceDiagram
   end
   Reviewer->>Gradebook: cambia de grupo
   Gradebook->>Draft: descarta entradas y acuse del grupo anterior
-  Note over Gradebook,Fixtures: Sin matrícula ni nombres reales; la escala no ha sido validada por UPTC
+  Note over Gradebook,Fixtures: Sin matrícula ni nombres reales, la escala no ha sido validada por UPTC
   Note over Gradebook,Draft: Sin API, identidad/permisos, promedio, resultado definitivo ni persistencia
   Note over Shell,Gradebook: El manifest de producción bloquea el módulo demo
 ```
@@ -297,8 +297,8 @@ flowchart LR
   Aptitude[Prueba adicional/aptitud<br/>según programa y convocatoria]
   Support[Examen médico/discapacidad<br/>y lengua de señas<br/>según calendario]
   Correction[Revisar errores y actuaciones<br/>hasta 10 nov]
-  SIRA[Proceso de admisión SIRA<br/>11–12 nov; estado actual por validar]
-  Rank[Aplicar ponderación Saber 11<br/>y reglas/cupos versionados;<br/>aprobar prueba adicional si aplica]
+  SIRA[Proceso de admisión SIRA<br/>11–12 nov, estado actual por validar]
+  Rank[Aplicar ponderación Saber 11<br/>y reglas/cupos versionados<br/>aprobar prueba adicional si aplica]
   First[Selección de primera opción]
   RegularSecond[Lista de opcionados a segunda opción<br/>si no admitido en primera y hay cupo]
   Special[Lista de casos especiales<br/>primera y segunda opción<br/>según actos aprobados]
@@ -306,8 +306,8 @@ flowchart LR
   SpecialSecond[Asignar cupo especial<br/>en segunda opción<br/>14 dic]
   Calls[Llamados de opcionados<br/>9–15 dic]
   Next[ISE, pagos y registro de asignaturas<br/>etapas posteriores]
-  Normalista[Inscripción normalista publicada<br/>4 ciclos + diploma;<br/>vía, convenio y semestre por validar]
-  Inscribete[«Inscríbete», reportado como implementado por UPTC<br/>sistema para 2026-II;<br/>PIN + formulario + documentos]
+  Normalista[Inscripción normalista publicada<br/>4 ciclos + diploma<br/>vía, convenio y semestre por validar]
+  Inscribete[«Inscríbete», reportado como implementado por UPTC<br/>sistema para 2026-II<br/>PIN + formulario + documentos]
   PlatformGate[Confirmar plataforma de inscripción y archivo<br/>Inscríbete / SIRA / Fase III / SGDEA<br/>cobertura e integración por validar]
   SGDEA[SGDEA institucional<br/>gestión documental electrónica]
   Gate[Redondeo, empates, apelaciones,<br/>pruebas y excepciones completas<br/>por validar]
@@ -361,18 +361,18 @@ sequenceDiagram
   UI->>API: GET /api/v1/academic-catalog/curriculum-template
   API-->>UI: CSV UTF-8 descargable generado desde CurriculumCsvSchema.HEADERS
   Operador->>UI: carga archivo de una versión curricular
-  Note over UI,API: La prevalidación usa AbortSignal; al perder academic:catalog:write o desmontarse el panel, la UI cancela la espera, descarta el archivo y la vista previa e ignora respuestas tardías
+  Note over UI,API: La prevalidación usa AbortSignal, al perder academic:catalog:write o desmontarse el panel, la UI cancela la espera, descarta el archivo y la vista previa e ignora respuestas tardías
   UI->>API: POST /api/v1/admin/academic-catalog/import-previews (multipart file)
   API->>Auth: autentica y exige academic:catalog:write
   Auth-->>API: sujeto y permiso interno validados en un entorno configurado
   API->>CSV: lee máximo 2 MiB y valida UTF-8, encabezados, filas y límites
   alt Archivo inválido o exceso de límite
     CSV-->>API: error localizado con fila/campo seguro
-    API-->>UI: 400 o 413; sin escritura en MySQL
+    API-->>UI: 400 o 413, sin escritura en MySQL
   else Archivo válido
     CSV-->>UseCase: contrato tipado completo + SHA-256 del origen
     UseCase->>Repo: buscar el último currículo publicado para código, nivel, modalidad y sede exactos
-    Repo->>DB: SELECT PUBLISHED por identidad exacta; ORDER BY published_at DESC, curriculum_id ASC; LIMIT 1
+    Repo->>DB: SELECT PUBLISHED por identidad exacta, ORDER BY published_at DESC, curriculum_id ASC, LIMIT 1
     alt No existe referencia publicada
       DB-->>Repo: 0 filas
       Repo-->>UseCase: Optional.empty
@@ -383,11 +383,11 @@ sequenceDiagram
       DB-->>Repo: cohorte, fecha de publicación y entradas completas
       Repo-->>UseCase: referencia publicada del mismo programa, nivel, modalidad y sede
       UseCase->>UseCase: emparejar códigos normalizados y comparar nombre, créditos, semestre, orden, espacio, componente y grupo opcional
-      Note over UseCase: Los cuatro conteos cubren todas las filas; muestras en orden estable, máximo 10 por categoría
+      Note over UseCase: Los cuatro conteos cubren todas las filas, muestras en orden estable, máximo 10 por categoría
     end
     Note over UseCase,DB: El preview no persiste borrador ni evento de auditoría
     UseCase-->>API: 200 con metadata, semestres, hasta 10 filas CSV y comparison
-    API-->>UI: NO_REFERENCE o COMPARED; sin comparación no se infieren ceros
+    API-->>UI: NO_REFERENCE o COMPARED, sin comparación no se infieren ceros
     Operador->>UI: revisa la muestra y confirma crear borrador
     UI->>API: POST /api/v1/admin/academic-catalog/imports (multipart file)
     API->>Auth: autentica y exige academic:catalog:write otra vez
@@ -396,13 +396,13 @@ sequenceDiagram
     CSV-->>UseCase: contrato tipado completo + SHA-256 del origen
     UseCase->>Repo: crear borrador validado
     Repo->>DB: transacción: identidades/revisiones + plan + entradas + evento CURRICULUM_IMPORTED
-    DB-->>Repo: commit; el plan queda DRAFT
+    DB-->>Repo: commit, el plan queda DRAFT
     Repo-->>UI: 201 con resumen del borrador
     Operador->>UI: abre la cola de borradores
     UI->>API: GET /api/v1/admin/academic-catalog/drafts?pageSize=25
     API->>Auth: exige academic:catalog:read
     API->>Repo: cuenta y solicita la página de DRAFT
-    Repo->>DB: COUNT + LIMIT; cursor (created_at, UUID) descendente
+    Repo->>DB: COUNT + LIMIT, cursor (created_at, UUID) descendente
     DB-->>Repo: máximo 25 borradores y conteo vigente
     Repo-->>UI: página administrativa de borradores
     Operador->>UI: abre un borrador de la página y revisa sus asignaturas
@@ -425,18 +425,18 @@ sequenceDiagram
   par programas publicados y afiliaciones vigentes
     UI->>API: GET /api/v1/academic-catalog/programs
     API->>DB: consulta solo programas con plan PUBLISHED
-    DB-->>API: catálogo público; en desarrollo retorna [] hasta una publicación autorizada
+    DB-->>API: catálogo público, en desarrollo retorna [] hasta una publicación autorizada
     API-->>UI: versiones publicadas y cohortes con programId
   and estructura académica pública
     UI->>StructureAPI: GET /api/v1/academic-structure
     StructureAPI->>DB: lee unidades, lugares y afiliaciones vigentes ordenadas
     DB-->>StructureAPI: snapshot vigente excluyendo origen explícito DEMO-
-    Note over StructureAPI,DB: filtra entidades con auditoría de alta DEMO- y afiliaciones con referencia DEMO-; la vista administrativa conserva filas y auditoría
+    Note over StructureAPI,DB: filtra entidades con auditoría de alta DEMO- y afiliaciones con referencia DEMO-, la vista administrativa conserva filas y auditoría
     StructureAPI-->>UI: snapshot público, sin la línea temporal administrativa
   end
-  UI->>UI: resuelve unidad y lugar por programId; omite facultad/sede del CSV
+  UI->>UI: resuelve unidad y lugar por programId, omite facultad/sede del CSV
   alt consulta de estructura fallida
-    UI-->>Comunidad: muestra error y reintento; no muestra ubicación histórica
+    UI-->>Comunidad: muestra error y reintento, no muestra ubicación histórica
   else falta, es ambigua o no resuelve la afiliación
     UI-->>Comunidad: muestra "Adscripción pendiente de validar"
   else afiliación vigente única y resoluble
@@ -457,7 +457,7 @@ sequenceDiagram
     UI->>API: GET /api/v1/academic-catalog/curricula/{id}/entries?page=1&pageSize=100
     API->>UseCase: consultar página pública de asignaturas
     UseCase->>Repo: contar y leer la página solicitada
-    Repo->>DB: transacción de solo lectura; filtro PUBLISHED y parámetros enlazados
+    Repo->>DB: transacción de solo lectura, filtro PUBLISHED y parámetros enlazados
     DB-->>Repo: total filtrado + hasta 100 filas en orden estable
     Repo-->>UseCase: metadata de página y asignaturas
     UseCase-->>API: respuesta acotada
@@ -492,7 +492,7 @@ sequenceDiagram
   Operator->>API: consulta árbol administrativo
   API->>Auth: exige academic:structure:read
   API->>DB: consulta maestros y afiliaciones vigentes con desempates estables
-  DB-->>API: raíces por orden de nodo; hijos por orden de relación; programas por orden de afiliación
+  DB-->>API: raíces por orden de nodo, hijos por orden de relación, programas por orden de afiliación
 ```
 
 Las raíces organizacionales y territoriales se presentan por `displayOrder` del nodo. Dentro de cada padre, los vínculos se presentan por su `displayOrder`, con orden/código del hijo como desempate estable. Cada afiliación conserva el `displayOrder` independiente del programa, con código/nombre como desempate. V10 migra el orden que ya tenían las relaciones tomando el orden previo del nodo hijo. El programa muestra el lugar de su afiliación vigente, no el campus legado que quedó en el catálogo. El árbol público muestra únicamente relaciones vigentes a la fecha institucional; la consola administrativa consulta la línea temporal completa mediante el endpoint protegido. El maestro de lugares sigue siendo una sección independiente. La pantalla local `/#academia` incluye cinco editores para actualizar una prioridad por solicitud en unidades, sedes, relaciones organizacionales, relaciones de sedes y afiliaciones de programas. También permite crear una facultad raíz con `FACULTY` fijo, un lugar raíz con tipo explícito y relaciones fechadas entre unidades o lugares existentes; las altas raíz no crean jerarquía/afiliación y los vínculos no asignan programas. No carga datos oficiales. Formularios y editores requieren permisos de lectura y escritura de estructura. Las operaciones envían una referencia institucional; el backend audita cada alta/cambio y, tras un alta o una relación, la pantalla vuelve a consultar el snapshot administrativo.
@@ -561,20 +561,20 @@ sequenceDiagram
   else permiso autorizado
     Auth-->>API: sujeto y permiso autorizados
     API->>Service: solicita crear unidad tipo FACULTY
-    Service->>Service: valida datos y referencia; el comando no contiene padre
+    Service->>Service: valida datos y referencia, el comando no contiene padre
     alt datos inválidos
       Service-->>API: error de validación
-      API-->>UI: 400; no se intenta persistir
+      API-->>UI: 400, no se intenta persistir
       UI-->>Operator: conserva el formulario y pide corregir los campos
     else datos válidos
       Service->>DB: inicia transacción e intenta insertar código único
       alt código duplicado u otra restricción de integridad
-        DB-->>Service: conflicto; revierte la transacción
+        DB-->>Service: conflicto, revierte la transacción
         Service-->>API: error de integridad
-        API-->>UI: 409; no se duplica la identidad
+        API-->>UI: 409, no se duplica la identidad
         UI-->>Operator: conserva el formulario e informa del conflicto
       else alta válida
-        DB-->>Service: inserta unidad y evento UNIT_CREATED; commit atómico
+        DB-->>Service: inserta unidad y evento UNIT_CREATED, commit atómico
         Service-->>API: identidad creada
         API-->>UI: 201 con id de unidad
         UI->>API: GET /api/v1/admin/academic-structure
@@ -613,10 +613,10 @@ sequenceDiagram
   else permiso autorizado
     Auth-->>API: sujeto y permiso autorizados
     API->>Service: solicita crear lugar con tipo explícito
-    Service->>Service: valida datos y referencia; el comando no contiene padre
+    Service->>Service: valida datos y referencia, el comando no contiene padre
     alt datos inválidos o código en conflicto
       Service-->>API: error de validación o integridad
-      API-->>UI: 400 o 409; no se confirma el alta
+      API-->>UI: 400 o 409, no se confirma el alta
       UI-->>Operator: conserva el formulario e informa el error
     else alta válida
       Service->>DB: inserta academic_site y evento SITE_CREATED en una transacción
@@ -661,12 +661,12 @@ sequenceDiagram
     Service->>DB: inicia transacción y bloquea cambios estructurales
     Service->>DB: valida padre activo y contención de vigencias
     alt padre inexistente o vigencia incompatible
-      DB-->>Service: 404 o 409; sin inserciones
+      DB-->>Service: 404 o 409, sin inserciones
       Service-->>API: error de dominio
       API-->>UI: error localizado
       UI->>API: relee vistas pública y administrativa tras conflicto 409
     else código duplicado
-      DB-->>Service: error de integridad; rollback completo
+      DB-->>Service: error de integridad, rollback completo
       Service-->>API: conflicto 409
       API-->>UI: no se crea unidad ni auditoría parcial
     else alta válida
@@ -696,7 +696,7 @@ sequenceDiagram
   participant DB as MySQL
 
   Operator->>UI: selecciona unidad/lugar superior e inferior, orden, vigencia y referencia
-  UI->>UI: bloquea pares idénticos; exige dos entidades existentes
+  UI->>UI: bloquea pares idénticos, exige dos entidades existentes
   UI->>Identity: GET /api/v1/me
   Identity-->>UI: permisos academic:structure:read y academic:structure:write
   UI->>API: POST /units/{parentId}/children/{childId} o /sites/{parentId}/children/{childId}
@@ -711,13 +711,13 @@ sequenceDiagram
     Structure->>DB: bloquea cambios estructurales y comprueba vigencia activa
     Structure->>Structure: valida contención temporal, padre único y ausencia de ciclos
     alt ciclo, padre concurrente o conflicto de vigencia
-      Structure-->>API: 409; no inserta relación ni auditoría parcial
+      Structure-->>API: 409, no inserta relación ni auditoría parcial
       API-->>UI: error de validación o conflicto
       UI->>API: GET /api/v1/admin/academic-structure para actualizar la línea temporal
       API-->>UI: snapshot administrativo con vigencias futuras e históricas
       UI-->>Operator: informa del conflicto y exige revisar antes de reintentar
     else entidad ausente o intervalo inválido
-      Structure-->>API: 404 o 400; no inserta relación ni auditoría
+      Structure-->>API: 404 o 400, no inserta relación ni auditoría
       API-->>UI: error localizado
       UI-->>Operator: conserva los datos e informa qué debe revisar
     else relación válida
@@ -770,7 +770,7 @@ sequenceDiagram
       API-->>UI: conflicto de afiliación
       UI->>API: GET /api/v1/admin/academic-structure para actualizar la línea temporal
       API-->>UI: snapshot administrativo con vigencias futuras e históricas
-      UI-->>Operator: informa el conflicto; requiere revisión manual
+      UI-->>Operator: informa el conflicto, requiere revisión manual
     else afiliación válida
       Structure->>DB: inserta academic_program_affiliation y PROGRAM_AFFILIATED
       DB-->>Structure: commit atómico
@@ -800,13 +800,13 @@ sequenceDiagram
 
   Operator->>UI: elige afiliación, destino, fecha, orden y referencia
   UI->>UI: valida destinos disponibles y presenta el corte inclusivo
-  UI-->>Operator: origen finaliza en D-1; sucesora inicia en D
+  UI-->>Operator: origen finaliza en D-1, sucesora inicia en D
   Operator->>UI: confirma reasignación
   UI->>API: POST /programs/{programId}/affiliations/{affiliationId}/reassign
   API->>Auth: autentica y exige academic:structure:write
   alt sesión o permiso rechazado
     API-->>UI: 401 o 403
-    UI->>API: solicita revalidación de permisos; no repite el POST
+    UI->>API: solicita revalidación de permisos, no repite el POST
   else permiso autorizado
     API->>Structure: envía destino y versión esperada de la afiliación
     Structure->>DB: bloquea academic_structure_control y carga origen
@@ -818,13 +818,13 @@ sequenceDiagram
       API-->>UI: conflicto de versión o intervalo
       UI->>API: GET estructura pública y snapshot administrativo
       API-->>UI: ambos snapshots actualizados
-      UI-->>Operator: revisa el estado; no hay reintento automático
+      UI-->>Operator: revisa el estado, no hay reintento automático
     else destino inactivo/fuera de vigencia o existe otro solapamiento
       Structure-->>API: 409 sin mutaciones
       API-->>UI: conflicto de destino o vigencia
       UI->>API: GET estructura pública y snapshot administrativo
       API-->>UI: ambos snapshots actualizados
-      UI-->>Operator: revisa el estado; no hay reintento automático
+      UI-->>Operator: revisa el estado, no hay reintento automático
     else reasignación válida
       Structure->>DB: trunca origen en D-1
       Structure->>DB: inserta sucesora en D con el mismo program_id
@@ -854,7 +854,7 @@ sequenceDiagram
   API->>Auth: exige academic:structure:write
   Auth-->>API: principal autorizado
   API->>Structure: solicita cambio tipado de nodo, relación o afiliación
-  Structure->>DB: bloquea control; lee vigencia y orden actual
+  Structure->>DB: bloquea control, lee vigencia y orden actual
   alt elemento ausente
     DB-->>API: 404 sin modificación
   else elemento no vigente o expectedDisplayOrder cambió
@@ -915,12 +915,12 @@ sequenceDiagram
   participant Structure as Servicio de estructura
   participant DB as MySQL
   Operator->>UI: selecciona vínculo, fecha final inclusiva y referencia
-  UI->>UI: muestra vista previa; solicita confirmación explícita
+  UI->>UI: muestra vista previa, solicita confirmación explícita
   Operator->>UI: confirma el cierre
   UI->>API: PATCH /units/.../close, /sites/.../close o /programs/.../affiliations/.../close
-  API->>API: exige academic:structure:write; valida intervalo y referencia
+  API->>API: exige academic:structure:write, valida intervalo y referencia
   API->>Structure: cierra únicamente la versión identificada por padre, hijo e inicio
-  Structure->>DB: bloquea cambios de estructura; lee vigencia actual
+  Structure->>DB: bloquea cambios de estructura, lee vigencia actual
   alt relación inexistente
     DB-->>API: 404 sin modificación
   else fecha final extiende un cierre finito
@@ -935,7 +935,7 @@ sequenceDiagram
   alt éxito o conflicto concurrente
     UI->>API: relee snapshot público y administrativo autorizado
     API-->>UI: estructura vigente y línea temporal completa
-    UI-->>Operator: presenta estado actualizado; no repite la mutación
+    UI-->>Operator: presenta estado actualizado, no repite la mutación
   else sesión o permiso rechazado
     UI->>Identity: revalida GET /api/v1/me
     Identity-->>UI: sesión o permisos actuales
@@ -962,7 +962,7 @@ sequenceDiagram
   Operator->>UI: crea revisión con referencia y actividades
   UI->>API: POST /{periodId}/calendars
   API->>Auth: exige academic:period:write
-  API->>Period: valida fechas propias de las actividades; ventanas independientes del rango lectivo
+  API->>Period: valida fechas propias de las actividades, ventanas independientes del rango lectivo
   Period->>DB: nueva revisión DRAFT + auditoría
   Operator->>UI: confirma publicar la revisión
   UI->>API: POST /{periodId}/calendars/{revisionId}/publish
@@ -986,14 +986,14 @@ sequenceDiagram
   UI->>API: GET /api/v1/admin/academic-periods/{periodId}/history con Bearer
   API->>Auth: exige academic:period:read
   API-->>UI: revisiones, actividades y eventos auditados
-  Note over UI: Carga bajo demanda; se cancela y oculta al cerrar o perder lectura
+  Note over UI: Carga bajo demanda, se cancela y oculta al cerrar o perder lectura
   Operator->>UI: solicita cerrar el periodo OPEN y confirma explícitamente
   UI->>API: POST /{periodId}/close con Bearer
   API->>Auth: exige academic:period:write
   API->>Period: valida el estado actual y la transición solicitada
   Period->>DB: actualiza estado + actor + instante + auditoría
   API-->>UI: periodo con estado nuevo
-  Note over UI,DB: La transición solo cambia estado; no publica oferta ni abre matrícula
+  Note over UI,DB: La transición solo cambia estado, no publica oferta ni abre matrícula
 ```
 
 El permiso administrativo se valida en Spring Security por ruta. React habilita la creación, edición de borradores de calendario, publicación y aprobación solo con `academic:period:read` y `academic:period:write`; una revisión publicada requiere confirmación explícita y queda inmutable. Aprobar y abrir requieren la revisión publicada más reciente y la referencia aprobatoria separada del acto del calendario. El cierre requiere `OPEN`; cancelar solo se permite antes de abrir y registra su referencia. Las mutaciones usan bloqueo transaccional por periodo y comparan la revisión de calendario observada; si otra solicitud la cambia antes de la transición, la solicitud antigua recibe conflicto sin revertir la enmienda ni escribir auditoría parcial. Ante `409`, React vuelve a consultar los periodos dentro del alcance autorizado, descarta la confirmación antigua y pide revisar el estado antes de intentar otra vez; ante `401/403`, revalida `/api/v1/me` y suspende el token rechazado para escritura. El historial con todas las revisiones, actividades y eventos se consulta bajo demanda mediante una ruta administrativa de solo lectura protegida por `academic:period:read`; cerrar el panel cancela la consulta y perder lectura oculta la vista. React solo ofrece abrir para estados `APPROVED` y cerrar para `OPEN`, pide confirmación y conserva denegadas ambas acciones si falta el permiso de escritura. Sin permiso de lectura, solo muestra periodos públicamente abiertos; el backend sigue siendo la autoridad final.
@@ -1085,7 +1085,7 @@ sequenceDiagram
       API-->>UI: nueva versión
     else otra operación ya cambió el borrador
       Service-->>API: conflicto de versión
-      API-->>UI: 409; sin reintento automático ni evento parcial
+      API-->>UI: 409, sin reintento automático ni evento parcial
     end
   end
 
@@ -1106,8 +1106,8 @@ sequenceDiagram
     UI->>Me: revalida permisos ante 401/403
   end
 
-  Note over UI,DB: Capacidad propuesta solamente; no hay publicación, cupos disponibles, inscripción ni matrícula
-  Note over API,DB: Fechas y periodo viven en entidades existentes; el ciclo OPEN/CLOSED no se modifica
+  Note over UI,DB: Capacidad propuesta solamente, no hay publicación, cupos disponibles, inscripción ni matrícula
+  Note over API,DB: Fechas y periodo viven en entidades existentes, el ciclo OPEN/CLOSED no se modifica
 ```
 
 La lista y el historial aceptan páginas de 1 a 100 filas. React carga inicialmente 25, valida las respuestas, aplica cursores opacos y solo agrega la página siguiente bajo la misma autorización. Crear y editar requieren lectura y escritura; cada ruta backend vuelve a autorizar. Un currículo o periodo inexistente y un currículo no publicado se rechazan antes de insertar; las claves foráneas duplicadas regresan conflicto y no guardan evento parcial. Una respuesta 409 termina el intento, actualiza la lectura y pide al operador revisar la nueva versión antes de editar.
@@ -1132,7 +1132,7 @@ sequenceDiagram
   IdP-->>UI: access token
   UI->>UI: elimina code/state de la URL y conserva usuario y tokens solo en memoria
   UI->>API: GET /api/v1/me con Authorization Bearer
-  API->>Auth: valida firma, issuer y audience; resuelve o registra idempotentemente el vínculo OIDC mínimo
+  API->>Auth: valida firma, issuer y audience, resuelve o registra idempotentemente el vínculo OIDC mínimo
   Auth->>Auth: consulta asignaciones por user_id canónico + mapa explícito de permisos externos
   Auth-->>API: userId canónico + subject opaco + permisos internos efectivos
   API-->>UI: userId, subject y permisos, Cache-Control no-store
@@ -1158,7 +1158,7 @@ sequenceDiagram
   API->>Store: emite bearer aleatorio de 256 bits, TTL 4 h
   Store-->>API: token de proceso no persistido
   API-->>React: accessToken + expiresAt, Cache-Control no-store
-  React->>React: conserva token solo en memoria; muestra banda de preview
+  React->>React: conserva token solo en memoria, muestra banda de preview
   React->>Me: GET /api/v1/me con bearer
   Me->>Store: el decoder acepta solo token activo del perfil
   Store-->>Me: issuer/subject sintético local
@@ -1191,7 +1191,7 @@ sequenceDiagram
 
   Operator->>UI: inicia sesión con el proveedor configurado
   UI->>Me: consulta permisos y asignaciones activas
-  Me->>Auth: valida JWT; resuelve/crea user_id mínimo y combina mapeo explícito con roles vigentes
+  Me->>Auth: valida JWT, resuelve/crea user_id mínimo y combina mapeo explícito con roles vigentes
   Auth-->>Me: userId canónico, subject opaco y permisos efectivos
   Me-->>UI: resumen de sesión con Cache-Control no-store
   UI->>UI: oculta #accesos si falta identity:roles:read
@@ -1201,7 +1201,7 @@ sequenceDiagram
   Auth-->>API: permiso efectivo del servidor
   API->>DB: consulta vínculos del directorio y asignaciones por user_id
   DB-->>API: userId, subjects opacos y roles/ámbitos
-  API-->>UI: resultados mínimos; seleccionar/query por userId, sin correo ni perfil personal
+  API-->>UI: resultados mínimos, seleccionar/query por userId, sin correo ni perfil personal
   alt La página llega al tope de 100 coincidencias
     UI-->>Operator: avisa que muestra las primeras 100 y pide afinar el prefijo
   end
@@ -1214,7 +1214,7 @@ sequenceDiagram
     UseCase->>DB: transacción de asignación o revocación
     UseCase->>Audit: registra userId, identityId, referencia y transición de versión
     DB-->>UseCase: commit conjunto o rollback
-    API-->>UI: resultado o conflicto 409; nunca reintenta la escritura
+    API-->>UI: resultado o conflicto 409, nunca reintenta la escritura
   end
 ```
 
@@ -1315,7 +1315,7 @@ sequenceDiagram
   API-->>React: entidades del departamento seleccionado
   React-->>Reviewer: selector, búsqueda local y atribución DANE
   Note over React,API: Sin POST, MySQL, solicitud de inscripción ni llamada externa en tiempo de ejecución
-  Note over React,Snapshot: Solo Vite DEV; actualizar el snapshot exige revisar la publicación DANE
+  Note over React,Snapshot: Solo Vite DEV, actualizar el snapshot exige revisar la publicación DANE
 ```
 
 Si cambia el departamento, React limpia la entidad seleccionada y aborta la consulta anterior; las respuestas obsoletas se descartan. El fallo de carga ofrece reintento y una búsqueda vacía permite limpiar el filtro. El snapshot de DANE DIVIPOLA/MGN 2025 contiene 33 departamentos y 1.122 entidades (1.103 municipios, una isla y 18 áreas no municipalizadas); las filas mantienen `dataYear` 2024 o 2025. Esta referencia territorial no reemplaza el directorio oficial de colegios ni habilita inscripción o selección de aspirantes.
@@ -1345,7 +1345,7 @@ sequenceDiagram
     API->>API: valida formato y límites del escenario
     API->>Planner: propose(scenario)
     Planner->>Planner: comprueba capacidad, equipo y cruces [inicio, fin)
-    Planner-->>API: máximo de grupos; desempate por menor holgura
+    Planner-->>API: máximo de grupos, desempate por menor holgura
     API-->>Client: propuesta efímera o 400/422
     Client-->>React: respuesta validada
     React-->>Reviewer: muestra asignaciones y causas sin aula
@@ -1420,7 +1420,7 @@ sequenceDiagram
   Module->>Security: realiza su solicitud
   Security-->>Module: valida el permiso en el servidor
 
-  Note over Persona,Home: La portada orienta la navegación; nunca concede permisos
+  Note over Persona,Home: La portada orienta la navegación, nunca concede permisos
 ```
 
 `/#inicio` continúa siendo el Centro de Identidad Visual. OIDC puede conservar `#resumen` como retorno interno. Sin sesión, la portada omite los enlaces administrativos. Los módulos sintéticos desconectados no aparecen en la portada ni en la navegación.
@@ -1474,7 +1474,7 @@ sequenceDiagram
   React->>React: presenta nueve fichas tipadas con fuente y fecha
   React-->>Visitor: muestra servicios institucionales en cinco categorías
   Visitor->>React: escribe texto o elige una categoría
-  React->>React: normaliza tildes y mayúsculas; filtra localmente
+  React->>React: normaliza tildes y mayúsculas, filtra localmente
   React-->>Visitor: anuncia el total de coincidencias
   alt Sin coincidencias
     React-->>Visitor: explica el estado vacío y ofrece limpiar filtros
