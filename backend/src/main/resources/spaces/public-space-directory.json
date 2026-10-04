@@ -331,6 +331,36 @@
           }
         ]
       }
+    },
+    {
+      "id": "auditorium-goranchacha-2026",
+      "kind": "SERVICE",
+      "name": "Auditorio Goranchacha · UPTC",
+      "municipality": "Tunja",
+      "department": "Boyacá",
+      "address": null,
+      "locationDetail": "Edificio de Posgrados, Sede Central de Tunja, según el comunicado UPTC.",
+      "mapQuery": null,
+      "source": {
+        "label": "Comunicado UPTC n.º 230 · apertura del Auditorio Goranchacha",
+        "url": "https://uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/Nuevo-Auditorio-Goranchacha-de-la-UPTC-abrio-sus-puertas-a-la-comunidad-universitaria/",
+        "checkedAt": "2026-10-04",
+        "sourceUpdatedAt": "2026-09-09"
+      },
+      "announcement": {
+        "capacities": [
+          { "areaName": "Capacidad aproximada", "announcedCapacityPersons": 450 }
+        ],
+        "locationNote": "El comunicado UPTC del 9 de septiembre de 2026 reporta capacidad aproximada de 450 personas. Esta cifra no indica disponibilidad actual.",
+        "locationReferences": [
+          {
+            "label": "UPTC Radio · referencia pública del Auditorio Goranchacha",
+            "url": "https://dsp.uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/UPTC-Radio-celebra-25-anos-al-aire-como-voz-academica-cultural-e-institucional-de-la-Universidad/",
+            "checkedAt": "2026-10-04",
+            "sourceUpdatedAt": "2026-09-29"
+          }
+        ]
+      }
     }
   ]
 }

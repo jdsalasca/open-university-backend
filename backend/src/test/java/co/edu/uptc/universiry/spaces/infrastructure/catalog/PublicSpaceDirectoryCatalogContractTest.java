@@ -21,11 +21,11 @@ class PublicSpaceDirectoryCatalogContractTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void publishes_twenty_two_locations_with_unique_ids_and_traceable_sources() throws IOException {
+    void publishes_twenty_three_locations_with_unique_ids_and_traceable_sources() throws IOException {
         JsonNode snapshot = readSnapshot();
         JsonNode locations = snapshot.path("locations");
 
-        assertEquals(22, locations.size());
+        assertEquals(23, locations.size());
 
         Set<String> ids = new HashSet<>();
         int campuses = 0;
@@ -36,8 +36,11 @@ class PublicSpaceDirectoryCatalogContractTest {
             assertFalse(location.path("name").asText().isBlank());
             assertFalse(location.path("source").path("label").asText().isBlank());
             assertTrue(location.path("source").path("url").asText().startsWith("https://"));
-            String expectedCheckedAt = "service-music-library-2026".equals(location.path("id").asText())
-                    ? "2026-10-03" : "2026-10-01";
+            String expectedCheckedAt = switch (location.path("id").asText()) {
+                case "service-music-library-2026" -> "2026-10-03";
+                case "auditorium-goranchacha-2026" -> "2026-10-04";
+                default -> "2026-10-01";
+            };
             assertEquals(expectedCheckedAt, location.path("source").path("checkedAt").asText());
             switch (location.path("kind").asText()) {
                 case "CAMPUS", "REGIONAL_SITE" -> campuses++;
@@ -49,7 +52,7 @@ class PublicSpaceDirectoryCatalogContractTest {
 
         assertEquals(6, campuses);
         assertEquals(11, creadLocations);
-        assertEquals(5, services);
+        assertEquals(6, services);
         assertEquals("https://www.uptc.edu.co/sitio/portal/sitios/directorio/",
                 snapshot.path("officialOfficeDirectoryUrl").asText());
     }

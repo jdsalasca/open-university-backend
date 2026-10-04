@@ -21,7 +21,7 @@ class ClasspathPublicSpaceDirectoryAdapterTest {
         var snapshot = directory.snapshot();
 
         assertNotNull(snapshot);
-        assertEquals(22, snapshot.locations().size());
+        assertEquals(23, snapshot.locations().size());
         assertEquals(5, snapshot.requestPathways().size());
         assertEquals("Sede Central Tunja", snapshot.locations().getFirst().name());
         var music = snapshot.locations().stream()
