@@ -11,7 +11,8 @@ public record SpaceLocation(
         String address,
         String locationDetail,
         String mapQuery,
-        SpaceSource source
+        SpaceSource source,
+        SpaceAnnouncement announcement
 ) {
 
     public SpaceLocation {
@@ -38,5 +39,9 @@ public record SpaceLocation(
             throw new IllegalArgumentException("A location without a street address needs a published location detail.");
         }
         Objects.requireNonNull(source, "Location source must not be null.");
+        if (announcement != null && (kind != SpaceLocationKind.SERVICE || address != null || mapQuery != null)) {
+            throw new IllegalArgumentException(
+                    "An announced service location must not imply a street address or map query.");
+        }
     }
 }

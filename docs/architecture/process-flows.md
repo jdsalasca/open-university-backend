@@ -1368,10 +1368,14 @@ sequenceDiagram
   Visitor->>React: abre la guía pública
   React->>API: GET anónimo con Accept: application/json
   API->>Catalog: consulta PublicSpaceDirectory.snapshot()
-  Catalog-->>API: 21 ubicaciones y 5 rutas oficiales con sus fuentes
+  Catalog-->>API: 22 ubicaciones y 5 rutas oficiales con sus fuentes
   API-->>React: instantánea de solo lectura
   React->>React: busca texto sin tildes y filtra por tipo y municipio publicado
   React-->>Visitor: ubicaciones publicadas y tarjetas de rutas institucionales
+  opt La ficha incluye capacidades anunciadas
+    React-->>Visitor: presenta cada área y capacidad por separado con una advertencia de vigencia
+    React-->>Visitor: muestra el conflicto de ubicación y las referencias oficiales
+  end
   Visitor->>Source: activa enlace de una fuente UPTC
   Source-->>Visitor: confirma ubicación y detalles actuales
   opt La entrada incluye dirección postal publicada
@@ -1380,7 +1384,7 @@ sequenceDiagram
   end
 ```
 
-El primer corte enumera 6 sedes, 11 CREAD y 4 puntos de servicio, además de cinco rutas de orientación pública respaldadas por páginas y actos oficiales; es un catálogo parcial. Las tarjetas enlazan a fuentes distintas para préstamo/alquiler académico, deporte, bibliotecas, aulas de informática y Break Room de personal. No se consolidan reglas incompatibles ni se presentan cupos o reservas. Departamento y fecha de actualización quedan nulos cuando la fuente no los declara. En Rondón, la fuente describe un segundo piso dentro de la biblioteca municipal, pero no publica dirección postal: la ficha muestra esa referencia y omite el enlace cartográfico. Branding `spaces.available/visible` controla la navegación lateral, no la lectura pública directa. Los errores de API ofrecen reintento, el catálogo vacío informa que no hay coincidencias y una búsqueda sin resultado permite limpiar los filtros. La lista de fuentes y sus fechas están en [la especificación](../superpowers/specs/2026-10-01-space-guide-design.md).
+El corte enumera 6 sedes, 11 CREAD y 5 puntos de servicio, además de cinco rutas de orientación pública respaldadas por páginas y actos oficiales; es un catálogo parcial. Las tarjetas enlazan a fuentes distintas para préstamo/alquiler académico, deporte, bibliotecas, aulas de informática y Break Room de personal. La ficha de Música presenta por separado las capacidades anunciadas de 30, 8 y 25 personas, mantiene el conflicto publicado entre primer y segundo piso y no genera dirección, mapa, total agregado, disponibilidad ni reserva. No se consolidan reglas incompatibles ni se presentan cupos actuales. Departamento y fecha de actualización quedan nulos cuando la fuente no los declara. En Rondón, la fuente describe un segundo piso dentro de la biblioteca municipal, pero no publica dirección postal: la ficha muestra esa referencia y omite el enlace cartográfico. Branding `spaces.available/visible` controla la navegación lateral, no la lectura pública directa. Los errores de API ofrecen reintento, el catálogo vacío informa que no hay coincidencias y una búsqueda sin resultado permite limpiar los filtros. La lista de fuentes y sus fechas están en [la especificación](../superpowers/specs/2026-10-01-space-guide-design.md).
 
 ## Portada unificada y navegación por capacidades
 

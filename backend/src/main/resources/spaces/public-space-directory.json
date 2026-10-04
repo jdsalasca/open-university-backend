@@ -293,6 +293,44 @@
       "locationDetail": "Edificio de Posgrados, primer piso, oficina 103",
       "mapQuery": "Edificio de Posgrados UPTC, Calle 39 No. 6-63, Tunja, Boyacá",
       "source": { "label": "Normatividad, Escuela de Posgrados de Ciencias UPTC", "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/facultades/fac_ciencias/posg/esp_0145_v/06_InfoComplementaria/01_norm.html", "checkedAt": "2026-10-01", "sourceUpdatedAt": "2026-06-01" }
+    },
+    {
+      "id": "service-music-library-2026",
+      "kind": "SERVICE",
+      "name": "Biblioteca de Música y Sala de Estudio · UPTC",
+      "municipality": "Tunja",
+      "department": null,
+      "address": null,
+      "locationDetail": "Segundo piso del Edificio de Música, según el comunicado UPTC.",
+      "mapQuery": null,
+      "source": {
+        "label": "Comunicado UPTC n.º 067 · Escuela de Música",
+        "url": "https://www.uptc.edu.co/sitio/mercury-demo/detail-pages/article/Escuela-de-Musica-de-la-UPTC-estrena-biblioteca-y-sala-de-estudio-nuevos-espacios-para-la-formacion-y-la-creacion-artistica/",
+        "checkedAt": "2026-10-03",
+        "sourceUpdatedAt": "2026-03-24"
+      },
+      "announcement": {
+        "capacities": [
+          { "areaName": "Zona de estudio teórico e histórico", "announcedCapacityPersons": 30 },
+          { "areaName": "Zona de atención central", "announcedCapacityPersons": 8 },
+          { "areaName": "Sala de estudio", "announcedCapacityPersons": 25 }
+        ],
+        "locationNote": "El comunicado del 24 de marzo de 2026 ubica los nuevos espacios en el segundo piso; la ficha de Biblioteca Presencial aún ubica la Biblioteca Especializada en Música en el primer piso. La ubicación definitiva requiere confirmación de Biblioteca; confirma antes de desplazarte.",
+        "locationReferences": [
+          {
+            "label": "Biblioteca de la Facultad de Estudios a Distancia · Biblioteca de Música",
+            "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/bibl/7secc/06fac/index.html",
+            "checkedAt": "2026-10-03",
+            "sourceUpdatedAt": "2024-10-10"
+          },
+          {
+            "label": "Biblioteca presencial UPTC · Biblioteca Especializada en Música",
+            "url": "https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/bibl/4_bpd/blbl_pres.html",
+            "checkedAt": "2026-10-03",
+            "sourceUpdatedAt": "2022-08-11"
+          }
+        ]
+      }
     }
   ]
 }

@@ -21,9 +21,15 @@ class ClasspathPublicSpaceDirectoryAdapterTest {
         var snapshot = directory.snapshot();
 
         assertNotNull(snapshot);
-        assertEquals(21, snapshot.locations().size());
+        assertEquals(22, snapshot.locations().size());
         assertEquals(5, snapshot.requestPathways().size());
         assertEquals("Sede Central Tunja", snapshot.locations().getFirst().name());
+        var music = snapshot.locations().stream()
+                .filter(location -> "service-music-library-2026".equals(location.id()))
+                .findFirst()
+                .orElseThrow();
+        assertNotNull(music.announcement());
+        assertEquals(3, music.announcement().capacities().size());
         assertEquals("https://www.uptc.edu.co/sitio/portal/sitios/directorio/",
                 snapshot.officialOfficeDirectoryUrl());
     }

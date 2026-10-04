@@ -21,11 +21,11 @@ class PublicSpaceDirectoryCatalogContractTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void publishes_twenty_one_locations_with_unique_ids_and_traceable_sources() throws IOException {
+    void publishes_twenty_two_locations_with_unique_ids_and_traceable_sources() throws IOException {
         JsonNode snapshot = readSnapshot();
         JsonNode locations = snapshot.path("locations");
 
-        assertEquals(21, locations.size());
+        assertEquals(22, locations.size());
 
         Set<String> ids = new HashSet<>();
         int campuses = 0;
@@ -36,7 +36,9 @@ class PublicSpaceDirectoryCatalogContractTest {
             assertFalse(location.path("name").asText().isBlank());
             assertFalse(location.path("source").path("label").asText().isBlank());
             assertTrue(location.path("source").path("url").asText().startsWith("https://"));
-            assertEquals("2026-10-01", location.path("source").path("checkedAt").asText());
+            String expectedCheckedAt = "service-music-library-2026".equals(location.path("id").asText())
+                    ? "2026-10-03" : "2026-10-01";
+            assertEquals(expectedCheckedAt, location.path("source").path("checkedAt").asText());
             switch (location.path("kind").asText()) {
                 case "CAMPUS", "REGIONAL_SITE" -> campuses++;
                 case "CREAD" -> creadLocations++;
@@ -47,9 +49,43 @@ class PublicSpaceDirectoryCatalogContractTest {
 
         assertEquals(6, campuses);
         assertEquals(11, creadLocations);
-        assertEquals(4, services);
+        assertEquals(5, services);
         assertEquals("https://www.uptc.edu.co/sitio/portal/sitios/directorio/",
                 snapshot.path("officialOfficeDirectoryUrl").asText());
+    }
+
+    @Test
+    void publishes_music_announcement_capacities_separately_and_preserves_the_floor_conflict() throws IOException {
+        JsonNode snapshot = readSnapshot();
+        JsonNode music = findById(snapshot, "service-music-library-2026");
+
+        assertEquals("SERVICE", music.path("kind").asText());
+        assertEquals("Tunja", music.path("municipality").asText());
+        assertTrue(music.get("address").isNull());
+        assertTrue(music.get("mapQuery").isNull());
+        assertEquals("https://www.uptc.edu.co/sitio/mercury-demo/detail-pages/article/Escuela-de-Musica-de-la-UPTC-estrena-biblioteca-y-sala-de-estudio-nuevos-espacios-para-la-formacion-y-la-creacion-artistica/",
+                music.path("source").path("url").asText());
+        assertEquals("2026-03-24", music.path("source").path("sourceUpdatedAt").asText());
+        assertEquals("2026-10-03", music.path("source").path("checkedAt").asText());
+
+        JsonNode announcement = music.path("announcement");
+        JsonNode capacities = announcement.path("capacities");
+        assertEquals(3, capacities.size());
+        assertEquals("Zona de estudio teórico e histórico", capacities.get(0).path("areaName").asText());
+        assertEquals(30, capacities.get(0).path("announcedCapacityPersons").asInt());
+        assertEquals("Zona de atención central", capacities.get(1).path("areaName").asText());
+        assertEquals(8, capacities.get(1).path("announcedCapacityPersons").asInt());
+        assertEquals("Sala de estudio", capacities.get(2).path("areaName").asText());
+        assertEquals(25, capacities.get(2).path("announcedCapacityPersons").asInt());
+        assertFalse(announcement.path("locationNote").asText().isBlank());
+        assertTrue(announcement.path("locationNote").asText().contains("segundo piso"));
+        assertTrue(announcement.path("locationNote").asText().contains("primer piso"));
+        assertEquals(2, announcement.path("locationReferences").size());
+        for (JsonNode source : announcement.path("locationReferences")) {
+            assertTrue(source.path("url").asText().startsWith("https://"));
+            assertEquals("2026-10-03", source.path("checkedAt").asText());
+        }
+        assertFalse(announcement.has("totalCapacity"));
     }
 
     @Test

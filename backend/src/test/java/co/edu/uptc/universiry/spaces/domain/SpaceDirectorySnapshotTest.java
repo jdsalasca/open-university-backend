@@ -65,7 +65,7 @@ class SpaceDirectorySnapshotTest {
         return new SpaceLocation(id, SpaceLocationKind.CREAD, id, "Bogotá", department,
                 "Carrera 13 No. 24-15", "Instalaciones INCCA", "Bogotá UPTC",
                 new SpaceSource("UPTC", "https://uptc.edu.co/source",
-                        LocalDate.of(2026, 10, 1), null));
+                        LocalDate.of(2026, 10, 1), null), null);
     }
 
     private SpaceUsePathway pathway(String id) {

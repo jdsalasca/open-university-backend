@@ -8,7 +8,7 @@
 
 UPTC publica varios procesos para ocupar espacios. Los auditorios/espacios académicos y administrativos, los escenarios deportivos y las salas de biblioteca tienen responsables, reglas de anticipación, elegibilidad y aprobación diferentes. El producto futuro necesita inventario y políticas por recurso/servicio; una única regla global de “reservar salón” no refleja lo publicado.
 
-La [guía pública de espacios de esta plataforma](../../README.md) combina el directorio de ubicaciones (6 sedes, 11 CREAD y 4 puntos de servicio) con cinco rutas informativas hacia fuentes oficiales: préstamo/alquiler académico o administrativo, escenarios deportivos, salas de biblioteca, asignación de aulas de informática y uso interno del Break Room. No contiene inventario físico vigente, disponibilidad, dotación, responsables completos ni tarifas; no recibe solicitudes ni habilita reservas o alquiler. La revisión de fuentes también localizó espacios de Música anunciados en marzo de 2026 que todavía requieren conciliación con una página de biblioteca que conserva otra ubicación.
+La [guía pública de espacios de esta plataforma](../../README.md) combina el directorio de ubicaciones (6 sedes, 11 CREAD y 5 puntos de servicio) con cinco rutas informativas hacia fuentes oficiales: préstamo/alquiler académico o administrativo, escenarios deportivos, salas de biblioteca, asignación de aulas de informática y uso interno del Break Room. No contiene inventario físico vigente, disponibilidad, dotación, responsables completos ni tarifas; no recibe solicitudes ni habilita reservas o alquiler. La ficha de Música presenta de forma separada las capacidades anunciadas en marzo de 2026 y deja visible la diferencia de ubicación con la página de Biblioteca, que aún requiere conciliación institucional.
 
 La vista enlaza únicamente a los canales y normas publicados y explica que la vigencia y la disponibilidad deben confirmarse con la unidad responsable. La discrepancia del aforo de La Saleta (24 en la página de servicio y 25 en el PDF de condiciones) aparece como advertencia, no como dato resuelto. Ningún formulario ni endpoint de escritura se añade para estos trámites.
 
@@ -33,7 +33,7 @@ La búsqueda de fuentes oficiales de UPTC consultada el 3 de octubre de 2026 con
 
 La consulta directa de ambas URL devolvió HTTP 502 durante esta revalidación. Por tanto, el contraste se basa en el texto indexado de los dominios oficiales, no en una lectura directa completada ni en una confirmación de la unidad responsable. La página de pruebas de admisión que también menciona el primer piso se refiere al lugar de una prueba, no a la biblioteca, y no resuelve la discrepancia.
 
-La ubicación definitiva sigue sin confirmar. Las capacidades citadas son datos anunciados por el comunicado: no son cupos actuales, disponibilidad ni autorización de reserva. No inferir dirección postal, coordenadas, accesibilidad o recorrido interior a partir de estas fuentes.
+La guía muestra esta información como anuncio con capacidades separadas (30, 8 y 25), referencias y advertencia visible sobre la ubicación pendiente de confirmar. No las suma ni las presenta como cupos actuales, disponibilidad o autorización de reserva. No inferir dirección postal, coordenadas, accesibilidad o recorrido interior a partir de estas fuentes.
 
 ## Flujo preliminar por familia
 
