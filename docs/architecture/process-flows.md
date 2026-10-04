@@ -1452,7 +1452,7 @@ El [registro de procedencia](../discovery/uptc-undergraduate-directory-snapshot-
 
 ## Directorio público de servicios estudiantiles
 
-El directorio `/#estudiantes` combina cuatro fichas estáticas de Bienestar y Biblioteca. La búsqueda y el filtro por categoría operan en memoria del navegador; ningún texto de búsqueda se envía al backend o se persiste. La persona abre una fuente UPTC oficial solo al activar su enlace.
+El directorio `/#estudiantes` combina cinco fichas estáticas de Bienestar y Biblioteca; Bienestar Virtual y la Línea de Apoyo Socioeconómico son fichas separadas. La búsqueda y el filtro por categoría operan en memoria del navegador; ningún texto de búsqueda se envía al backend o se persiste. La persona abre una fuente UPTC oficial solo al activar su enlace.
 
 ```mermaid
 sequenceDiagram
@@ -1461,7 +1461,7 @@ sequenceDiagram
   participant Source as Portal oficial UPTC
 
   Visitor->>React: abre el directorio
-  React->>React: presenta cuatro fichas tipadas con fuente y fecha
+  React->>React: presenta cinco fichas tipadas con fuente y fecha
   React-->>Visitor: muestra Bienestar y Biblioteca
   Visitor->>React: escribe texto o elige una categoría
   React->>React: normaliza tildes y mayúsculas; filtra localmente
@@ -1469,13 +1469,13 @@ sequenceDiagram
   alt Sin coincidencias
     React-->>Visitor: explica el estado vacío y ofrece limpiar filtros
     Visitor->>React: restablece búsqueda y categoría
-    React-->>Visitor: vuelve a mostrar las cuatro fichas y enfoca la búsqueda
+    React-->>Visitor: vuelve a mostrar las cinco fichas y enfoca la búsqueda
   end
   Visitor->>Source: activa el enlace HTTPS de una ficha
   Source-->>Visitor: presenta la información institucional vigente
 ```
 
-Las fichas orientan y no confirman requisitos, cupos ni disponibilidad. Aunque el título mencione préstamo o consulta, Universiry no presta recursos ni reserva espacios. El navegador abre las páginas públicas en otra pestaña con `noopener noreferrer`. La revisión de fuentes registra que el contenido se comprobó en resultados indexados oficiales y que no se pudo recuperar directamente cada página en esta sesión; las áreas de Bienestar y Biblioteca deben validar el catálogo y su mantenimiento antes de tratarlo como contenido institucional vigente. Ver [el registro de fuentes](../discovery/uptc-student-services-directory-2026-10.md).
+Las fichas orientan y no confirman requisitos, cupos ni disponibilidad. Aunque el título mencione préstamo o consulta, Universiry no presta recursos ni reserva espacios. El navegador abre las páginas públicas en otra pestaña con `noopener noreferrer`. La revisión del 3 de octubre se apoyó en resultados indexados oficiales; algunas páginas no se pudieron recuperar directamente. Las áreas de Bienestar y Biblioteca deben validar el catálogo y su mantenimiento antes de tratarlo como contenido institucional vigente. Ver [el registro de fuentes](../discovery/uptc-student-services-directory-2026-10.md).
 
 ## Catálogo y circulación de biblioteca
 

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "project": "Universiry UPTC",
+  "integrationTarget": "develop",
+  "features": [
+    {
+      "id": "keep-current-remote-capabilities",
+      "status": "covered",
+      "acceptance": "Curriculum comparison, public undergraduate directory, workspace home, and the current student services directory remain at the newest remote develop versions."
+    },
+    {
+      "id": "separate-socioeconomic-support",
+      "status": "verified-locally",
+      "acceptance": "The public student services page has a separate official link for socioeconomic support and clearly identifies the visible source update date without claiming current availability."
+    },
+    {
+      "id": "publish-frontend-first",
+      "status": "published-verified",
+      "acceptance": "Frontend tests, lint, and build pass before a fast-forward push to origin/develop."
+    },
+    {
+      "id": "sync-backend-submodule",
+      "status": "pending-push",
+      "acceptance": "Backend develop points to the published frontend develop SHA and backend verification passes before its fast-forward push."
+    },
+    {
+      "id": "single-remote-branch",
+      "status": "verified-at-start",
+      "acceptance": "Both GitHub remotes expose only refs/heads/develop."
+    }
+  ]
+}
