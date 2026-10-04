@@ -25,6 +25,7 @@ Cada remoto anuncia solo `refs/heads/develop`. Los checkouts antiguos se mantien
 
 - Ampliar `/#estudiantes` de cinco a nueve fichas públicas con enlaces UPTC para UPTC Conecta, SIRA/Campus Virtual, opciones de inscripción de materias y calendario de pregrado. La página sigue siendo informativa: no consulta horarios/notas personales, no procesa inscripciones y no solicita credenciales.
 - Hacer accesible como `role="alert"` el error de la carga inicial del directorio público de pregrado.
+- Enlazar desde el respaldo público 2027-I el registro oficial de la Resolución 111 de 2026 en la Compilación Normativa UPTC; la referencia no se aplica a convocatorias posteriores ni interpreta el acto.
 - Documentar las fuentes, su alcance editorial y los límites de interpretación en `docs/discovery/uptc-student-services-directory-2026-10.md`.
 
 ## Secuencia verificada
@@ -40,6 +41,7 @@ Cada remoto anuncia solo `refs/heads/develop`. Los checkouts antiguos se mantien
 
 - Ambas referencias `origin/develop` coinciden con sus worktrees activos y el gitlink del backend coincide con `Universiry-frontend/develop`.
 - Las rutas nuevas apuntan a páginas institucionales HTTPS y no implican elegibilidad, vigencia, cupos, trámites ni acceso automatizado.
+- El enlace a la Resolución 111 se muestra solo cuando el calendario de respaldo lo incluye; un calendario publicado distinto no hereda ese acto.
 - Las pruebas del directorio cubren consulta, enlaces y error accesible; la suite, lint y build completos del frontend pasan.
 - Backend CI pasa con su workflow normal; ningún dato personal o secreto se incorpora.
 - El preview sigue en `http://localhost:5175`, Compose Watch actualiza el contenedor y los archivos temporales de prueba quedan retirados.

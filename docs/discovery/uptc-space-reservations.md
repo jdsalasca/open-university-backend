@@ -35,6 +35,15 @@ La consulta directa de ambas URL devolvió HTTP 502 durante esta revalidación. 
 
 La guía muestra esta información como anuncio con capacidades separadas (30, 8 y 25), referencias y advertencia visible sobre la ubicación pendiente de confirmar. No las suma ni las presenta como cupos actuales, disponibilidad o autorización de reserva. No inferir dirección postal, coordenadas, accesibilidad o recorrido interior a partir de estas fuentes.
 
+## Revalidación de ubicación de Música — 2026-10-04
+
+La consulta de resultados indexados de los dominios oficiales UPTC el 4 de octubre de 2026 conserva la diferencia:
+
+- El [comunicado del 24 de marzo de 2026](https://www.uptc.edu.co/sitio/mercury-demo/detail-pages/article/Escuela-de-Musica-de-la-UPTC-estrena-biblioteca-y-sala-de-estudio-nuevos-espacios-para-la-formacion-y-la-creacion-artistica/) ubica los nuevos espacios anunciados en el segundo piso y describe capacidades separadas de 30, 8 y 25 personas.
+- La [Biblioteca Especializada en Música, en la página de Biblioteca presencial](https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/bibl/4_bpd/blbl_pres.html) sigue indexada en el primer piso. La página de [Bibliotecas de facultad](https://www.uptc.edu.co/sitio/portal/sitios/universidad/vic_aca/bibl/7secc/06fac/index.html) también presenta el primer piso y muestra actualización al 10 de octubre de 2024.
+
+La apertura directa de las tres páginas volvió a fallar con HTTP 502 durante esta revisión; por tanto, la evidencia directa disponible es el contenido indexado, no una respuesta de las unidades responsables. Las fuentes no permiten determinar si se refieren al mismo recinto, a espacios distintos o a una reubicación. Se conserva el aviso de discrepancia en la guía; no se cambia la ubicación ni se infieren reservas, aforo disponible o accesibilidad.
+
 ## Flujo preliminar por familia
 
 ```mermaid

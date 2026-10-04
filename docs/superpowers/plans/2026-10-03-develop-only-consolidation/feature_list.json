@@ -19,6 +19,11 @@
       "acceptance": "The initial public undergraduate directory load error is exposed through an accessible alert and covered by an AAA regression test."
     },
     {
+      "id": "link-official-2027-i-admissions-act",
+      "status": "published-verified",
+      "acceptance": "The informational 2027-I calendar links to the official UPTC compilation record for Resolution 111; the source is omitted from unrelated future calls, and the interface does not interpret rules or receive applications."
+    },
+    {
       "id": "publish-frontend-first",
       "status": "published-verified",
       "acceptance": "Frontend tests, lint, build, and CI pass before its fast-forward push to origin/develop."
