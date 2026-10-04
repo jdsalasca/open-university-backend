@@ -13,12 +13,13 @@
     },
     {
       "id": "legacy-checkout-reconciliation",
-      "status": "in_progress",
-      "description": "Record which local branches and worktrees are already superseded by current develop and preserve unresolved files for individual review.",
+      "status": "completed",
+      "description": "Record how local branches and worktrees compare with current develop, and preserve stale or generated files without overwriting the active implementations.",
       "acceptanceCriteria": [
         "Remote branches remain develop only.",
-        "No stale or generated files are committed as a batch.",
-        "Legacy worktrees remain unchanged."
+        "Feature worktrees were compared with current develop; no missing product delta was identified for transfer.",
+        "The legacy coordination-only commit and generated artifacts are excluded from develop.",
+        "Legacy worktrees and their local contents remain unchanged."
       ]
     }
   ]
