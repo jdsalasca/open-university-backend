@@ -1,6 +1,10 @@
 # Hallazgo: desplazamiento de diseño (CLS) en `/#programas`
 
-Fecha: 2026-10-03. Estado: **abierto, requiere decisión de producto**.
+Fecha: 2026-10-03. Estado: **cerrado el 2026-10-04**. Ver
+[la evidencia del cierre](../evidence/round-2026-10-04-programs-layout-shift/README.md). El CLS
+medido pasó de 0.8507 a 0 sin reordenar la página: el directorio público muestra una ventana de 24
+tarjetas con botón «Ver más», y el `Suspense` que lo envuelve reserva la altura que el directorio
+ocupa. Este documento se conserva como análisis original.
 
 ## Qué se observó
 
