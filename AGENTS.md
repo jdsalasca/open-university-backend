@@ -4,6 +4,10 @@
 
 Construir por etapas una plataforma institucional que unifique y reemplace los sistemas de la UPTC. La primera línea de trabajo cubre la identidad visual administrable, identidad y permisos, información básica del estudiante, fundamentos del catálogo académico (programas, mallas, currículos y asignaturas) y consultas públicas útiles de la vida universitaria. El alcance real de los legados se confirma mediante inventario institucional; los documentos públicos son antecedentes, no una fuente completa de requisitos.
 
+## Contexto común de trabajo
+
+Lee `docs/PROJECT.md` para la misión, visión, objetivo, ficha técnica y prioridad actual. Léelo junto con estas instrucciones antes de iniciar una tarea; consulta `docs/ROADMAP.md` y los documentos de descubrimiento del dominio para conocer su estado y dependencias. El alcance objetivo de la plataforma no significa que cada módulo ya esté implementado, aprobado o listo para producción.
+
 ## Arquitectura acordada
 
 - Dos repositorios Git privados y coordinados: `Universiry-frontend` contiene el monolito Vite/React/TypeScript y `Universiry-backend` contiene el monolito Java/Spring Boot, Compose, SDKMAN y la documentación de integración. Ambos usan `develop` como rama de integración.
