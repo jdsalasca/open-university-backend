@@ -1421,28 +1421,34 @@ sequenceDiagram
 
 `/#inicio` continúa siendo el Centro de Identidad Visual. OIDC puede conservar `#resumen` como retorno interno. Sin sesión, la portada omite los enlaces administrativos. Los módulos sintéticos desconectados no aparecen en la portada ni en la navegación.
 
-## Consulta del directorio público de pregrado UPTC
+## Consulta de los directorios públicos de programas UPTC
 
-`/#programas` carga un asset JSON estático con hash desde el mismo origen. La instantánea consultada el 2 de octubre de 2026 contiene 79 programas en 11 facultades; 72 registros llevan literalmente la marca «Programa ofertado» de la fuente. La página oficial indica actualización el 15 de septiembre de 2026. Estos datos son informativos y no se incorporan al maestro académico, a una migración ni a MySQL.
+`/#programas` ofrece dos instantáneas JSON estáticas desde el mismo origen, con carga diferida según la selección. Pregrado abre por defecto; su instantánea contiene 79 programas consultados el 2 de octubre de 2026 y la página indica actualización al 15 de septiembre. Posgrado contiene 139 fichas consultadas el 4 de octubre de 2026 y la página indica actualización al 3 de agosto. Los datos son informativos y no se incorporan al maestro académico, a una migración ni a MySQL.
 
 ```mermaid
 sequenceDiagram
   actor Persona as Visitante
   participant Browser as Navegador
   participant Route as React: #programas
-  participant Snapshot as Asset JSON estático con hash
+  participant UG as Asset JSON pregrado
+  participant PG as Asset JSON posgrado
   participant Source as Catálogo público y fichas UPTC
 
   Persona->>Browser: abre #programas
-  Browser->>Route: monta el directorio y la sección curricular separada
-  Route->>Snapshot: solicita el asset versionado del mismo origen
-  Snapshot-->>Route: programas, fuente y fechas
-  Route-->>Persona: presenta resultados, filtros y aviso sobre el marcador
+  Browser->>Route: monta el selector y la sección curricular separada
+  Route->>UG: carga por defecto el asset versionado de pregrado
+  UG-->>Route: programas, fuente y fechas
+  opt La persona cambia a posgrado
+    Persona->>Route: selecciona Posgrado
+    Route->>PG: carga el asset versionado de posgrado
+    PG-->>Route: programas, fuente y fechas
+  end
+  Route-->>Persona: presenta resultados, procedencia y límites de la instantánea activa
   Persona->>Route: busca y combina filtros
   Route->>Route: normaliza acentos y filtra en memoria
   Route-->>Persona: actualiza resultados o comunica que no hay coincidencias
   Persona->>Browser: activa una ficha oficial
-  Browser->>Source: abre el enlace publicado
+  Browser->>Source: abre el enlace oficial de la ficha publicada
 
   Note over Route,Snapshot: Sin API backend, MySQL, seed ni consulta runtime al sitio UPTC
   Note over Persona,Source: La marca no confirma convocatoria abierta, fechas, cupos ni admisión

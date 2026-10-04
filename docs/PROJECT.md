@@ -32,7 +32,7 @@ Avanzar hacia una plataforma universitaria coherente que pueda reemplazar sistem
 
 ### Misión de la próxima entrega
 
-Completar el hito local de navegación del portal en `/#resumen` y sus vistas públicas, mantener desconectados los módulos sintéticos que carecen de contrato y registrar arquitectura, fuentes y evidencia de validación. La siguiente tarea de dominio conserva como pendiente la conciliación de las ubicaciones públicas de los espacios de Música, sin elegir una ubicación hasta que la fuente responsable lo confirme.
+Completar en `/#programas` la consulta atribuida de pregrado y posgrado, mantener desconectados los módulos sintéticos que carecen de contrato y registrar arquitectura, fuentes y evidencia de validación. El directorio de posgrados debe conservar las fechas de su fuente, filtros locales y la advertencia de que no confirma disponibilidad ni convocatoria.
 
 ## Decisiones confirmadas
 
