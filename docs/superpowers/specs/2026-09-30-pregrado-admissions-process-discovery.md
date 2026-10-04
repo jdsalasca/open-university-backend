@@ -133,20 +133,20 @@ El diagrama representa reglas y fechas **publicadas**, no una máquina de estado
 flowchart LR
   Publish[ACRA publica convocatoria y calendario versionado]
   Pin[Venta de PIN<br/>21 sep–21 oct]
-  Benefit[Postulación y beneficio de inscripción<br/>canal del MEN; anuncia inicio 2027-I<br/>decreto/reglamento y operación por conciliar]
+  Benefit[Postulación y beneficio de inscripción<br/>canal del MEN, anuncia inicio 2027-I<br/>decreto/reglamento y operación por conciliar]
   Register[Inscripción web<br/>21 sep–23 oct<br/>primera y segunda opción]
   Verify[Verificación por ICFES<br/>28–29 oct]
   Exams{Programa o condición<br/>requiere evaluación?}
   Aptitude[Pruebas adicionales/aptitud<br/>según programa y convocatoria]
   Disability[Examen médico / lengua de señas<br/>según condición y calendario]
   Correct[Revisión de datos errados<br/>y actuaciones hasta 10 nov]
-  SIRA[Proceso de admisión SIRA<br/>11–12 nov; estado actual por validar]
-  Rank[Aplicar ponderación Saber 11<br/>y cupos aprobados; aptitud aprobada cuando aplica]
+  SIRA[Proceso de admisión SIRA<br/>11–12 nov, estado actual por validar]
+  Rank[Aplicar ponderación Saber 11<br/>y cupos aprobados, aptitud aprobada cuando aplica]
   First[Admitir primera opción<br/>por orden/reglas vigentes]
   Second[Opcionados a segunda opción<br/>si no admitido en primera y hay cupos]
   Special[Lista de casos especiales<br/>primera/segunda opción según 015/2021,<br/>2941/2021 y 5362/2025]
   Results[Publicar resultados admitidos<br/>13 nov]
-  Special2[Asignar cupos especiales de segunda opción<br/>14 dic; antes de admitir opcionados]
+  Special2[Asignar cupos especiales de segunda opción<br/>14 dic, antes de admitir opcionados]
   Calls[Llamados de opcionados<br/>9–15 dic]
   ISE[Formulario ISE<br/>17–27 nov]
   Tuition[Pago/matrícula<br/>23 nov–10 dic]
@@ -163,7 +163,7 @@ flowchart LR
   Results --> ISE --> Tuition
   Results --> Special2 --> Calls --> ISE
   Open -. define controles previos .-> SIRA
-  Renewal[Nuevo sistema académico alternativo a SIRA<br/>Fase III formulada 100 %; indicador de ejecución: 50 % (meta 90 %) en 2025<br/>estado actual y relación por confirmar]
+  Renewal["Nuevo sistema académico alternativo a SIRA<br/>Fase III formulada 100 %, indicador de ejecución: 50 % (meta 90 %) en 2025<br/>estado actual y relación por confirmar"]
   Renewal -. alinear antes de sustituir .-> Open
 ```
 
