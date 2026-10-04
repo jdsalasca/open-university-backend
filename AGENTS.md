@@ -8,6 +8,8 @@ Construir por etapas una plataforma institucional que unifique y reemplace los s
 
 Lee `docs/PROJECT.md` para la misión, visión, objetivo, ficha técnica y prioridad actual. Léelo junto con estas instrucciones antes de iniciar una tarea; consulta `docs/ROADMAP.md` y los documentos de descubrimiento del dominio para conocer su estado y dependencias. El alcance objetivo de la plataforma no significa que cada módulo ya esté implementado, aprobado o listo para producción.
 
+- Coordinación: no crear ni invocar subagentes salvo petición expresa del usuario. Registra en Harness Moon el trabajo de esta sesión y sus avances; la presencia de otras tareas o agentes en el tablero no autoriza a delegar ni a modificar sus ámbitos.
+
 ## Arquitectura acordada
 
 - Dos repositorios Git públicos y coordinados: `open-university-frontend` contiene el monolito Vite/React/TypeScript y `open-university-backend` contiene el monolito Java/Spring Boot, Compose, SDKMAN y la documentación de integración. Ambos usan `develop` como rama de integración. La visibilidad pública del código no habilita datos ni operación institucional.
