@@ -26,7 +26,7 @@ class SpaceDirectoryControllerTest {
     void returns_the_sourced_location_directory_to_an_anonymous_visitor() throws Exception {
         mockMvc.perform(get("/api/v1/spaces"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.locations.length()").value(23))
+                .andExpect(jsonPath("$.locations.length()").value(24))
                 .andExpect(jsonPath("$.requestPathways.length()").value(5))
                 .andExpect(jsonPath("$.requestPathways[0].id").value("auditoriums-admin-spaces"))
                 .andExpect(jsonPath("$.locations[0].id").value("site-central-tunja"))
@@ -44,6 +44,21 @@ class SpaceDirectoryControllerTest {
                 .andExpect(jsonPath("$.locations[22].announcement.capacities[0].areaName")
                         .value("Capacidad aproximada"))
                 .andExpect(jsonPath("$.locations[22].announcement.capacities[0].announcedCapacityPersons").value(450))
+                .andExpect(jsonPath("$.locations[23].id").value("health-faculty-wellbeing-2026"))
+                .andExpect(jsonPath("$.locations[23].name")
+                        .value("Espacios de bienestar e integración · Facultad de Ciencias de la Salud"))
+                .andExpect(jsonPath("$.locations[23].municipality").value("Tunja"))
+                .andExpect(jsonPath("$.locations[23].address").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.locations[23].mapQuery").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.locations[23].source.url").value(
+                        "https://uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/Facultad-de-Ciencias-de-la-Salud-de-la-UPTC-estrena-espacios-para-el-bienestar-e-integracion-de-sus-estudiantes/"))
+                .andExpect(jsonPath("$.locations[23].source.sourceUpdatedAt").value("2026-10-01"))
+                .andExpect(jsonPath("$.locations[23].locationDetail").value(org.hamcrest.Matchers.allOf(
+                        org.hamcrest.Matchers.containsString("canchas multifuncional y de voleibol arena"),
+                        org.hamcrest.Matchers.containsString("kiosco"),
+                        org.hamcrest.Matchers.containsString("coworking"),
+                        org.hamcrest.Matchers.containsString("nueve mesas exteriores"))))
+                .andExpect(jsonPath("$.locations[23].announcement").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.officialOfficeDirectoryUrl").value(
                         "https://www.uptc.edu.co/sitio/portal/sitios/directorio/"));
     }

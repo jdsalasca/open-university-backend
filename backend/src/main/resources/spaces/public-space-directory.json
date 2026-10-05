@@ -361,6 +361,23 @@
           }
         ]
       }
+    },
+    {
+      "id": "health-faculty-wellbeing-2026",
+      "kind": "SERVICE",
+      "name": "Espacios de bienestar e integración · Facultad de Ciencias de la Salud",
+      "municipality": "Tunja",
+      "department": null,
+      "address": null,
+      "locationDetail": "El comunicado UPTC n.º 252 del 1 de octubre de 2026 informa la puesta en funcionamiento de las canchas multifuncional y de voleibol arena, un kiosco, un espacio de coworking y nueve mesas exteriores. La publicación no ofrece dirección postal ni disponibilidad.",
+      "mapQuery": null,
+      "source": {
+        "label": "Comunicado UPTC n.º 252 · espacios de bienestar en Ciencias de la Salud",
+        "url": "https://uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/Facultad-de-Ciencias-de-la-Salud-de-la-UPTC-estrena-espacios-para-el-bienestar-e-integracion-de-sus-estudiantes/",
+        "checkedAt": "2026-10-04",
+        "sourceUpdatedAt": "2026-10-01"
+      },
+      "announcement": null
     }
   ]
 }

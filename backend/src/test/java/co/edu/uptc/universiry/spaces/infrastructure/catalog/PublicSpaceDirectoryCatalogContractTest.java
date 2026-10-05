@@ -21,11 +21,11 @@ class PublicSpaceDirectoryCatalogContractTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void publishes_twenty_three_locations_with_unique_ids_and_traceable_sources() throws IOException {
+    void publishes_twenty_four_locations_with_unique_ids_and_traceable_sources() throws IOException {
         JsonNode snapshot = readSnapshot();
         JsonNode locations = snapshot.path("locations");
 
-        assertEquals(23, locations.size());
+        assertEquals(24, locations.size());
 
         Set<String> ids = new HashSet<>();
         int campuses = 0;
@@ -38,7 +38,7 @@ class PublicSpaceDirectoryCatalogContractTest {
             assertTrue(location.path("source").path("url").asText().startsWith("https://"));
             String expectedCheckedAt = switch (location.path("id").asText()) {
                 case "service-music-library-2026" -> "2026-10-03";
-                case "auditorium-goranchacha-2026" -> "2026-10-04";
+                case "auditorium-goranchacha-2026", "health-faculty-wellbeing-2026" -> "2026-10-04";
                 default -> "2026-10-01";
             };
             assertEquals(expectedCheckedAt, location.path("source").path("checkedAt").asText());
@@ -52,9 +52,32 @@ class PublicSpaceDirectoryCatalogContractTest {
 
         assertEquals(6, campuses);
         assertEquals(11, creadLocations);
-        assertEquals(6, services);
+        assertEquals(7, services);
         assertEquals("https://www.uptc.edu.co/sitio/portal/sitios/directorio/",
                 snapshot.path("officialOfficeDirectoryUrl").asText());
+    }
+
+    @Test
+    void publishes_health_wellbeing_spaces_with_official_source_without_inventing_address_or_capacity() throws IOException {
+        JsonNode snapshot = readSnapshot();
+        JsonNode healthSpaces = findById(snapshot, "health-faculty-wellbeing-2026");
+
+        assertEquals("SERVICE", healthSpaces.path("kind").asText());
+        assertEquals("Tunja", healthSpaces.path("municipality").asText());
+        assertTrue(healthSpaces.get("address").isNull());
+        assertTrue(healthSpaces.get("mapQuery").isNull());
+        assertEquals("https://uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/Facultad-de-Ciencias-de-la-Salud-de-la-UPTC-estrena-espacios-para-el-bienestar-e-integracion-de-sus-estudiantes/",
+                healthSpaces.path("source").path("url").asText());
+        assertEquals("2026-10-01", healthSpaces.path("source").path("sourceUpdatedAt").asText());
+        assertEquals("2026-10-04", healthSpaces.path("source").path("checkedAt").asText());
+
+        String detail = healthSpaces.path("locationDetail").asText();
+        assertTrue(detail.contains("canchas multifuncional y de voleibol arena"));
+        assertTrue(detail.contains("kiosco"));
+        assertTrue(detail.contains("coworking"));
+        assertTrue(detail.contains("nueve mesas exteriores"));
+        assertTrue(healthSpaces.get("announcement").isNull());
+        assertFalse(detail.contains("disponibilidad confirmada"));
     }
 
     @Test
