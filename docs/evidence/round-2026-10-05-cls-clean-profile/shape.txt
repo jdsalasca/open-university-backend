@@ -1,0 +1,2 @@
+MEDICION {"altoContenido":4508,"altoMain":4508,"altoFooter":25,"altoBody":4595}
+ASSETS [{"f":"index-5YnTH4Hi.js","kb":273},{"f":"AcademicOperationsPage-CLj4noJb.js","kb":95},{"f":"identitySessionManager-HHyBh007.js","kb":67},{"f":"index.esm-CJbvIUdv.js","kb":36},{"f":"AcademicCatalogPage-B1utWlQw.js","kb":32},{"f":"AdmissionsExperience-Bk14I96v.js","kb":27}]

@@ -1,0 +1,41 @@
+[
+ {
+  "corrida": 1,
+  "cls": 0.0064,
+  "fuentes": [
+   {
+    "v": 0.0064,
+    "t": 1141,
+    "src": [
+     "catalog-page-content"
+    ]
+   }
+  ]
+ },
+ {
+  "corrida": 2,
+  "cls": 0.0064,
+  "fuentes": [
+   {
+    "v": 0.0064,
+    "t": 1065,
+    "src": [
+     "catalog-page-content"
+    ]
+   }
+  ]
+ },
+ {
+  "corrida": 3,
+  "cls": 0.0064,
+  "fuentes": [
+   {
+    "v": 0.0064,
+    "t": 1055,
+    "src": [
+     "catalog-page-content"
+    ]
+   }
+  ]
+ }
+]

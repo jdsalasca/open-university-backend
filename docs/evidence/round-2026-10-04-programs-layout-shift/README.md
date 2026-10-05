@@ -1,5 +1,13 @@
 # CLS de `/#programas` — cerrado el 4 de octubre de 2026
 
+> **Corrección del 5 de octubre de 2026.** La tabla de este paquete afirma «perfil limpio por
+> corrida», pero `measure-cls.cjs` reutiliza un `--user-data-dir` fijo, de modo que las corridas 2 y 3
+> heredaban la caché del bundle. Con perfil realmente limpio la carga inicial de la ruta da CLS
+> **0.7503**, no 0. La causa era el `Suspense` de la ruta en `App.tsx`, no la reserva
+> `catalog-loading-directory` de esta página. La medición y el arreglo están en
+> [el paquete del 5 de octubre](../round-2026-10-05-cls-clean-profile/README.md). Las cifras de este
+> documento se conservan como se observaron en su momento, no como resultado de una primera visita.
+
 Cierra [`docs/discovery/frontend-layout-shift-finding-2026-10.md`](../../discovery/frontend-layout-shift-finding-2026-10.md),
 que estaba abierto desde el 3 de octubre y marcado «requiere decisión de producto». Se resolvió
 sin reordenar la página y sin tocar el presupuesto de JavaScript.
