@@ -21,9 +21,18 @@ class ClasspathPublicSpaceDirectoryAdapterTest {
         var snapshot = directory.snapshot();
 
         assertNotNull(snapshot);
-        assertEquals(23, snapshot.locations().size());
+        assertEquals(24, snapshot.locations().size());
         assertEquals(5, snapshot.requestPathways().size());
         assertEquals("Sede Central Tunja", snapshot.locations().getFirst().name());
+        var healthFaculty = snapshot.locations().stream()
+                .filter(location -> "health-faculty-wellbeing-2026".equals(location.id()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("Espacios de bienestar e integración · Facultad de Ciencias de la Salud", healthFaculty.name());
+        assertEquals("Tunja", healthFaculty.municipality());
+        assertEquals("https://uptc.edu.co/sitio/portal/cal_not_eve/noticias/det/"
+                        + "Facultad-de-Ciencias-de-la-Salud-de-la-UPTC-estrena-espacios-para-el-bienestar-e-integracion-de-sus-estudiantes/",
+                healthFaculty.source().url());
         var music = snapshot.locations().stream()
                 .filter(location -> "service-music-library-2026".equals(location.id()))
                 .findFirst()
