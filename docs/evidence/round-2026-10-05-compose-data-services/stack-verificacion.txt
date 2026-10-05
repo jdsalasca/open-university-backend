@@ -1,0 +1,72 @@
+=== docker compose ps ===
+SERVICE    STATUS                    PORTS
+backend    Up 19 minutes             127.0.0.1:8080->8080/tcp
+frontend   Up 23 minutes             127.0.0.1:5173->5173/tcp
+mongodb    Up 23 minutes (healthy)   127.0.0.1:27017->27017/tcp
+mysql      Up 19 minutes (healthy)   127.0.0.1:3307->3306/tcp
+
+=== health backend ===
+123
+34
+103
+114
+111
+117
+112
+115
+34
+58
+91
+34
+108
+105
+118
+101
+110
+101
+115
+115
+34
+44
+34
+114
+101
+97
+100
+105
+110
+101
+115
+115
+34
+93
+44
+34
+115
+116
+97
+116
+117
+115
+34
+58
+34
+85
+80
+34
+125
+
+=== frontend ===
+HTTP 200
+
+=== mongodb ping (1 = ok) ===
+1
+
+=== mysql tablas + flyway ===
+
+tablas
+44
+27	1
+26	1
+25	1
+

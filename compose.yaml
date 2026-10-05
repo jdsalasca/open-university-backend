@@ -1,9 +1,11 @@
-name: universiry
+name: open-university-os
 
 services:
   mysql:
     image: mysql:8.4
     environment:
+      # The schema and grants already live in the mysql-data volume under these names; renaming them
+      # would orphan the Flyway history, so the project rename does not touch the credentials.
       MYSQL_DATABASE: ${MYSQL_DATABASE:-universiry_dev}
       MYSQL_USER: ${DB_USERNAME:-universiry_dev}
       MYSQL_PASSWORD: ${DB_PASSWORD:-universiry_dev_local_only}
@@ -19,6 +21,24 @@ services:
       retries: 20
       start_period: 20s
 
+  # Document store for structures that do not fit the relational model. Nothing reads it yet: the
+  # backend owns no Mongo port and no repository, so adding it here provisions infrastructure without
+  # creating a second source of truth for any domain.
+  mongodb:
+    image: mongo:8
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-open_university_os_documents}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' \"$(echo $$MONGO_INITDB_DATABASE)\" | grep -q 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
   backend:
     build:
       context: ./backend
@@ -28,6 +48,7 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-universiry_dev}?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
       DB_USERNAME: ${DB_USERNAME:-universiry_dev}
       DB_PASSWORD: ${DB_PASSWORD:-universiry_dev_local_only}
+      MONGODB_URI: mongodb://mongodb:27017/${MONGODB_DATABASE:-open_university_os_documents}
       BRANDING_ASSETS_DIRECTORY: /var/branding-assets
       ACADEMIC_CATALOG_IMPORT_MAX_FILE_BYTES: ${ACADEMIC_CATALOG_IMPORT_MAX_FILE_BYTES:-2097152}
       ACADEMIC_CATALOG_IMPORT_MAX_ROWS: ${ACADEMIC_CATALOG_IMPORT_MAX_ROWS:-10000}
@@ -37,6 +58,8 @@ services:
       UPTC_OIDC_ROLE_PERMISSION_MAPPING: ${UPTC_OIDC_ROLE_PERMISSION_MAPPING:-}
     depends_on:
       mysql:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
     ports:
       - "127.0.0.1:8080:8080"
@@ -89,5 +112,6 @@ services:
 
 volumes:
   mysql-data:
+  mongodb-data:
   maven-cache:
   branding-assets:
